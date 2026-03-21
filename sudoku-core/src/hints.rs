@@ -1,0 +1,103 @@
+// hints.rs: 数独提示技巧
+
+use crate::board::Grid;
+use crate::checker::{is_valid, possible_values};
+
+fn row_has(grid: &Grid, row: usize, val: u8) -> bool {
+    for c in 0..9 {
+        if let Some(v) = grid[row][c].value() {
+            if v == val {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn col_has(grid: &Grid, col: usize, val: u8) -> bool {
+    for r in 0..9 {
+        if let Some(v) = grid[r][col].value() {
+            if v == val {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn box_has(grid: &Grid, box_r: usize, box_c: usize, val: u8) -> bool {
+    for r in box_r..box_r + 3 {
+        for c in box_c..box_c + 3 {
+            if let Some(v) = grid[r][c].value() {
+                if v == val {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+/// 找 Naked Single（唯一候选数）
+pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+    for r in 0..9 {
+        for c in 0..9 {
+            if grid[r][c].value().is_none() {
+                let candidates = possible_values(grid, r, c);
+                if candidates.len() == 1 {
+                    return Some(((r, c), candidates[0]));
+                }
+            }
+        }
+    }
+    None
+}
+
+/// 找 Hidden Single（隐藏唯一）
+pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+    for r in 0..9 {
+        for val in 1..=9 {
+            if !row_has(grid, r, val) {
+                let possible: Vec<usize> = (0..9)
+                    .filter(|&c| grid[r][c].value().is_none() && is_valid(grid, r, c, val))
+                    .collect();
+                if possible.len() == 1 {
+                    return Some(((r, possible[0]), val));
+                }
+            }
+        }
+    }
+
+    for c in 0..9 {
+        for val in 1..=9 {
+            if !col_has(grid, c, val) {
+                let possible: Vec<usize> = (0..9)
+                    .filter(|&r| grid[r][c].value().is_none() && is_valid(grid, r, c, val))
+                    .collect();
+                if possible.len() == 1 {
+                    return Some(((possible[0], c), val));
+                }
+            }
+        }
+    }
+
+    for box_r in (0..9).step_by(3) {
+        for box_c in (0..9).step_by(3) {
+            for val in 1..=9 {
+                if !box_has(grid, box_r, box_c, val) {
+                    let possible: Vec<(usize, usize)> = (box_r..box_r + 3)
+                        .flat_map(|r| (box_c..box_c + 3).map(move |c| (r, c)))
+                        .filter(|(r, c)| {
+                            grid[*r][*c].value().is_none() && is_valid(grid, *r, *c, val)
+                        })
+                        .collect();
+                    if possible.len() == 1 {
+                        return Some((possible[0], val));
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
