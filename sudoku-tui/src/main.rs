@@ -43,7 +43,7 @@ fn main() -> std::io::Result<()> {
                     }
                 }
                 AppState::Playing { .. } => {
-                    if let Some(input::playing::Action::Back) = input::playing::handle(key.code) {
+                    if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
                         state = AppState::Menu {
                             difficulty: sudoku_core::Difficulty::Easy,
                         };
