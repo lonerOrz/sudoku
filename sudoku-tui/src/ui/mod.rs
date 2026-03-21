@@ -1,3 +1,5 @@
+// ui/mod.rs: UI 模块入口
+
 mod menu;
 
 pub fn draw(state: &crate::state::AppState, f: &mut ratatui::prelude::Frame) {
