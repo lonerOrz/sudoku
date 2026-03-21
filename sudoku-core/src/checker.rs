@@ -1,20 +1,21 @@
 // checker.rs: 数独验证规则
 
-use crate::board::{peers, Grid};
+use crate::board::{Grid, peers};
 
 /// 检查在 (row, col) 位置放置 val 是否有效
 pub fn is_valid(grid: &Grid, row: usize, col: usize, val: u8) -> bool {
     for (r, c) in peers(row, col) {
-        if let Some(v) = grid[r][c].value() {
-            if v == val {
-                return false;
-            }
+        if let Some(v) = grid[r][c].value()
+            && v == val
+        {
+            return false;
         }
     }
     true
 }
 
 /// 检查数独是否已完成且正确
+#[allow(clippy::needless_range_loop)]
 pub fn is_solved(grid: &Grid) -> bool {
     for r in 0..9 {
         for c in 0..9 {
@@ -25,10 +26,10 @@ pub fn is_solved(grid: &Grid) -> bool {
     }
     for r in 0..9 {
         for c in 0..9 {
-            if let Some(val) = grid[r][c].value() {
-                if !is_valid(grid, r, c, val) {
-                    return false;
-                }
+            if let Some(val) = grid[r][c].value()
+                && !is_valid(grid, r, c, val)
+            {
+                return false;
             }
         }
     }
@@ -59,11 +60,11 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
             if let Some(val) = grid[r][c].value() {
                 let mut is_error = false;
                 for (pr, pc) in peers(r, c) {
-                    if let Some(other) = grid[pr][pc].value() {
-                        if other == val {
-                            is_error = true;
-                            break;
-                        }
+                    if let Some(other) = grid[pr][pc].value()
+                        && other == val
+                    {
+                        is_error = true;
+                        break;
                     }
                 }
                 if is_error {

@@ -9,7 +9,7 @@ pub mod solver;
 // 重新导出常用类型和函数
 pub use board::{Cell, Grid};
 pub use checker::{find_errors, is_solved, is_valid, possible_values};
-pub use generator::{generate, Difficulty};
+pub use generator::{Difficulty, generate};
 pub use hints::{find_hidden_single, find_naked_single};
 pub use solver::{count_solutions, solve};
 

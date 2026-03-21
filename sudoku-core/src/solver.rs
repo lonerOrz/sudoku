@@ -3,6 +3,7 @@
 use crate::board::{Cell, Grid};
 use crate::checker::is_valid;
 
+#[allow(clippy::needless_range_loop)]
 fn find_empty(grid: &Grid) -> Option<(usize, usize)> {
     for r in 0..9 {
         for c in 0..9 {
