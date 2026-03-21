@@ -1,0 +1,7 @@
+[package]
+name = "sudoku-tui"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sudoku-core = { workspace = true }

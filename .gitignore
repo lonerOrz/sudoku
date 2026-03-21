@@ -1,0 +1,5 @@
+/target
+sudoku.db
+.sediment/
+AGENTS.md
+RUST_TIPS.md
