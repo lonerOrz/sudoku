@@ -19,3 +19,25 @@ pub fn handle(key: KeyCode) -> Option<Action> {
         _ => None,
     }
 }
+
+pub struct Control {
+    pub key: &'static str,
+    pub label: &'static str,
+}
+
+pub fn controls() -> &'static [Control] {
+    &[
+        Control {
+            key: "←/→",
+            label: "Change",
+        },
+        Control {
+            key: "Enter",
+            label: "Start",
+        },
+        Control {
+            key: "q",
+            label: "Quit",
+        },
+    ]
+}

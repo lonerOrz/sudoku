@@ -52,13 +52,18 @@ fn selector(difficulty: Difficulty) -> Paragraph<'static> {
 }
 
 fn controls() -> Paragraph<'static> {
-    let content = vec![Line::from(vec![
-        Span::styled("←/→", Style::default().fg(Color::Cyan)),
-        Span::styled(" Change  ", Style::default().fg(Color::DarkGray)),
-        Span::styled("Enter", Style::default().fg(Color::Cyan)),
-        Span::styled(" Start  ", Style::default().fg(Color::DarkGray)),
-        Span::styled("q", Style::default().fg(Color::Cyan)),
-        Span::styled(" Quit", Style::default().fg(Color::DarkGray)),
-    ])];
-    Paragraph::new(content).alignment(Alignment::Center)
+    use crate::input::menu;
+
+    let mut spans = Vec::new();
+    for (i, ctrl) in menu::controls().iter().enumerate() {
+        if i > 0 {
+            spans.push(Span::raw("  "));
+        }
+        spans.push(Span::styled(ctrl.key, Style::default().fg(Color::Cyan)));
+        spans.push(Span::styled(
+            format!(" {}", ctrl.label),
+            Style::default().fg(Color::DarkGray),
+        ));
+    }
+    Paragraph::new(vec![Line::from(spans)]).alignment(Alignment::Center)
 }
