@@ -1,22 +1,14 @@
 mod config;
+mod constants;
+mod input;
 mod state;
+mod terminal;
 mod ui;
-
-use crossterm::{
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
-};
-use ratatui::{prelude::CrosstermBackend, terminal::Terminal};
 
 use state::AppState;
 
 fn main() -> std::io::Result<()> {
-    let backend = CrosstermBackend::new(std::io::stdout());
-    let mut terminal = Terminal::new(backend)?;
-    enable_raw_mode()?;
-    execute!(std::io::stdout(), EnterAlternateScreen)?;
-
+    let mut terminal = terminal::init()?;
     let mut state = AppState::Menu {
         difficulty: sudoku_core::Difficulty::Easy,
     };
@@ -24,24 +16,26 @@ fn main() -> std::io::Result<()> {
     loop {
         terminal.draw(|f| ui::draw(&state, f))?;
 
-        if let Event::Key(key) = event::read()? {
-            match (&mut state, key.code) {
-                (AppState::Menu { difficulty }, KeyCode::Left) => {
-                    *difficulty = config::cycle(*difficulty, false);
+        let event = crossterm::event::read()?;
+        if let crossterm::event::Event::Key(key) = event {
+            match &mut state {
+                AppState::Menu { difficulty } => {
+                    if let Some(action) = input::menu::handle(key.code) {
+                        match action {
+                            input::menu::Action::PrevDifficulty => {
+                                *difficulty = config::cycle(*difficulty, false);
+                            }
+                            input::menu::Action::NextDifficulty => {
+                                *difficulty = config::cycle(*difficulty, true);
+                            }
+                            input::menu::Action::Start => {}
+                            input::menu::Action::Back => break,
+                        }
+                    }
                 }
-                (AppState::Menu { difficulty }, KeyCode::Right) => {
-                    *difficulty = config::cycle(*difficulty, true);
-                }
-                (AppState::Menu { .. }, KeyCode::Enter | KeyCode::Char(' ')) => {}
-                (_, KeyCode::Char('q') | KeyCode::Esc) => {
-                    break;
-                }
-                _ => {}
             }
         }
     }
 
-    execute!(std::io::stdout(), LeaveAlternateScreen)?;
-    disable_raw_mode()?;
-    Ok(())
+    terminal::cleanup()
 }
