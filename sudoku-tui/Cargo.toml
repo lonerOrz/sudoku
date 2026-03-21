@@ -5,3 +5,5 @@ edition.workspace = true
 
 [dependencies]
 sudoku-core = { workspace = true }
+ratatui = "0.26"
+crossterm = "0.27"
