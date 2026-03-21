@@ -188,6 +188,154 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     (puzzle, solution)
 }
 
+/// 计算 (row, col) 位置可能的数字
+pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
+    // 如果不是空格，直接返回
+    if grid[row][col].value().is_some() {
+        return vec![];
+    }
+
+    let mut candidates = Vec::new();
+    for val in 1..=9 {
+        if is_valid(grid, row, col, val) {
+            candidates.push(val);
+        }
+    }
+    candidates
+}
+
+/// 找出所有有冲突的格子
+pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
+    let mut errors = Vec::new();
+
+    for r in 0..9 {
+        for c in 0..9 {
+            if let Some(val) = grid[r][c].value() {
+                // 检查是否有效（排除自己）
+                let mut is_error = false;
+                for (pr, pc) in peers(r, c) {
+                    if let Some(other) = grid[pr][pc].value() {
+                        if other == val {
+                            is_error = true;
+                            break;
+                        }
+                    }
+                }
+                if is_error {
+                    errors.push((r, c));
+                }
+            }
+        }
+    }
+
+    errors
+}
+
+/// 找 Naked Single（唯一候选数）
+pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+    for r in 0..9 {
+        for c in 0..9 {
+            if grid[r][c].value().is_none() {
+                let candidates = possible_values(grid, r, c);
+                if candidates.len() == 1 {
+                    return Some(((r, c), candidates[0]));
+                }
+            }
+        }
+    }
+    None
+}
+
+/// 找 Hidden Single（隐藏唯一）
+pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+    // 检查每行
+    for r in 0..9 {
+        for val in 1..=9 {
+            if !row_has(grid, r, val) {
+                let possible: Vec<usize> = (0..9)
+                    .filter(|&c| grid[r][c].value().is_none() && is_valid(grid, r, c, val))
+                    .collect();
+                if possible.len() == 1 {
+                    return Some(((r, possible[0]), val));
+                }
+            }
+        }
+    }
+
+    // 检查每列
+    for c in 0..9 {
+        for val in 1..=9 {
+            if !col_has(grid, c, val) {
+                let possible: Vec<usize> = (0..9)
+                    .filter(|&r| grid[r][c].value().is_none() && is_valid(grid, r, c, val))
+                    .collect();
+                if possible.len() == 1 {
+                    return Some(((possible[0], c), val));
+                }
+            }
+        }
+    }
+
+    // 检查每宫
+    for box_r in (0..9).step_by(3) {
+        for box_c in (0..9).step_by(3) {
+            for val in 1..=9 {
+                if !box_has(grid, box_r, box_c, val) {
+                    let possible: Vec<(usize, usize)> = (box_r..box_r + 3)
+                        .flat_map(|r| (box_c..box_c + 3).map(move |c| (r, c)))
+                        .filter(|(r, c)| {
+                            grid[*r][*c].value().is_none() && is_valid(grid, *r, *c, val)
+                        })
+                        .collect();
+                    if possible.len() == 1 {
+                        return Some((possible[0], val));
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+/// 检查行是否包含某数字
+fn row_has(grid: &Grid, row: usize, val: u8) -> bool {
+    for c in 0..9 {
+        if let Some(v) = grid[row][c].value() {
+            if v == val {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// 检查列是否包含某数字
+fn col_has(grid: &Grid, col: usize, val: u8) -> bool {
+    for r in 0..9 {
+        if let Some(v) = grid[r][col].value() {
+            if v == val {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// 检查宫是否包含某数字
+fn box_has(grid: &Grid, box_r: usize, box_c: usize, val: u8) -> bool {
+    for r in box_r..box_r + 3 {
+        for c in box_c..box_c + 3 {
+            if let Some(v) = grid[r][c].value() {
+                if v == val {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -381,5 +529,43 @@ mod tests {
         assert_eq!(Cell::Given(5).value(), Some(5));
         assert_eq!(Cell::UserInput(3).value(), Some(3));
         assert_eq!(Cell::Empty.value(), None);
+    }
+
+    #[test]
+    fn test_possible_values() {
+        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        grid[0][0] = Cell::Given(5);
+        grid[1][1] = Cell::Given(3);
+
+        let candidates = possible_values(&grid, 0, 1);
+        assert!(candidates.contains(&1));
+        assert!(!candidates.contains(&5));
+        assert!(!candidates.contains(&3));
+    }
+
+    #[test]
+    fn test_find_errors() {
+        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        grid[0][0] = Cell::Given(5);
+        grid[0][1] = Cell::Given(5); // 重复！
+
+        let errors = find_errors(&grid);
+        assert!(errors.contains(&(0, 1)));
+    }
+
+    #[test]
+    fn test_find_naked_single() {
+        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        grid[0][0] = Cell::Given(5);
+        // 只有一个位置可以放 1
+        let candidates = possible_values(&grid, 0, 1);
+        assert!(candidates.len() > 1);
+    }
+
+    #[test]
+    fn test_find_errors_empty() {
+        let grid: Grid = [[Cell::Empty; 9]; 9];
+        let errors = find_errors(&grid);
+        assert!(errors.is_empty());
     }
 }
