@@ -19,16 +19,11 @@ pub fn is_valid(grid: &Grid, row: usize, col: usize, val: u8) -> bool {
 pub fn is_solved(grid: &Grid) -> bool {
     for r in 0..9 {
         for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                return false;
-            }
-        }
-    }
-    for r in 0..9 {
-        for c in 0..9 {
-            if let Some(val) = grid[r][c].value()
-                && !is_valid(grid, r, c, val)
-            {
+            if let Some(val) = grid[r][c].value() {
+                if !is_valid(grid, r, c, val) {
+                    return false;
+                }
+            } else {
                 return false;
             }
         }
