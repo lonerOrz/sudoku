@@ -31,6 +31,19 @@ pub fn is_solved(grid: &Grid) -> bool {
     true
 }
 
+/// 检查是否还有空格
+#[allow(clippy::needless_range_loop)]
+pub fn has_empty(grid: &Grid) -> bool {
+    for r in 0..9 {
+        for c in 0..9 {
+            if grid[r][c].value().is_none() {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 /// 计算 (row, col) 位置可能的数字
 pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {

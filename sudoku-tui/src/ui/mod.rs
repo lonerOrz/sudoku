@@ -13,5 +13,6 @@ pub fn draw(state: &crate::state::AppState, f: &mut ratatui::prelude::Frame) {
             errors,
             ..
         } => playing::draw(f, puzzle, *cursor_row, *cursor_col, errors),
+        crate::state::AppState::Won { difficulty } => playing::draw_won(f, *difficulty),
     }
 }

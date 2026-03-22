@@ -13,5 +13,9 @@ pub enum AppState {
         cursor_row: usize,
         cursor_col: usize,
         errors: Vec<(usize, usize)>,
+        difficulty: Difficulty,
+    },
+    Won {
+        difficulty: Difficulty,
     },
 }

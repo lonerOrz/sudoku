@@ -42,11 +42,19 @@ fn main() -> std::io::Result<()> {
                                         cursor_row: 4,
                                         cursor_col: 4,
                                         errors,
+                                        difficulty: *difficulty,
                                     };
                                 }
                             }
                             input::menu::Action::Back => break,
                         }
+                    }
+                }
+                AppState::Won { .. } => {
+                    if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
+                        state = AppState::Menu {
+                            difficulty: sudoku_core::Difficulty::Easy,
+                        };
                     }
                 }
                 AppState::Playing { .. } => {
@@ -91,6 +99,7 @@ fn main() -> std::io::Result<()> {
                                     cursor_row,
                                     cursor_col,
                                     errors,
+                                    difficulty,
                                     ..
                                 } = &mut state
                                 {
@@ -102,6 +111,11 @@ fn main() -> std::io::Result<()> {
                                     {
                                         *cell = sudoku_core::Cell::UserInput(n);
                                         *errors = sudoku_core::find_errors(puzzle);
+                                        if errors.is_empty() && !sudoku_core::has_empty(puzzle) {
+                                            state = AppState::Won {
+                                                difficulty: *difficulty,
+                                            };
+                                        }
                                     }
                                 }
                             }

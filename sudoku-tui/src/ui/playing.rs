@@ -90,6 +90,39 @@ pub fn draw(
     );
 }
 
+pub fn draw_won(f: &mut Frame, difficulty: sudoku_core::Difficulty) {
+    let area = f.size();
+
+    let label = crate::config::label(difficulty);
+
+    let content = vec![
+        Line::from(vec![Span::styled(
+            "Congratulations!",
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("You completed {}!", label))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::styled(
+            "Press q to return to menu",
+            Style::default().fg(Color::Cyan),
+        )]),
+    ];
+
+    let v_chunks = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(content.len() as u16),
+        Constraint::Min(0),
+    ])
+    .split(area);
+
+    let paragraph = Paragraph::new(content).alignment(Alignment::Center);
+
+    f.render_widget(paragraph, v_chunks[1]);
+}
+
 fn render_info() -> Vec<Line<'static>> {
     vec![
         Line::from(vec![Span::styled(
