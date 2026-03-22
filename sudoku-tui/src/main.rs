@@ -35,11 +35,13 @@ fn main() -> std::io::Result<()> {
                             input::menu::Action::Start => {
                                 if let AppState::Menu { difficulty } = &state {
                                     let (puzzle, solution) = sudoku_core::generate(*difficulty);
+                                    let errors = sudoku_core::find_errors(&puzzle);
                                     state = AppState::Playing {
                                         puzzle,
                                         solution,
                                         cursor_row: 4,
                                         cursor_col: 4,
+                                        errors,
                                     };
                                 }
                             }
@@ -88,6 +90,7 @@ fn main() -> std::io::Result<()> {
                                     puzzle,
                                     cursor_row,
                                     cursor_col,
+                                    errors,
                                     ..
                                 } = &mut state
                                 {
@@ -95,6 +98,7 @@ fn main() -> std::io::Result<()> {
                                     if !matches!(cell, sudoku_core::Cell::Given(_)) {
                                         *cell = sudoku_core::Cell::UserInput(n);
                                     }
+                                    *errors = sudoku_core::find_errors(puzzle);
                                 }
                             }
                             input::playing::Action::Erase => {
@@ -102,6 +106,7 @@ fn main() -> std::io::Result<()> {
                                     puzzle,
                                     cursor_row,
                                     cursor_col,
+                                    errors,
                                     ..
                                 } = &mut state
                                 {
@@ -109,6 +114,7 @@ fn main() -> std::io::Result<()> {
                                     if matches!(cell, sudoku_core::Cell::UserInput(_)) {
                                         *cell = sudoku_core::Cell::Empty;
                                     }
+                                    *errors = sudoku_core::find_errors(puzzle);
                                 }
                             }
                             _ => {}

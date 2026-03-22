@@ -53,17 +53,13 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
     for r in 0..9 {
         for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
-                let mut is_error = false;
                 for (pr, pc) in peers(r, c) {
                     if let Some(other) = grid[pr][pc].value()
                         && other == val
                     {
-                        is_error = true;
+                        errors.push((r, c));
                         break;
                     }
-                }
-                if is_error {
-                    errors.push((r, c));
                 }
             }
         }

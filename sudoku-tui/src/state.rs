@@ -12,5 +12,6 @@ pub enum AppState {
         solution: Grid,
         cursor_row: usize,
         cursor_col: usize,
+        errors: Vec<(usize, usize)>,
     },
 }

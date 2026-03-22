@@ -10,12 +10,18 @@ use sudoku_core::Cell;
 const CELL_W: usize = 7;
 const CELL_H: usize = 3;
 
-pub fn draw(f: &mut Frame, puzzle: &sudoku_core::Grid, cursor_row: usize, cursor_col: usize) {
+pub fn draw(
+    f: &mut Frame,
+    puzzle: &sudoku_core::Grid,
+    cursor_row: usize,
+    cursor_col: usize,
+    errors: &[(usize, usize)],
+) {
     let area = f.size();
 
     let main_chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).split(area);
 
-    let grid = render_grid(puzzle, cursor_row, cursor_col);
+    let grid = render_grid(puzzle, cursor_row, cursor_col, errors);
     let grid_width = grid
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -122,6 +128,7 @@ fn render_grid(
     puzzle: &sudoku_core::Grid,
     cursor_row: usize,
     cursor_col: usize,
+    errors: &[(usize, usize)],
 ) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
@@ -130,7 +137,7 @@ fn render_grid(
     for cell_row in 0..9 {
         for inner_row in 0..CELL_H {
             lines.push(content_line(
-                puzzle, cell_row, inner_row, cursor_row, cursor_col,
+                puzzle, cell_row, inner_row, cursor_row, cursor_col, errors,
             ));
         }
 
@@ -197,6 +204,7 @@ fn content_line(
     inner_row: usize,
     cursor_row: usize,
     cursor_col: usize,
+    errors: &[(usize, usize)],
 ) -> Line<'static> {
     let mut spans = Vec::new();
 
@@ -204,7 +212,17 @@ fn content_line(
 
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
-        let bg = if is_cursor { Color::Blue } else { Color::Reset };
+        let is_error = errors.contains(&(cell_row, cell_col));
+        let cell = puzzle[cell_row][cell_col];
+        let is_user_input_error = is_error && matches!(cell, Cell::UserInput(_));
+
+        let bg = if is_cursor {
+            Color::Blue
+        } else if is_error && matches!(cell, Cell::Given(_)) {
+            Color::Red
+        } else {
+            Color::Reset
+        };
 
         let sep_char = if cell_col == 0 || cell_col % 3 == 0 {
             "┃"
@@ -217,8 +235,6 @@ fn content_line(
             Color::DarkGray
         };
         spans.push(Span::styled(sep_char, Style::default().fg(sep_fg)));
-
-        let cell = puzzle[cell_row][cell_col];
 
         let content = if inner_row == center_row {
             match cell {
@@ -236,10 +252,14 @@ fn content_line(
             "       ".to_string()
         };
 
-        let fg = match cell {
-            Cell::Given(_) => Color::White,
-            Cell::UserInput(_) => Color::Cyan,
-            Cell::Empty => Color::White,
+        let fg = if is_user_input_error {
+            Color::Red
+        } else {
+            match cell {
+                Cell::Given(_) => Color::White,
+                Cell::UserInput(_) => Color::Cyan,
+                Cell::Empty => Color::White,
+            }
         };
         spans.push(Span::styled(content, Style::default().fg(fg).bg(bg)));
     }

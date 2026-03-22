@@ -10,7 +10,8 @@ pub fn draw(state: &crate::state::AppState, f: &mut ratatui::prelude::Frame) {
             puzzle,
             cursor_row,
             cursor_col,
+            errors,
             ..
-        } => playing::draw(f, puzzle, *cursor_row, *cursor_col),
+        } => playing::draw(f, puzzle, *cursor_row, *cursor_col, errors),
     }
 }
