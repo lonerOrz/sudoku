@@ -56,6 +56,7 @@ fn main() -> std::io::Result<()> {
                                             difficulty: *difficulty,
                                             mistakes: 0,
                                             hints_used: 0,
+                                            undo_used: 0,
                                             start_time: std::time::Instant::now(),
                                             elapsed_secs: 0,
                                             paused: false,
@@ -199,6 +200,7 @@ fn handle_undo(state: &mut AppState) {
         cursor_row,
         cursor_col,
         mistakes,
+        undo_used,
         history,
         conflicts,
         ..
@@ -210,6 +212,7 @@ fn handle_undo(state: &mut AppState) {
         *cursor_row = entry.cursor_row;
         *cursor_col = entry.cursor_col;
         *mistakes = entry.mistakes;
+        *undo_used += 1;
         *conflicts = compute_conflicts(puzzle);
     }
 }
