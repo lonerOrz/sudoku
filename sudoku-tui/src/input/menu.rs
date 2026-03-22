@@ -2,6 +2,8 @@
 
 use crossterm::event::KeyCode;
 
+use super::controls::Control;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Action {
     PrevDifficulty,
@@ -18,11 +20,6 @@ pub fn handle(key: KeyCode) -> Option<Action> {
         KeyCode::Char('q') | KeyCode::Esc => Some(Action::Back),
         _ => None,
     }
-}
-
-pub struct Control {
-    pub key: &'static str,
-    pub label: &'static str,
 }
 
 pub fn controls() -> &'static [Control] {
