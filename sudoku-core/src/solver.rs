@@ -12,8 +12,7 @@ fn solve_inner(grid: &mut Grid, masks: &mut BitmaskGrid) -> bool {
     let mut best_mask = 0u16;
     let mut best_count = 10;
 
-    let mut idx = 0;
-    while idx < 81 {
+    for idx in 0..81 {
         if get_value(grid, idx).is_none() {
             let mask = masks.candidates(idx / 9, idx % 9);
             let count = mask.count_ones() as usize;
@@ -26,7 +25,6 @@ fn solve_inner(grid: &mut Grid, masks: &mut BitmaskGrid) -> bool {
                 }
             }
         }
-        idx += 1;
     }
 
     if best_idx >= 81 {
@@ -69,8 +67,7 @@ fn count_inner(grid: &mut Grid, masks: &mut BitmaskGrid, count: &mut usize, max:
     let mut best_mask = 0u16;
     let mut best_count = 10;
 
-    let mut idx = 0;
-    while idx < 81 {
+    for idx in 0..81 {
         if get_value(grid, idx).is_none() {
             let mask = masks.candidates(idx / 9, idx % 9);
             let count_cands = mask.count_ones() as usize;
@@ -83,7 +80,6 @@ fn count_inner(grid: &mut Grid, masks: &mut BitmaskGrid, count: &mut usize, max:
                 }
             }
         }
-        idx += 1;
     }
 
     if best_idx >= 81 {
