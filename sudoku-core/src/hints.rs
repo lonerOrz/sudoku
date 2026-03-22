@@ -1,9 +1,10 @@
 // hints.rs: 数独提示技巧
 
+#![allow(clippy::needless_range_loop)]
+
 use crate::board::Grid;
 use crate::checker::{is_valid, possible_values};
 
-#[allow(clippy::needless_range_loop)]
 fn row_has(grid: &Grid, row: usize, val: u8) -> bool {
     for c in 0..9 {
         if let Some(v) = grid[row][c].value()
@@ -15,7 +16,6 @@ fn row_has(grid: &Grid, row: usize, val: u8) -> bool {
     false
 }
 
-#[allow(clippy::needless_range_loop)]
 fn col_has(grid: &Grid, col: usize, val: u8) -> bool {
     for r in 0..9 {
         if let Some(v) = grid[r][col].value()
@@ -27,7 +27,6 @@ fn col_has(grid: &Grid, col: usize, val: u8) -> bool {
     false
 }
 
-#[allow(clippy::needless_range_loop)]
 fn box_has(grid: &Grid, box_r: usize, box_c: usize, val: u8) -> bool {
     for r in box_r..box_r + 3 {
         for c in box_c..box_c + 3 {

@@ -5,14 +5,14 @@ use ratatui::{
     style::Color,
     widgets::Paragraph,
 };
-use sudoku_core::Cell;
+use sudoku_core::{Cell, Difficulty, Grid};
 
 const CELL_W: usize = 7;
 const CELL_H: usize = 3;
 
 pub fn draw(
     f: &mut Frame,
-    puzzle: &sudoku_core::Grid,
+    puzzle: &Grid,
     cursor_row: usize,
     cursor_col: usize,
     errors: &[(usize, usize)],
@@ -90,7 +90,7 @@ pub fn draw(
     );
 }
 
-pub fn draw_won(f: &mut Frame, difficulty: sudoku_core::Difficulty) {
+pub fn draw_won(f: &mut Frame, difficulty: Difficulty) {
     let area = f.size();
 
     let label = difficulty.label();
@@ -158,7 +158,7 @@ fn render_controls() -> Line<'static> {
 }
 
 fn render_grid(
-    puzzle: &sudoku_core::Grid,
+    puzzle: &Grid,
     cursor_row: usize,
     cursor_col: usize,
     errors: &[(usize, usize)],
@@ -232,7 +232,7 @@ fn h_line(kind: LineKind) -> Line<'static> {
 }
 
 fn content_line(
-    puzzle: &sudoku_core::Grid,
+    puzzle: &Grid,
     cell_row: usize,
     inner_row: usize,
     cursor_row: usize,

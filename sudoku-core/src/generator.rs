@@ -1,3 +1,5 @@
+// generator.rs: 数独谜题生成
+
 use crate::board::{Cell, Grid};
 use crate::difficulty::Difficulty;
 use crate::solver::{count_solutions, solve};

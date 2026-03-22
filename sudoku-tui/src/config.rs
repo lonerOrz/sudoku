@@ -1,3 +1,5 @@
+// config.rs: TUI 配置
+
 use ratatui::style::Color;
 use sudoku_core::Difficulty;
 
