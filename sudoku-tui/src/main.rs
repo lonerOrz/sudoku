@@ -92,9 +92,22 @@ fn main() -> std::io::Result<()> {
                                 } = &mut state
                                 {
                                     let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                    // Given 不能覆盖，UserInput 和 Empty 可以
                                     if !matches!(cell, sudoku_core::Cell::Given(_)) {
                                         *cell = sudoku_core::Cell::UserInput(n);
+                                    }
+                                }
+                            }
+                            input::playing::Action::Erase => {
+                                if let AppState::Playing {
+                                    puzzle,
+                                    cursor_row,
+                                    cursor_col,
+                                    ..
+                                } = &mut state
+                                {
+                                    let cell = &mut puzzle[*cursor_row][*cursor_col];
+                                    if matches!(cell, sudoku_core::Cell::UserInput(_)) {
+                                        *cell = sudoku_core::Cell::Empty;
                                     }
                                 }
                             }

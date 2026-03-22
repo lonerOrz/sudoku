@@ -21,10 +21,10 @@ pub fn handle(key: KeyCode) -> Option<Action> {
         KeyCode::Right => Some(Action::MoveRight),
         KeyCode::Up => Some(Action::MoveUp),
         KeyCode::Down => Some(Action::MoveDown),
+        KeyCode::Char('0') | KeyCode::Delete | KeyCode::Backspace => Some(Action::Erase),
         KeyCode::Char(c) if c.is_ascii_digit() => {
             c.to_digit(10).map(|d| Action::PlaceNumber(d as u8))
         }
-        KeyCode::Char('0') | KeyCode::Delete | KeyCode::Backspace => Some(Action::Erase),
         KeyCode::Char('u') | KeyCode::Char('U') => Some(Action::Undo),
         KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
         _ => None,
