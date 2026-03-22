@@ -358,3 +358,439 @@ fn has_conflicts(conflicts: &sudoku_core::Conflicts) -> bool {
         .iter()
         .any(|row| row.iter().any(|ct| !ct.is_empty()))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sudoku_core::{Cell, Difficulty};
+
+    fn create_empty_game() -> Game {
+        let (puzzle, solution) = generate(Difficulty::Easy);
+        let conflicts = compute_conflicts(&puzzle);
+        let pencil_marks: PencilMarks =
+            std::array::from_fn(|_| std::array::from_fn(|_| Vec::new()));
+        Game {
+            puzzle,
+            solution,
+            pencil_marks,
+            pencil_mode: false,
+            hint_mode: false,
+            cursor_row: 4,
+            cursor_col: 4,
+            conflicts,
+            difficulty: Difficulty::Easy,
+            mistakes: 0,
+            hints_used: 0,
+            undo_used: 0,
+            start_time: std::time::Instant::now(),
+            elapsed_secs: 0,
+            paused: false,
+            history: vec![],
+        }
+    }
+
+    fn find_empty_cell(game: &mut Game) -> Option<(usize, usize)> {
+        for row in 0..9 {
+            for col in 0..9 {
+                if matches!(game.puzzle()[row][col], Cell::Empty) {
+                    return Some((row, col));
+                }
+            }
+        }
+        None
+    }
+
+    fn move_to_cell(game: &mut Game, row: usize, col: usize) {
+        game.move_cursor(
+            row as i32 - game.cursor_row() as i32,
+            col as i32 - game.cursor_col() as i32,
+        );
+    }
+
+    #[test]
+    fn test_new_game_initialization() {
+        let game = Game::new(Difficulty::Easy);
+        assert_eq!(game.difficulty(), Difficulty::Easy);
+        assert_eq!(game.cursor_row(), 4);
+        assert_eq!(game.cursor_col(), 4);
+        assert_eq!(game.mistakes(), 0);
+        assert_eq!(game.hints_used(), 0);
+        assert_eq!(game.undo_used(), 0);
+        assert!(!game.is_paused());
+        assert!(!game.is_pencil_mode());
+        assert!(!game.is_hint_mode());
+    }
+
+    #[test]
+    fn test_cursor_movement() {
+        let mut game = create_empty_game();
+
+        game.move_cursor(0, 1);
+        assert_eq!(game.cursor_col(), 5);
+
+        game.move_cursor(0, -1);
+        assert_eq!(game.cursor_col(), 4);
+
+        game.move_cursor(-1, 0);
+        assert_eq!(game.cursor_row(), 3);
+
+        game.move_cursor(1, 0);
+        assert_eq!(game.cursor_row(), 4);
+    }
+
+    #[test]
+    fn test_cursor_boundary() {
+        let mut game = create_empty_game();
+
+        game.move_cursor(0, 100);
+        assert_eq!(game.cursor_col(), 8);
+
+        game.move_cursor(0, -100);
+        assert_eq!(game.cursor_col(), 0);
+
+        game.move_cursor(-100, 0);
+        assert_eq!(game.cursor_row(), 0);
+
+        game.move_cursor(100, 0);
+        assert_eq!(game.cursor_row(), 8);
+    }
+
+    #[test]
+    fn test_cursor_blocked_when_paused() {
+        let mut game = create_empty_game();
+        game.toggle_pause();
+
+        let row_before = game.cursor_row();
+        game.move_cursor(1, 0);
+        assert_eq!(game.cursor_row(), row_before);
+    }
+
+    #[test]
+    fn test_toggle_modes() {
+        let mut game = create_empty_game();
+
+        assert!(!game.is_pencil_mode());
+        game.toggle_pencil_mode();
+        assert!(game.is_pencil_mode());
+        game.toggle_pencil_mode();
+        assert!(!game.is_pencil_mode());
+
+        assert!(!game.is_hint_mode());
+        game.toggle_hint_mode();
+        assert!(game.is_hint_mode());
+        game.toggle_hint_mode();
+        assert!(!game.is_hint_mode());
+    }
+
+    #[test]
+    fn test_pencil_marks_toggle() {
+        let mut game = create_empty_game();
+        game.toggle_pencil_mode();
+        assert!(game.is_pencil_mode());
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+        game.place_number(5);
+
+        let marks = game.pencil_marks();
+        assert!(marks[row][col].contains(&5));
+
+        game.place_number(6);
+        let marks = game.pencil_marks();
+        assert!(marks[row][col].contains(&6));
+
+        game.place_number(5);
+        let marks = game.pencil_marks();
+        assert!(!marks[row][col].contains(&5));
+    }
+
+    #[test]
+    fn test_place_number_on_given_cell() {
+        let mut game = create_empty_game();
+
+        let result = game.place_number(1);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_place_correct_number() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        let solution_value = game.solution()[row][col];
+        let result = game.place_number(solution_value);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_place_wrong_number_increments_mistakes() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        let solution_value = game.solution()[row][col];
+        let wrong_value = if solution_value == 1 { 9 } else { 1 };
+
+        let mistakes_before = game.mistakes();
+        game.place_number(wrong_value);
+        assert_eq!(game.mistakes(), mistakes_before + 1);
+    }
+
+    #[test]
+    fn test_five_mistakes_leads_to_failed() {
+        let mut game = create_empty_game();
+
+        let mut mistakes = 0;
+        for _ in 0..10 {
+            if let Some((row, col)) = find_empty_cell(&mut game) {
+                if game.solution()[row][col] != 1 {
+                    move_to_cell(&mut game, row, col);
+                    let result = game.place_number(1);
+                    if matches!(result, Some(AppState::Failed { .. })) {
+                        return;
+                    }
+                    mistakes += 1;
+                    if mistakes >= 5 {
+                        break;
+                    }
+                }
+            }
+        }
+
+        let result = game.place_number(1);
+        assert!(matches!(result, Some(AppState::Failed { .. })));
+    }
+
+    #[test]
+    fn test_erase_user_input() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        game.place_number(5);
+        assert!(matches!(game.puzzle()[row][col], Cell::UserInput(5)));
+
+        game.erase();
+
+        assert!(matches!(game.puzzle()[row][col], Cell::Empty));
+    }
+
+    #[test]
+    fn test_erase_does_nothing_on_given() {
+        let mut game = create_empty_game();
+
+        for row in 0..9 {
+            for col in 0..9 {
+                if matches!(game.puzzle()[row][col], Cell::Given(_)) {
+                    move_to_cell(&mut game, row, col);
+                    game.erase();
+                    assert!(matches!(game.puzzle()[row][col], Cell::Given(_)));
+                    return;
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_hint_mode_places_correct_number() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        game.toggle_hint_mode();
+        assert!(game.is_hint_mode());
+
+        let solution_value = game.solution()[row][col];
+        game.place_hint();
+
+        assert_eq!(game.puzzle()[row][col], Cell::UserInput(solution_value));
+        assert_eq!(game.hints_used(), 1);
+        assert!(!game.is_hint_mode());
+    }
+
+    #[test]
+    fn test_hint_only_works_in_hint_mode() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        let result = game.place_hint();
+        assert!(result.is_none());
+        assert_eq!(game.hints_used(), 0);
+    }
+
+    #[test]
+    fn test_hint_disabled_when_paused() {
+        let mut game = create_empty_game();
+
+        game.toggle_hint_mode();
+        game.toggle_pause();
+
+        let result = game.place_hint();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_undo_restores_state() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        let original_cell = game.puzzle()[row][col];
+        game.place_number(5);
+        let after_place = game.puzzle()[row][col];
+
+        game.undo();
+        let after_undo = game.puzzle()[row][col];
+
+        assert!(matches!(original_cell, Cell::Empty));
+        assert!(matches!(after_place, Cell::UserInput(5)));
+        assert_eq!(after_undo, original_cell);
+        assert_eq!(game.undo_used(), 1);
+    }
+
+    #[test]
+    fn test_undo_restores_mistakes() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        if game.solution()[row][col] != 1 {
+            move_to_cell(&mut game, row, col);
+        } else {
+            return;
+        }
+
+        game.place_number(1);
+        assert_eq!(game.mistakes(), 1);
+
+        game.undo();
+        assert_eq!(game.mistakes(), 0);
+    }
+
+    #[test]
+    fn test_undo_with_empty_history() {
+        let mut game = create_empty_game();
+        let result = game.undo();
+        assert!(result.is_none());
+        assert_eq!(game.undo_used(), 0);
+    }
+
+    #[test]
+    fn test_toggle_pause() {
+        let mut game = create_empty_game();
+
+        assert!(!game.is_paused());
+        game.toggle_pause();
+        assert!(game.is_paused());
+        game.toggle_pause();
+        assert!(!game.is_paused());
+    }
+
+    #[test]
+    fn test_place_number_disabled_in_hint_mode() {
+        let mut game = create_empty_game();
+
+        game.toggle_hint_mode();
+
+        let result = game.place_number(5);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_place_number_disabled_when_paused() {
+        let mut game = create_empty_game();
+
+        game.toggle_pause();
+
+        let result = game.place_number(5);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_erase_disabled_in_hint_mode() {
+        let mut game = create_empty_game();
+
+        game.toggle_hint_mode();
+
+        game.erase();
+    }
+
+    #[test]
+    fn test_erase_disabled_when_paused() {
+        let mut game = create_empty_game();
+
+        game.toggle_pause();
+
+        game.erase();
+    }
+
+    #[test]
+    fn test_place_same_number_again() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        let solution_value = game.solution()[row][col];
+        game.place_number(solution_value);
+        let result = game.place_number(solution_value);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_history_is_saved() {
+        let mut game = create_empty_game();
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        move_to_cell(&mut game, row, col);
+
+        game.place_number(5);
+        let (row2, col2) = find_empty_cell(&mut game).unwrap_or((row, col));
+        move_to_cell(&mut game, row2, col2);
+        game.place_number(6);
+
+        game.undo();
+        assert_eq!(game.puzzle()[row2][col2], Cell::Empty);
+    }
+
+    #[test]
+    fn test_conflicts_update_after_placement() {
+        let mut game = create_empty_game();
+
+        let has_conflicts_before = has_conflicts(game.conflicts());
+
+        let (row, col) = find_empty_cell(&mut game).unwrap();
+        if game.solution()[row][col] != 1 {
+            move_to_cell(&mut game, row, col);
+        } else {
+            return;
+        }
+
+        game.place_number(1);
+
+        let has_conflicts_after = has_conflicts(game.conflicts());
+        assert_ne!(has_conflicts_before, has_conflicts_after);
+    }
+
+    #[test]
+    fn test_init_menu_creates_menu_state() {
+        let state = init_menu(Difficulty::Medium);
+        assert!(matches!(state, AppState::Menu { difficulty } if difficulty == Difficulty::Medium));
+    }
+
+    #[test]
+    fn test_start_game_creates_playing_state() {
+        let state = start_game(Difficulty::Hard);
+        assert!(matches!(state, AppState::Playing(_)));
+    }
+}
