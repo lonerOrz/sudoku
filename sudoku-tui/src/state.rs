@@ -1,6 +1,6 @@
 // state.rs: 应用状态
 
-use sudoku_core::{Difficulty, Grid, Solution};
+use sudoku_core::{Conflicts, Difficulty, Grid, Solution};
 
 pub type PencilMarks = [[Vec<u8>; 9]; 9];
 
@@ -149,7 +149,7 @@ pub enum AppState {
         hint_mode: bool,
         cursor_row: usize,
         cursor_col: usize,
-        errors: [bool; 81],
+        conflicts: Conflicts,
         difficulty: Difficulty,
         mistakes: u8,
         start_time: std::time::Instant,

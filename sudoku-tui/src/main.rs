@@ -8,7 +8,7 @@ mod ui;
 
 use state::{AppState, HistoryEntry, PencilMarks};
 use sudoku_core::{
-    Cell, Difficulty, clear_peers, find_conflicts_at, find_errors, generate, has_empty,
+    Cell, Conflicts, Difficulty, clear_peers, compute_conflicts, generate, has_empty,
 };
 
 fn main() -> std::io::Result<()> {
@@ -40,7 +40,7 @@ fn main() -> std::io::Result<()> {
                                 input::menu::Action::Start => {
                                     if let AppState::Menu { difficulty } = &state {
                                         let (puzzle, solution) = generate(*difficulty);
-                                        let errors = error_vec_to_array(find_errors(&puzzle));
+                                        let conflicts = compute_conflicts(&puzzle);
                                         let pencil_marks: PencilMarks = std::array::from_fn(|_| {
                                             std::array::from_fn(|_| Vec::new())
                                         });
@@ -52,7 +52,7 @@ fn main() -> std::io::Result<()> {
                                             hint_mode: false,
                                             cursor_row: 4,
                                             cursor_col: 4,
-                                            errors,
+                                            conflicts,
                                             difficulty: *difficulty,
                                             mistakes: 0,
                                             start_time: std::time::Instant::now(),
@@ -142,14 +142,6 @@ fn main() -> std::io::Result<()> {
     terminal::cleanup()
 }
 
-fn error_vec_to_array(errors: Vec<(usize, usize)>) -> [bool; 81] {
-    let mut arr = [false; 81];
-    for (r, c) in errors {
-        arr[r * 9 + c] = true;
-    }
-    arr
-}
-
 fn handle_place_hint(state: &mut AppState) {
     let r;
     let c;
@@ -179,8 +171,7 @@ fn handle_place_hint(state: &mut AppState) {
         if let AppState::Playing {
             puzzle,
             pencil_marks,
-            errors,
-            mistakes,
+            conflicts,
             history,
             hint_mode,
             ..
@@ -192,10 +183,7 @@ fn handle_place_hint(state: &mut AppState) {
             puzzle[r][c] = Cell::UserInput(v);
             pencil_marks[r][c].clear();
             clear_peers(pencil_marks, r, c, v);
-            *errors = error_vec_to_array(find_conflicts_at(puzzle, r, c, v));
-            if !errors.iter().all(|&e| !e) {
-                *mistakes += 1;
-            }
+            *conflicts = compute_conflicts(puzzle);
             *hint_mode = false;
         }
     }
@@ -209,7 +197,7 @@ fn handle_undo(state: &mut AppState) {
         cursor_col,
         mistakes,
         history,
-        errors,
+        conflicts,
         ..
     } = state
         && let Some(entry) = history.pop()
@@ -219,7 +207,7 @@ fn handle_undo(state: &mut AppState) {
         *cursor_row = entry.cursor_row;
         *cursor_col = entry.cursor_col;
         *mistakes = entry.mistakes;
-        *errors = error_vec_to_array(find_errors(puzzle));
+        *conflicts = compute_conflicts(puzzle);
     }
 }
 
@@ -243,6 +231,12 @@ fn save_history(state: &AppState) -> Option<HistoryEntry> {
     } else {
         None
     }
+}
+
+fn has_conflicts(conflicts: &Conflicts) -> bool {
+    conflicts
+        .iter()
+        .any(|row| row.iter().any(|ct| !ct.is_empty()))
 }
 
 fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
@@ -304,10 +298,11 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                 let history_entry = save_history(state);
                 if let AppState::Playing {
                     puzzle,
+                    solution,
                     pencil_marks,
                     cursor_row,
                     cursor_col,
-                    errors,
+                    conflicts,
                     difficulty,
                     mistakes,
                     start_time,
@@ -325,21 +320,16 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                         *cell = Cell::UserInput(n);
                         pencil_marks[*cursor_row][*cursor_col].clear();
                         clear_peers(pencil_marks, *cursor_row, *cursor_col, n);
-                        *errors = error_vec_to_array(find_conflicts_at(
-                            puzzle,
-                            *cursor_row,
-                            *cursor_col,
-                            n,
-                        ));
-                        if !errors.iter().all(|&e| !e) {
+                        if solution[*cursor_row][*cursor_col] != n {
                             *mistakes += 1;
-                            if *mistakes >= 5 {
-                                *state = AppState::Failed {
-                                    difficulty: *difficulty,
-                                    elapsed_secs: start_time.elapsed().as_secs(),
-                                };
-                            }
-                        } else if errors.iter().all(|&e| !e) && !has_empty(puzzle) {
+                        }
+                        *conflicts = compute_conflicts(puzzle);
+                        if *mistakes >= 5 {
+                            *state = AppState::Failed {
+                                difficulty: *difficulty,
+                                elapsed_secs: start_time.elapsed().as_secs(),
+                            };
+                        } else if !has_conflicts(conflicts) && !has_empty(puzzle) {
                             *state = AppState::Won {
                                 difficulty: *difficulty,
                                 elapsed_secs: start_time.elapsed().as_secs(),
@@ -356,7 +346,7 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                 pencil_marks,
                 cursor_row,
                 cursor_col,
-                errors,
+                conflicts,
                 history,
                 ..
             } = state
@@ -368,7 +358,7 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                     }
                     *cell = Cell::Empty;
                     pencil_marks[*cursor_row][*cursor_col].clear();
-                    *errors = error_vec_to_array(find_errors(puzzle));
+                    *conflicts = compute_conflicts(puzzle);
                 } else if !pencil_marks[*cursor_row][*cursor_col].is_empty() {
                     pencil_marks[*cursor_row][*cursor_col].clear();
                 }

@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 rand = "0.8"
+bitflags = "2"
 
 [dev-dependencies]
 criterion = "0.5"

@@ -6,7 +6,7 @@ use ratatui::{
     style::Color,
     widgets::{Block, BorderType, Paragraph},
 };
-use sudoku_core::{Cell, Difficulty, Grid};
+use sudoku_core::{Cell, Conflicts, Difficulty, Grid};
 
 const CELL_W: usize = 7;
 const CELL_H: usize = 3;
@@ -57,21 +57,23 @@ impl GameInfo {
 
 pub struct CellRenderParams<'a> {
     pub puzzle: &'a Grid,
+    pub solution: &'a [[u8; 9]; 9],
     pub pencil_marks: &'a PencilMarks,
     pub pencil_mode: bool,
     pub cursor_row: usize,
     pub cursor_col: usize,
-    pub errors: &'a [bool; 81],
+    pub conflicts: &'a Conflicts,
 }
 
 pub struct DrawParams<'a> {
     pub puzzle: &'a Grid,
+    pub solution: &'a [[u8; 9]; 9],
     pub pencil_marks: &'a PencilMarks,
     pub pencil_mode: bool,
     pub hint_mode: bool,
     pub cursor_row: usize,
     pub cursor_col: usize,
-    pub errors: &'a [bool; 81],
+    pub conflicts: &'a Conflicts,
     pub mistakes: u8,
     pub difficulty: Difficulty,
     pub elapsed_secs: u64,
@@ -86,11 +88,12 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
 
     let cell_params = CellRenderParams {
         puzzle: params.puzzle,
+        solution: params.solution,
         pencil_marks: params.pencil_marks,
         pencil_mode: params.pencil_mode,
         cursor_row: params.cursor_row,
         cursor_col: params.cursor_col,
-        errors: params.errors,
+        conflicts: params.conflicts,
     };
     let grid = render_grid(&cell_params);
     let grid_width = grid
@@ -399,17 +402,24 @@ fn h_line(kind: LineKind) -> Line<'static> {
 fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) -> Line<'static> {
     let mut spans = Vec::new();
     let puzzle = params.puzzle;
+    let solution = params.solution;
     let pencil_marks = params.pencil_marks;
     let pencil_mode = params.pencil_mode;
     let cursor_row = params.cursor_row;
     let cursor_col = params.cursor_col;
-    let errors = params.errors;
+    let conflicts = params.conflicts;
 
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
-        let is_error = errors[cell_row * 9 + cell_col];
         let cell = puzzle[cell_row][cell_col];
-        let is_user_input_error = is_error && matches!(cell, Cell::UserInput(_));
+        let conflict_type = conflicts[cell_row][cell_col];
+        let has_conflict = !conflict_type.is_empty();
+
+        let is_wrong = if let Cell::UserInput(v) = cell {
+            solution[cell_row][cell_col] != v
+        } else {
+            false
+        };
 
         let bg = if is_cursor {
             if pencil_mode {
@@ -417,7 +427,7 @@ fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) ->
             } else {
                 Color::Blue
             }
-        } else if is_error && matches!(cell, Cell::Given(_)) {
+        } else if has_conflict && !is_wrong {
             Color::Red
         } else {
             Color::Reset
@@ -494,7 +504,7 @@ fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) ->
             }
         };
 
-        let fg = if is_user_input_error {
+        let fg = if is_wrong {
             Color::Red
         } else {
             match cell {

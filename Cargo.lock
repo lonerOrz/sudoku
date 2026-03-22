@@ -768,6 +768,7 @@ dependencies = [
 name = "sudoku-core"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "criterion",
  "rand",
 ]

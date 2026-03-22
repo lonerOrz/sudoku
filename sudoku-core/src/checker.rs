@@ -3,6 +3,113 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
+use bitflags::bitflags;
+
+bitflags! {
+    #[derive(Clone, Copy, Default)]
+    pub struct ConflictType: u8 {
+        const ROW = 0b001;
+        const COL = 0b010;
+        const BOX = 0b100;
+    }
+}
+
+pub type Conflicts = [[ConflictType; 9]; 9];
+
+pub fn compute_conflicts(grid: &Grid) -> Conflicts {
+    let mut conflicts: Conflicts = [[ConflictType::empty(); 9]; 9];
+
+    for r in 0..9 {
+        for c in 0..9 {
+            let Some(val) = grid[r][c].value() else {
+                continue;
+            };
+
+            for c2 in 0..9 {
+                if c2 == c {
+                    continue;
+                }
+                if grid[r][c2].value() == Some(val) {
+                    conflicts[r][c].insert(ConflictType::ROW);
+                    conflicts[r][c2].insert(ConflictType::ROW);
+                }
+            }
+
+            for r2 in 0..9 {
+                if r2 == r {
+                    continue;
+                }
+                if grid[r2][c].value() == Some(val) {
+                    conflicts[r][c].insert(ConflictType::COL);
+                    conflicts[r2][c].insert(ConflictType::COL);
+                }
+            }
+
+            let box_r = (r / 3) * 3;
+            let box_c = (c / 3) * 3;
+            for dr in 0..3 {
+                for dc in 0..3 {
+                    let r2 = box_r + dr;
+                    let c2 = box_c + dc;
+                    if r2 == r && c2 == c {
+                        continue;
+                    }
+                    if grid[r2][c2].value() == Some(val) {
+                        conflicts[r][c].insert(ConflictType::BOX);
+                        conflicts[r2][c2].insert(ConflictType::BOX);
+                    }
+                }
+            }
+        }
+    }
+
+    conflicts
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_conflict_type_flags() {
+        let mut ct = ConflictType::empty();
+        assert!(!ct.intersects(ConflictType::ROW));
+        assert!(!ct.intersects(ConflictType::COL));
+        assert!(!ct.intersects(ConflictType::BOX));
+
+        ct.insert(ConflictType::ROW);
+        assert!(ct.intersects(ConflictType::ROW));
+        assert!(!ct.intersects(ConflictType::COL));
+
+        ct.insert(ConflictType::COL);
+        ct.insert(ConflictType::BOX);
+        assert!(ct.intersects(ConflictType::ROW));
+        assert!(ct.intersects(ConflictType::COL));
+        assert!(ct.intersects(ConflictType::BOX));
+    }
+
+    #[test]
+    fn test_compute_conflicts_row() {
+        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        grid[0][0] = crate::Cell::Given(5);
+        grid[0][3] = crate::Cell::UserInput(5);
+
+        let conflicts = compute_conflicts(&grid);
+        assert!(conflicts[0][0].intersects(ConflictType::ROW));
+        assert!(conflicts[0][3].intersects(ConflictType::ROW));
+    }
+
+    #[test]
+    fn test_compute_conflicts_no_conflict() {
+        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        grid[0][0] = crate::Cell::Given(5);
+        grid[0][3] = crate::Cell::Given(3);
+
+        let conflicts = compute_conflicts(&grid);
+        assert!(conflicts[0][0].is_empty());
+        assert!(conflicts[0][3].is_empty());
+    }
+}
 
 pub fn is_solved(grid: &Grid) -> bool {
     let masks = BitmaskGrid::from_grid(grid);
