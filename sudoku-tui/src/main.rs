@@ -70,6 +70,43 @@ fn main() -> std::io::Result<()> {
                             };
                         }
                     }
+                    AppState::Paused { .. } => {
+                        if let Some(input::playing::Action::Pause) =
+                            input::playing::handle(key.code)
+                        {
+                            if let AppState::Paused {
+                                puzzle,
+                                solution,
+                                cursor_row,
+                                cursor_col,
+                                errors,
+                                difficulty,
+                                mistakes,
+                                elapsed_secs,
+                            } = &state
+                            {
+                                let paused_duration = std::time::Instant::now().elapsed().as_secs();
+                                let total_elapsed = *elapsed_secs + paused_duration;
+                                state = AppState::Playing {
+                                    puzzle: *puzzle,
+                                    solution: *solution,
+                                    cursor_row: *cursor_row,
+                                    cursor_col: *cursor_col,
+                                    errors: errors.clone(),
+                                    difficulty: *difficulty,
+                                    mistakes: *mistakes,
+                                    start_time: std::time::Instant::now()
+                                        - std::time::Duration::from_secs(total_elapsed),
+                                };
+                            }
+                        } else if let Some(input::playing::Action::Quit) =
+                            input::playing::handle(key.code)
+                        {
+                            state = AppState::Menu {
+                                difficulty: Difficulty::Easy,
+                            };
+                        }
+                    }
                     AppState::Playing { .. } => {
                         if let Some(action) = input::playing::handle(key.code) {
                             match action {
@@ -77,6 +114,31 @@ fn main() -> std::io::Result<()> {
                                     state = AppState::Menu {
                                         difficulty: Difficulty::Easy,
                                     };
+                                }
+                                input::playing::Action::Pause => {
+                                    if let AppState::Playing {
+                                        puzzle,
+                                        solution,
+                                        cursor_row,
+                                        cursor_col,
+                                        errors,
+                                        difficulty,
+                                        mistakes,
+                                        start_time,
+                                    } = &state
+                                    {
+                                        let elapsed = start_time.elapsed().as_secs();
+                                        state = AppState::Paused {
+                                            puzzle: *puzzle,
+                                            solution: *solution,
+                                            cursor_row: *cursor_row,
+                                            cursor_col: *cursor_col,
+                                            errors: errors.clone(),
+                                            difficulty: *difficulty,
+                                            mistakes: *mistakes,
+                                            elapsed_secs: elapsed,
+                                        };
+                                    }
                                 }
                                 input::playing::Action::MoveLeft => {
                                     if let AppState::Playing { cursor_col, .. } = &mut state

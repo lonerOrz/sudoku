@@ -12,6 +12,7 @@ pub enum Action {
     PlaceNumber(u8),
     Erase,
     Undo,
+    Pause,
     Quit,
 }
 
@@ -26,6 +27,7 @@ pub fn handle(key: KeyCode) -> Option<Action> {
             c.to_digit(10).map(|d| Action::PlaceNumber(d as u8))
         }
         KeyCode::Char('u') | KeyCode::Char('U') => Some(Action::Undo),
+        KeyCode::Char(' ') => Some(Action::Pause),
         KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
         _ => None,
     }
@@ -51,8 +53,8 @@ pub fn controls() -> &'static [Control] {
             label: "Erase",
         },
         Control {
-            key: "u",
-            label: "Undo",
+            key: "Space",
+            label: "Pause",
         },
         Control {
             key: "q",

@@ -1,5 +1,3 @@
-// ui/mod.rs: UI 模块入口
-
 mod menu;
 mod playing;
 
@@ -25,6 +23,25 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
             *mistakes,
             *start_time,
         ),
+        AppState::Paused {
+            puzzle,
+            cursor_row,
+            cursor_col,
+            errors,
+            mistakes,
+            elapsed_secs,
+            ..
+        } => {
+            playing::draw_paused(
+                f,
+                puzzle,
+                *cursor_row,
+                *cursor_col,
+                errors,
+                *mistakes,
+                *elapsed_secs,
+            );
+        }
         AppState::Won {
             difficulty,
             elapsed_secs,

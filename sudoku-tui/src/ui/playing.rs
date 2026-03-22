@@ -3,7 +3,7 @@
 use ratatui::{
     prelude::{Alignment, Constraint, Frame, Layout, Line, Span, Style},
     style::Color,
-    widgets::Paragraph,
+    widgets::{Block, BorderType, Paragraph},
 };
 use sudoku_core::{Cell, Difficulty, Grid};
 
@@ -162,6 +162,136 @@ pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
     f.render_widget(paragraph, v_chunks[1]);
 }
 
+pub fn draw_paused(
+    f: &mut Frame,
+    puzzle: &Grid,
+    cursor_row: usize,
+    cursor_col: usize,
+    errors: &[(usize, usize)],
+    mistakes: u8,
+    elapsed_secs: u64,
+) {
+    let area = f.size();
+
+    let main_chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).split(area);
+
+    let grid = render_grid(puzzle, cursor_row, cursor_col, errors);
+    let grid_width = grid
+        .iter()
+        .map(|l| l.to_string().len() as u16)
+        .max()
+        .unwrap_or(0);
+    let grid_height = grid.len() as u16;
+
+    let info = render_info_for_paused(mistakes, elapsed_secs);
+    let info_width = info
+        .iter()
+        .map(|l| l.to_string().len() as u16)
+        .max()
+        .unwrap_or(0);
+
+    let total_width = grid_width + info_width;
+
+    let centered = Layout::horizontal([
+        Constraint::Min(0),
+        Constraint::Length(total_width),
+        Constraint::Min(0),
+    ])
+    .split(main_chunks[0]);
+
+    let side_chunks =
+        Layout::horizontal([Constraint::Ratio(8, 10), Constraint::Ratio(2, 10)]).split(centered[1]);
+
+    let grid_v = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(grid_height),
+        Constraint::Min(0),
+    ])
+    .split(side_chunks[0]);
+
+    let info_v = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(info.len() as u16),
+        Constraint::Min(0),
+    ])
+    .split(side_chunks[1]);
+
+    f.render_widget(Paragraph::new(grid).alignment(Alignment::Center), grid_v[1]);
+    f.render_widget(Paragraph::new(info).alignment(Alignment::Left), info_v[1]);
+
+    let hints = render_paused_controls();
+    let hints_width = hints.to_string().len() as u16;
+    let hints_h = Layout::horizontal([
+        Constraint::Min(0),
+        Constraint::Length(hints_width),
+        Constraint::Min(0),
+    ])
+    .split(main_chunks[1]);
+
+    let hints_v = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(1),
+        Constraint::Min(0),
+    ])
+    .split(hints_h[1]);
+
+    f.render_widget(
+        Paragraph::new(vec![hints])
+            .alignment(Alignment::Center)
+            .wrap(ratatui::widgets::Wrap { trim: false }),
+        hints_v[1],
+    );
+
+    let popup = center_rect(30, 7, grid_v[1]);
+    f.render_widget(ratatui::widgets::Clear, popup);
+
+    let block = Block::bordered()
+        .title(" Paused ")
+        .border_type(BorderType::Rounded)
+        .style(Style::default().fg(Color::Yellow));
+
+    let time_str = format_time(elapsed_secs);
+    let text = Paragraph::new(vec![
+        Line::from(""),
+        Line::from(vec![Span::styled(
+            "PAUSED",
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
+        Line::from(""),
+        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
+        Line::from(""),
+        Line::from(vec![
+            Span::raw("Press "),
+            Span::styled("Space", Style::default().fg(Color::Cyan)),
+            Span::raw(" to resume"),
+        ]),
+    ])
+    .block(block)
+    .alignment(Alignment::Center);
+
+    f.render_widget(text, popup);
+}
+
+fn center_rect(width: u16, height: u16, area: ratatui::prelude::Rect) -> ratatui::prelude::Rect {
+    let vert = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(height),
+        Constraint::Min(0),
+    ])
+    .split(area);
+
+    let horiz = Layout::horizontal([
+        Constraint::Min(0),
+        Constraint::Length(width),
+        Constraint::Min(0),
+    ])
+    .split(vert[1]);
+
+    horiz[1]
+}
+
 fn format_time(total_secs: u64) -> String {
     let hours = total_secs / 3600;
     let mins = (total_secs % 3600) / 60;
@@ -189,6 +319,28 @@ fn render_info(mistakes: u8, start_time: std::time::Instant) -> Vec<Line<'static
     ]
 }
 
+fn render_info_for_paused(mistakes: u8, elapsed_secs: u64) -> Vec<Line<'static>> {
+    let time_str = format_time(elapsed_secs);
+
+    vec![
+        Line::from(vec![Span::styled(
+            "Info",
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Timer: {}", time_str))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::styled(
+            "Mode: PAUSED",
+            Style::default().fg(Color::Yellow),
+        )]),
+    ]
+}
+
 fn render_controls() -> Line<'static> {
     use crate::input::playing;
 
@@ -204,6 +356,15 @@ fn render_controls() -> Line<'static> {
         ));
     }
     Line::from(spans)
+}
+
+fn render_paused_controls() -> Line<'static> {
+    Line::from(vec![
+        Span::styled("Space", Style::default().fg(Color::Cyan)),
+        Span::styled(" Resume  ", Style::default().fg(Color::White)),
+        Span::styled("q", Style::default().fg(Color::Cyan)),
+        Span::styled(" Quit", Style::default().fg(Color::White)),
+    ])
 }
 
 fn render_grid(

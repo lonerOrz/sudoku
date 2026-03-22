@@ -17,6 +17,16 @@ pub enum AppState {
         mistakes: u8,
         start_time: std::time::Instant,
     },
+    Paused {
+        puzzle: Grid,
+        solution: Grid,
+        cursor_row: usize,
+        cursor_col: usize,
+        errors: Vec<(usize, usize)>,
+        difficulty: Difficulty,
+        mistakes: u8,
+        elapsed_secs: u64,
+    },
     Won {
         difficulty: Difficulty,
         elapsed_secs: u64,
