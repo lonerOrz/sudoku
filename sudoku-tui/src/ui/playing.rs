@@ -35,41 +35,36 @@ pub fn draw(
     let grid_height = grid.len() as u16;
 
     let info = render_info(difficulty, mistakes, elapsed_secs, paused);
-    let info_width = info.iter().map(|l| l.width() as u16).max().unwrap_or(16);
     let info_height = info.len() as u16;
+
+    let total_width = grid_width + 20;
 
     let centered = Layout::horizontal([
         Constraint::Min(0),
-        Constraint::Length(grid_width),
-        Constraint::Length(info_width + 4),
+        Constraint::Length(total_width),
         Constraint::Min(0),
     ])
     .split(main_chunks[0]);
+
+    let side_chunks =
+        Layout::horizontal([Constraint::Ratio(8, 10), Constraint::Ratio(2, 10)]).split(centered[1]);
 
     let grid_v = Layout::vertical([
         Constraint::Min(0),
         Constraint::Length(grid_height),
         Constraint::Min(0),
     ])
-    .split(centered[1]);
+    .split(side_chunks[0]);
 
     let info_v = Layout::vertical([
         Constraint::Min(0),
-        Constraint::Length(info_height + 2),
+        Constraint::Length(info_height),
         Constraint::Min(0),
     ])
-    .split(centered[2]);
+    .split(side_chunks[1]);
 
     f.render_widget(Paragraph::new(grid).alignment(Alignment::Center), grid_v[1]);
-
-    let info_block = Block::bordered()
-        .title(" Info ")
-        .border_type(BorderType::Rounded)
-        .style(Style::default().fg(Color::White));
-    let info_para = Paragraph::new(info)
-        .alignment(Alignment::Left)
-        .block(info_block);
-    f.render_widget(info_para, info_v[1]);
+    f.render_widget(Paragraph::new(info).alignment(Alignment::Left), info_v[1]);
 
     let hints = if paused {
         render_paused_controls()
@@ -243,14 +238,21 @@ fn render_info(
     };
 
     vec![
-        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
+        Line::from(vec![Span::styled(
+            "Info",
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw(format!(
             "Difficulty: {}",
             difficulty.label()
         ))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw("Mode: "), mode]),
     ]
