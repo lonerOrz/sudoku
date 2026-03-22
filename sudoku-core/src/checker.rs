@@ -26,20 +26,14 @@ pub fn compute_conflicts(grid: &Grid) -> Conflicts {
             };
 
             for c2 in 0..9 {
-                if c2 == c {
-                    continue;
-                }
-                if grid[r][c2].value() == Some(val) {
+                if c2 != c && grid[r][c2].value() == Some(val) {
                     conflicts[r][c].insert(ConflictType::ROW);
                     conflicts[r][c2].insert(ConflictType::ROW);
                 }
             }
 
             for r2 in 0..9 {
-                if r2 == r {
-                    continue;
-                }
-                if grid[r2][c].value() == Some(val) {
+                if r2 != r && grid[r2][c].value() == Some(val) {
                     conflicts[r][c].insert(ConflictType::COL);
                     conflicts[r2][c].insert(ConflictType::COL);
                 }
@@ -51,10 +45,7 @@ pub fn compute_conflicts(grid: &Grid) -> Conflicts {
                 for dc in 0..3 {
                     let r2 = box_r + dr;
                     let c2 = box_c + dc;
-                    if r2 == r && c2 == c {
-                        continue;
-                    }
-                    if grid[r2][c2].value() == Some(val) {
+                    if (r2 != r || c2 != c) && grid[r2][c2].value() == Some(val) {
                         conflicts[r][c].insert(ConflictType::BOX);
                         conflicts[r2][c2].insert(ConflictType::BOX);
                     }

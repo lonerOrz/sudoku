@@ -26,17 +26,15 @@ pub fn find_naked_single(grid: &Grid) -> Option<Clue> {
     let masks = BitmaskGrid::from_grid(grid);
     for r in 0..9 {
         for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                let mask = masks.candidates(r, c);
-                if mask.count_ones() == 1 {
-                    let val = mask.trailing_zeros() as u8;
-                    return Some(Clue {
-                        target_row: r,
-                        target_col: c,
-                        value: val,
-                        technique: "Naked Single",
-                    });
-                }
+            let mask = masks.candidates(r, c);
+            if mask.count_ones() == 1 {
+                let val = mask.trailing_zeros() as u8;
+                return Some(Clue {
+                    target_row: r,
+                    target_col: c,
+                    value: val,
+                    technique: "Naked Single",
+                });
             }
         }
     }

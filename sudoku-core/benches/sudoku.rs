@@ -1,5 +1,5 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
-use sudoku_core::{Difficulty, count_solutions, generate, solve};
+use sudoku_core::{Difficulty, compute_conflicts, count_solutions, find_clue, generate, solve};
 
 fn generate_all_difficulties(c: &mut Criterion) {
     let mut group = c.benchmark_group("generate");
@@ -96,6 +96,26 @@ fn shuffle_entropy(c: &mut Criterion) {
     });
 }
 
+fn hint_find_clue(c: &mut Criterion) {
+    let (puzzle, solution) = generate(Difficulty::Medium);
+
+    c.bench_function("find_clue_medium", |b| {
+        b.iter(|| {
+            find_clue(black_box(&puzzle), black_box(&solution));
+        });
+    });
+}
+
+fn check_compute_conflicts(c: &mut Criterion) {
+    let (puzzle, _) = generate(Difficulty::Medium);
+
+    c.bench_function("compute_conflicts_medium", |b| {
+        b.iter(|| {
+            compute_conflicts(black_box(&puzzle));
+        });
+    });
+}
+
 criterion_group!(
     benches,
     generate_all_difficulties,
@@ -103,5 +123,7 @@ criterion_group!(
     uniqueness_check,
     shuffle_quality,
     shuffle_entropy,
+    hint_find_clue,
+    check_compute_conflicts,
 );
 criterion_main!(benches);
