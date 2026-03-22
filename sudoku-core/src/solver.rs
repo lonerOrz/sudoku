@@ -52,7 +52,6 @@ pub fn solve(grid: &mut Grid) -> bool {
     true
 }
 
-/// 计算解的数量
 pub fn count_solutions(grid: &mut Grid) -> usize {
     let mut count = 0;
     count_solutions_inner(grid, &mut count, 2);

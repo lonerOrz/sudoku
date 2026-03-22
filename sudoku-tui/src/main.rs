@@ -6,11 +6,12 @@ mod terminal;
 mod ui;
 
 use state::AppState;
+use sudoku_core::{Cell, Difficulty, find_errors, generate, has_empty};
 
 fn main() -> std::io::Result<()> {
     let mut terminal = terminal::init()?;
     let mut state = AppState::Menu {
-        difficulty: sudoku_core::Difficulty::Easy,
+        difficulty: Difficulty::Easy,
     };
 
     loop {
@@ -34,8 +35,8 @@ fn main() -> std::io::Result<()> {
                             }
                             input::menu::Action::Start => {
                                 if let AppState::Menu { difficulty } = &state {
-                                    let (puzzle, solution) = sudoku_core::generate(*difficulty);
-                                    let errors = sudoku_core::find_errors(&puzzle);
+                                    let (puzzle, solution) = generate(*difficulty);
+                                    let errors = find_errors(&puzzle);
                                     state = AppState::Playing {
                                         puzzle,
                                         solution,
@@ -53,7 +54,7 @@ fn main() -> std::io::Result<()> {
                 AppState::Won { .. } => {
                     if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
                         state = AppState::Menu {
-                            difficulty: sudoku_core::Difficulty::Easy,
+                            difficulty: Difficulty::Easy,
                         };
                     }
                 }
@@ -62,7 +63,7 @@ fn main() -> std::io::Result<()> {
                         match action {
                             input::playing::Action::Quit => {
                                 state = AppState::Menu {
-                                    difficulty: sudoku_core::Difficulty::Easy,
+                                    difficulty: Difficulty::Easy,
                                 };
                             }
                             input::playing::Action::MoveLeft => {
@@ -105,13 +106,11 @@ fn main() -> std::io::Result<()> {
                                 {
                                     let cell = &mut puzzle[*cursor_row][*cursor_col];
                                     let already_has_n =
-                                        matches!(cell, sudoku_core::Cell::UserInput(v) if *v == n);
-                                    if !already_has_n
-                                        && !matches!(cell, sudoku_core::Cell::Given(_))
-                                    {
-                                        *cell = sudoku_core::Cell::UserInput(n);
-                                        *errors = sudoku_core::find_errors(puzzle);
-                                        if errors.is_empty() && !sudoku_core::has_empty(puzzle) {
+                                        matches!(cell, Cell::UserInput(v) if *v == n);
+                                    if !already_has_n && !matches!(cell, Cell::Given(_)) {
+                                        *cell = Cell::UserInput(n);
+                                        *errors = find_errors(puzzle);
+                                        if errors.is_empty() && !has_empty(puzzle) {
                                             state = AppState::Won {
                                                 difficulty: *difficulty,
                                             };
@@ -129,9 +128,9 @@ fn main() -> std::io::Result<()> {
                                 } = &mut state
                                 {
                                     let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                    if matches!(cell, sudoku_core::Cell::UserInput(_)) {
-                                        *cell = sudoku_core::Cell::Empty;
-                                        *errors = sudoku_core::find_errors(puzzle);
+                                    if matches!(cell, Cell::UserInput(_)) {
+                                        *cell = Cell::Empty;
+                                        *errors = find_errors(puzzle);
                                     }
                                 }
                             }

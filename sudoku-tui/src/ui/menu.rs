@@ -34,8 +34,9 @@ fn center(width: u16, height: u16, area: Rect) -> Rect {
 }
 
 fn selector(difficulty: Difficulty) -> Paragraph<'static> {
-    let label = config::label(difficulty);
+    let label = difficulty.label();
     let color = config::color(difficulty);
+    let (min, max) = difficulty.givens_range();
 
     let content = vec![
         Line::from(Span::raw("Select Difficulty")),
@@ -44,6 +45,10 @@ fn selector(difficulty: Difficulty) -> Paragraph<'static> {
             Span::styled(
                 format!("  {}  ", label),
                 Style::default().fg(color).add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(
+                format!("({}-{} clues)", min, max),
+                Style::default().fg(Color::DarkGray),
             ),
             Span::styled("  ►", Style::default().fg(Color::DarkGray)),
         ]),

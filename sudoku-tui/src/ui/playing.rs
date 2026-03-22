@@ -93,7 +93,7 @@ pub fn draw(
 pub fn draw_won(f: &mut Frame, difficulty: sudoku_core::Difficulty) {
     let area = f.size();
 
-    let label = crate::config::label(difficulty);
+    let label = difficulty.label();
 
     let content = vec![
         Line::from(vec![Span::styled(

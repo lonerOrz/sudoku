@@ -1,36 +1,15 @@
-// generator.rs: 数独谜题生成
-
 use crate::board::{Cell, Grid};
+use crate::difficulty::Difficulty;
 use crate::solver::{count_solutions, solve};
 
-/// 难度级别
-#[derive(Clone, Copy, Debug)]
-pub enum Difficulty {
-    Easy,
-    Medium,
-    Hard,
-    Expert,
-}
-
-impl Difficulty {
-    pub fn givens_count(&self) -> usize {
-        match self {
-            Difficulty::Easy => 40,
-            Difficulty::Medium => 34,
-            Difficulty::Hard => 27,
-            Difficulty::Expert => 22,
-        }
-    }
-}
-
-/// 生成谜题（保证唯一解）
 pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let mut grid: Grid = [[Cell::Empty; 9]; 9];
-
     solve(&mut grid);
     let solution = grid;
 
-    let empty_cells = 81 - difficulty.givens_count();
+    let (min_givens, max_givens) = difficulty.givens_range();
+    let target_givens = (min_givens + max_givens) / 2;
+    let empty_cells = 81 - target_givens;
     let mut puzzle = solution;
 
     let mut removed = 0;
