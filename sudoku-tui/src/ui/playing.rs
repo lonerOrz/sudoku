@@ -16,7 +16,7 @@ pub fn draw(
     puzzle: &Grid,
     cursor_row: usize,
     cursor_col: usize,
-    errors: &[(usize, usize)],
+    errors: &[bool; 81],
     mistakes: u8,
     difficulty: Difficulty,
     elapsed_secs: u64,
@@ -297,7 +297,7 @@ fn render_grid(
     puzzle: &Grid,
     cursor_row: usize,
     cursor_col: usize,
-    errors: &[(usize, usize)],
+    errors: &[bool; 81],
 ) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
@@ -373,7 +373,7 @@ fn content_line(
     inner_row: usize,
     cursor_row: usize,
     cursor_col: usize,
-    errors: &[(usize, usize)],
+    errors: &[bool; 81],
 ) -> Line<'static> {
     let mut spans = Vec::new();
 
@@ -381,7 +381,7 @@ fn content_line(
 
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
-        let is_error = errors.contains(&(cell_row, cell_col));
+        let is_error = errors[cell_row * 9 + cell_col];
         let cell = puzzle[cell_row][cell_col];
         let is_user_input_error = is_error && matches!(cell, Cell::UserInput(_));
 

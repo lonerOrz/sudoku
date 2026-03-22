@@ -7,7 +7,7 @@ mod terminal;
 mod ui;
 
 use state::AppState;
-use sudoku_core::{Cell, Difficulty, find_errors, generate, has_empty};
+use sudoku_core::{find_errors, Cell, Difficulty, generate, has_empty};
 
 fn main() -> std::io::Result<()> {
     let mut terminal = terminal::init()?;
@@ -38,7 +38,7 @@ fn main() -> std::io::Result<()> {
                                 input::menu::Action::Start => {
                                     if let AppState::Menu { difficulty } = &state {
                                         let (puzzle, _solution) = generate(*difficulty);
-                                        let errors = find_errors(&puzzle);
+                                        let errors = error_vec_to_array(find_errors(&puzzle));
                                         state = AppState::Playing {
                                             puzzle,
                                             cursor_row: 4,
@@ -104,33 +104,33 @@ fn main() -> std::io::Result<()> {
     terminal::cleanup()
 }
 
+fn error_vec_to_array(errors: Vec<(usize, usize)>) -> [bool; 81] {
+    let mut arr = [false; 81];
+    for (r, c) in errors {
+        arr[r * 9 + c] = true;
+    }
+    arr
+}
+
 fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
     match action {
         input::playing::Action::MoveLeft => {
-            if let AppState::Playing { cursor_col, .. } = state
-                && *cursor_col > 0
-            {
+            if let AppState::Playing { cursor_col, .. } = state && *cursor_col > 0 {
                 *cursor_col -= 1;
             }
         }
         input::playing::Action::MoveRight => {
-            if let AppState::Playing { cursor_col, .. } = state
-                && *cursor_col < 8
-            {
+            if let AppState::Playing { cursor_col, .. } = state && *cursor_col < 8 {
                 *cursor_col += 1;
             }
         }
         input::playing::Action::MoveUp => {
-            if let AppState::Playing { cursor_row, .. } = state
-                && *cursor_row > 0
-            {
+            if let AppState::Playing { cursor_row, .. } = state && *cursor_row > 0 {
                 *cursor_row -= 1;
             }
         }
         input::playing::Action::MoveDown => {
-            if let AppState::Playing { cursor_row, .. } = state
-                && *cursor_row < 8
-            {
+            if let AppState::Playing { cursor_row, .. } = state && *cursor_row < 8 {
                 *cursor_row += 1;
             }
         }
@@ -150,8 +150,9 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                 let already_has_n = matches!(cell, Cell::UserInput(v) if *v == n);
                 if !already_has_n && !matches!(cell, Cell::Given(_)) {
                     *cell = Cell::UserInput(n);
-                    *errors = find_errors(puzzle);
-                    if errors.contains(&(*cursor_row, *cursor_col)) {
+                    *errors = error_vec_to_array(find_errors(puzzle));
+                    let cursor_idx = *cursor_row * 9 + *cursor_col;
+                    if errors[cursor_idx] {
                         *mistakes += 1;
                         if *mistakes >= 5 {
                             *state = AppState::Failed {
@@ -159,7 +160,7 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                                 elapsed_secs: start_time.elapsed().as_secs(),
                             };
                         }
-                    } else if errors.is_empty() && !has_empty(puzzle) {
+                    } else if errors.iter().all(|&e| !e) && !has_empty(puzzle) {
                         *state = AppState::Won {
                             difficulty: *difficulty,
                             elapsed_secs: start_time.elapsed().as_secs(),
@@ -180,7 +181,7 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                 let cell = &mut puzzle[*cursor_row][*cursor_col];
                 if matches!(cell, Cell::UserInput(_)) {
                     *cell = Cell::Empty;
-                    *errors = find_errors(puzzle);
+                    *errors = error_vec_to_array(find_errors(puzzle));
                 }
             }
         }

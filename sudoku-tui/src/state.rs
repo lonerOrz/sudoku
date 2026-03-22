@@ -11,7 +11,7 @@ pub enum AppState {
         puzzle: Grid,
         cursor_row: usize,
         cursor_col: usize,
-        errors: Vec<(usize, usize)>,
+        errors: [bool; 81],
         difficulty: Difficulty,
         mistakes: u8,
         start_time: std::time::Instant,
