@@ -5,3 +5,10 @@ edition.workspace = true
 
 [dependencies]
 rand = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "sudoku"
+harness = false

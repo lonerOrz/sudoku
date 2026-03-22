@@ -8,3 +8,4 @@ edition = "2024"
 
 [workspace.dependencies]
 sudoku-core = { path = "sudoku-core" }
+criterion = "0.5"

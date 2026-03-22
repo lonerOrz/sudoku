@@ -7,7 +7,7 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-pub use board::{Cell, Grid, is_valid};
+pub use board::{Cell, Grid, PEERS, is_valid};
 pub use checker::{find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;
@@ -117,5 +117,55 @@ mod tests {
         let grid: Grid = [[Cell::Empty; 9]; 9];
         let errors = find_errors(&grid);
         assert!(errors.is_empty());
+    }
+
+    #[test]
+    fn test_shuffle_quality() {
+        let mut counts = [0u32; 81];
+        let samples = 1000;
+
+        for _ in 0..samples {
+            let (puzzle, _) = generate(Difficulty::Medium);
+            for idx in 0..81 {
+                if puzzle[idx / 9][idx % 9].value().is_some() {
+                    counts[idx] += 1;
+                }
+            }
+        }
+
+        let total: f64 = counts.iter().map(|&c| c as f64).sum();
+        let expected = total / 81.0;
+
+        let chi_square: f64 = counts
+            .iter()
+            .map(|&c| {
+                let observed = c as f64;
+                (observed - expected).powi(2) / expected
+            })
+            .sum();
+
+        let entropy: f64 = counts
+            .iter()
+            .map(|&c| {
+                let p = c as f64 / total;
+                if p > 0.0 { -p * p.log2() } else { 0.0 }
+            })
+            .sum::<f64>()
+            / 81.0;
+
+        println!("\n=== Shuffle Quality Report ===");
+        println!("Samples: {}", samples);
+        println!("Mean Given count per cell: {:.2}", expected);
+        println!(
+            "Chi-square: {:.2} (df=80, p<0.05 threshold≈101)",
+            chi_square
+        );
+        println!("Normalized entropy: {:.6} (1.0 = perfect uniform)", entropy);
+
+        let min_count = *counts.iter().min().unwrap();
+        let max_count = *counts.iter().max().unwrap();
+        println!("Min/Max counts: {}/{}", min_count, max_count);
+
+        assert!(chi_square < 101.0, "Chi-square too high: {:.2}", chi_square);
     }
 }

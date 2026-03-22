@@ -3,7 +3,7 @@
 use crate::board::{Cell, Grid};
 use crate::difficulty::Difficulty;
 use crate::solver::{count_solutions, solve};
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{thread_rng, Rng};
 
 pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let mut grid: Grid = [[Cell::Empty; 9]; 9];
@@ -15,14 +15,12 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let empty_cells = 81 - target_givens;
     let mut puzzle = solution;
 
-    let mut positions: Vec<usize> = (0..81).collect();
-    positions.shuffle(&mut thread_rng());
+    let mut candidates: Vec<usize> = (0..81).collect();
 
     let mut removed = 0;
-    for idx in positions {
-        if removed >= empty_cells {
-            break;
-        }
+    while removed < empty_cells && !candidates.is_empty() {
+        let pos = thread_rng().gen_range(0..candidates.len());
+        let idx = candidates[pos];
 
         let r = idx / 9;
         let c = idx % 9;
@@ -31,6 +29,7 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
 
         if count_solutions(&mut puzzle) != 1 {
             puzzle[r][c] = backup;
+            candidates.swap_remove(pos);
         } else {
             removed += 1;
         }
