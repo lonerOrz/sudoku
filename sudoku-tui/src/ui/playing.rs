@@ -1,5 +1,6 @@
 // ui/playing.rs: 游戏界面
 
+use crate::state::PencilMarks;
 use ratatui::{
     prelude::{Alignment, Constraint, Frame, Layout, Line, Span, Style},
     style::Color,
@@ -14,6 +15,8 @@ const CELL_H: usize = 3;
 pub fn draw(
     f: &mut Frame,
     puzzle: &Grid,
+    pencil_marks: &PencilMarks,
+    pencil_mode: bool,
     cursor_row: usize,
     cursor_col: usize,
     errors: &[bool; 81],
@@ -26,7 +29,14 @@ pub fn draw(
 
     let main_chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).split(area);
 
-    let grid = render_grid(puzzle, cursor_row, cursor_col, errors);
+    let grid = render_grid(
+        puzzle,
+        pencil_marks,
+        pencil_mode,
+        cursor_row,
+        cursor_col,
+        errors,
+    );
     let grid_width = grid
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -34,7 +44,7 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let info = render_info(difficulty, mistakes, elapsed_secs, paused);
+    let info = render_info(difficulty, mistakes, elapsed_secs, paused, pencil_mode);
     let info_height = info.len() as u16;
 
     let total_width = grid_width + 20;
@@ -238,10 +248,13 @@ fn render_info(
     mistakes: u8,
     elapsed_secs: u64,
     paused: bool,
+    pencil_mode: bool,
 ) -> Vec<Line<'static>> {
     let time_str = format_time(elapsed_secs);
     let mode = if paused {
         Span::styled("PAUSED", Style::default().fg(Color::Yellow))
+    } else if pencil_mode {
+        Span::styled("PENCIL", Style::default().fg(Color::Green))
     } else {
         Span::raw("Normal")
     };
@@ -295,6 +308,8 @@ fn render_paused_controls() -> Line<'static> {
 
 fn render_grid(
     puzzle: &Grid,
+    pencil_marks: &PencilMarks,
+    pencil_mode: bool,
     cursor_row: usize,
     cursor_col: usize,
     errors: &[bool; 81],
@@ -306,7 +321,14 @@ fn render_grid(
     for cell_row in 0..9 {
         for inner_row in 0..CELL_H {
             lines.push(content_line(
-                puzzle, cell_row, inner_row, cursor_row, cursor_col, errors,
+                puzzle,
+                pencil_marks,
+                pencil_mode,
+                cell_row,
+                inner_row,
+                cursor_row,
+                cursor_col,
+                errors,
             ));
         }
 
@@ -369,6 +391,8 @@ fn h_line(kind: LineKind) -> Line<'static> {
 
 fn content_line(
     puzzle: &Grid,
+    pencil_marks: &PencilMarks,
+    pencil_mode: bool,
     cell_row: usize,
     inner_row: usize,
     cursor_row: usize,
@@ -377,8 +401,6 @@ fn content_line(
 ) -> Line<'static> {
     let mut spans = Vec::new();
 
-    let center_row = CELL_H / 2;
-
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
         let is_error = errors[cell_row * 9 + cell_col];
@@ -386,7 +408,11 @@ fn content_line(
         let is_user_input_error = is_error && matches!(cell, Cell::UserInput(_));
 
         let bg = if is_cursor {
-            Color::Blue
+            if pencil_mode {
+                Color::Green
+            } else {
+                Color::Blue
+            }
         } else if is_error && matches!(cell, Cell::Given(_)) {
             Color::Red
         } else {
@@ -405,20 +431,63 @@ fn content_line(
         };
         spans.push(Span::styled(sep_char, Style::default().fg(sep_fg)));
 
-        let content = if inner_row == center_row {
+        let content = if inner_row == 1 {
             match cell {
-                Cell::Given(v) => format!("   {}   ", char::from_digit(v as u32, 10).unwrap()),
-                Cell::UserInput(v) => format!("   {}   ", char::from_digit(v as u32, 10).unwrap()),
+                Cell::Given(v) | Cell::UserInput(v) => {
+                    format!("   {}   ", char::from_digit(v as u32, 10).unwrap())
+                }
                 Cell::Empty => {
-                    if is_cursor {
-                        "   ·   ".to_string()
+                    let marks = &pencil_marks[cell_row][cell_col];
+                    if marks.is_empty() {
+                        if is_cursor {
+                            "   ·   ".to_string()
+                        } else {
+                            "       ".to_string()
+                        }
                     } else {
-                        "       ".to_string()
+                        let base = (inner_row * 3 + 1) as u8;
+                        let c0 = if marks.contains(&base) {
+                            (b'0' + base) as char
+                        } else {
+                            ' '
+                        };
+                        let c1 = if marks.contains(&(base + 1)) {
+                            (b'0' + base + 1) as char
+                        } else {
+                            ' '
+                        };
+                        let c2 = if marks.contains(&(base + 2)) {
+                            (b'0' + base + 2) as char
+                        } else {
+                            ' '
+                        };
+                        format!(" {} {} {} ", c0, c1, c2)
                     }
                 }
             }
         } else {
-            "       ".to_string()
+            let marks = &pencil_marks[cell_row][cell_col];
+            if marks.is_empty() {
+                "       ".to_string()
+            } else {
+                let base = (inner_row * 3 + 1) as u8;
+                let c0 = if marks.contains(&base) {
+                    (b'0' + base) as char
+                } else {
+                    ' '
+                };
+                let c1 = if marks.contains(&(base + 1)) {
+                    (b'0' + base + 1) as char
+                } else {
+                    ' '
+                };
+                let c2 = if marks.contains(&(base + 2)) {
+                    (b'0' + base + 2) as char
+                } else {
+                    ' '
+                };
+                format!(" {} {} {} ", c0, c1, c2)
+            }
         };
 
         let fg = if is_user_input_error {
@@ -427,7 +496,13 @@ fn content_line(
             match cell {
                 Cell::Given(_) => Color::White,
                 Cell::UserInput(_) => Color::Cyan,
-                Cell::Empty => Color::White,
+                Cell::Empty => {
+                    if is_cursor && !pencil_marks[cell_row][cell_col].is_empty() {
+                        Color::Cyan
+                    } else {
+                        Color::DarkGray
+                    }
+                }
             }
         };
         spans.push(Span::styled(content, Style::default().fg(fg).bg(bg)));

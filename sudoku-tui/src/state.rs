@@ -2,9 +2,12 @@
 
 use sudoku_core::{Difficulty, Grid, Solution};
 
+pub type PencilMarks = [[Vec<u8>; 9]; 9];
+
 #[derive(Clone)]
 pub struct HistoryEntry {
     pub puzzle: Grid,
+    pub pencil_marks: PencilMarks,
     pub cursor_row: usize,
     pub cursor_col: usize,
     pub mistakes: u8,
@@ -18,6 +21,8 @@ pub enum AppState {
     Playing {
         puzzle: Grid,
         solution: Solution,
+        pencil_marks: PencilMarks,
+        pencil_mode: bool,
         cursor_row: usize,
         cursor_col: usize,
         errors: [bool; 81],

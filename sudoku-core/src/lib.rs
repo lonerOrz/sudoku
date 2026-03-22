@@ -8,6 +8,17 @@ pub mod hints;
 pub mod solver;
 
 pub use board::{BitmaskGrid, Cell, Grid, PEERS, Solution, is_valid};
+
+pub fn clear_peers(pencil_marks: &mut [[Vec<u8>; 9]; 9], row: usize, col: usize, val: u8) {
+    for &peer_idx in &PEERS[row * 9 + col] {
+        if peer_idx == u8::MAX {
+            break;
+        }
+        let r = peer_idx as usize / 9;
+        let c = peer_idx as usize % 9;
+        pencil_marks[r][c].retain(|&v| v != val);
+    }
+}
 pub use checker::{find_conflicts_at, find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;

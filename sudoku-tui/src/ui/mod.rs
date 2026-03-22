@@ -8,6 +8,8 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
         AppState::Menu { difficulty } => menu::draw(f, *difficulty),
         AppState::Playing {
             puzzle,
+            pencil_marks,
+            pencil_mode,
             cursor_row,
             cursor_col,
             errors,
@@ -26,6 +28,8 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
             playing::draw(
                 f,
                 puzzle,
+                pencil_marks,
+                *pencil_mode,
                 *cursor_row,
                 *cursor_col,
                 errors,

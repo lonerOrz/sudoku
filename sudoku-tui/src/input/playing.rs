@@ -14,6 +14,7 @@ pub enum Action {
     Erase,
     Undo,
     Pause,
+    TogglePencilMode,
     Quit,
 }
 
@@ -29,6 +30,7 @@ pub fn handle(key: KeyCode) -> Option<Action> {
         }
         KeyCode::Char('u') | KeyCode::Char('U') => Some(Action::Undo),
         KeyCode::Char(' ') => Some(Action::Pause),
+        KeyCode::Char('p') | KeyCode::Char('P') => Some(Action::TogglePencilMode),
         KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
         _ => None,
     }
@@ -55,6 +57,10 @@ pub fn controls() -> &'static [Control] {
         Control {
             key: "Space",
             label: "Pause",
+        },
+        Control {
+            key: "p",
+            label: "Pencil",
         },
         Control {
             key: "q",
