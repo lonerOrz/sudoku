@@ -95,10 +95,14 @@ fn main() -> std::io::Result<()> {
                                 } = &mut state
                                 {
                                     let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                    if !matches!(cell, sudoku_core::Cell::Given(_)) {
+                                    let already_has_n =
+                                        matches!(cell, sudoku_core::Cell::UserInput(v) if *v == n);
+                                    if !already_has_n
+                                        && !matches!(cell, sudoku_core::Cell::Given(_))
+                                    {
                                         *cell = sudoku_core::Cell::UserInput(n);
+                                        *errors = sudoku_core::find_errors(puzzle);
                                     }
-                                    *errors = sudoku_core::find_errors(puzzle);
                                 }
                             }
                             input::playing::Action::Erase => {
@@ -113,8 +117,8 @@ fn main() -> std::io::Result<()> {
                                     let cell = &mut puzzle[*cursor_row][*cursor_col];
                                     if matches!(cell, sudoku_core::Cell::UserInput(_)) {
                                         *cell = sudoku_core::Cell::Empty;
+                                        *errors = sudoku_core::find_errors(puzzle);
                                     }
-                                    *errors = sudoku_core::find_errors(puzzle);
                                 }
                             }
                             _ => {}
