@@ -8,10 +8,8 @@ mod ui;
 
 use crate::command::Command;
 use crate::input::global::should_quit;
-use crate::input::menu;
-use crate::input::playing;
 use crate::state::AppState;
-use game::{apply_command, init_menu};
+use game::{handle_input, init_menu};
 use sudoku_core::Difficulty;
 
 fn main() -> std::io::Result<()> {
@@ -38,42 +36,26 @@ fn main() -> std::io::Result<()> {
 }
 
 fn handle_key(state: &mut AppState, key: crossterm::event::KeyCode) -> bool {
-    let quit = match state {
-        AppState::Menu { .. } => {
-            if let Some(cmd) = menu::handle(key) {
-                if matches!(cmd, Command::Quit) {
-                    true
-                } else {
-                    apply_command(state, cmd);
-                    false
-                }
-            } else {
-                false
-            }
+    if let AppState::Playing(game) = state
+        && game.is_paused()
+    {
+        if key == crossterm::event::KeyCode::Char(' ')
+            || key == crossterm::event::KeyCode::Char('q')
+            || key == crossterm::event::KeyCode::Esc
+        {
+            handle_input(state, key);
+            return true;
         }
-        AppState::Playing(game) => {
-            if game.is_paused() {
-                if key == crossterm::event::KeyCode::Char(' ') {
-                    apply_command(state, Command::Pause);
-                } else if key == crossterm::event::KeyCode::Char('q')
-                    || key == crossterm::event::KeyCode::Esc
-                {
-                    apply_command(state, Command::Quit);
-                }
-                false
-            } else if let Some(cmd) = playing::handle(key) {
-                apply_command(state, cmd);
-                false
-            } else {
-                false
-            }
-        }
-        AppState::Won { .. } | AppState::Failed { .. } => {
-            if let Some(cmd) = playing::handle(key) {
-                apply_command(state, cmd);
-            }
-            false
-        }
-    };
-    !quit
+        return true;
+    }
+
+    if let AppState::Menu { .. } = state
+        && let Some(cmd) = crate::input::menu::handle(key)
+        && matches!(cmd, Command::Quit)
+    {
+        return false;
+    }
+
+    handle_input(state, key);
+    true
 }

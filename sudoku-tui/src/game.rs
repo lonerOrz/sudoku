@@ -1,7 +1,9 @@
 // game.rs: 游戏逻辑层
 
 use crate::command::Command;
+use crate::input::playing::Mode;
 use crate::state::{AppState, HistoryEntry, PencilMarks};
+use crossterm::event::KeyCode;
 use sudoku_core::{Cell, Difficulty, clear_peers, compute_conflicts, generate, has_empty};
 
 pub fn init_menu(difficulty: Difficulty) -> AppState {
@@ -12,7 +14,20 @@ pub fn start_game(difficulty: Difficulty) -> AppState {
     AppState::Playing(Game::new(difficulty))
 }
 
-pub fn apply_command(state: &mut AppState, cmd: Command) {
+pub fn handle_input(state: &mut AppState, key: KeyCode) {
+    let cmd = match state {
+        AppState::Menu { .. } => crate::input::menu::handle(key),
+        AppState::Playing(game) => {
+            let mode = game.current_mode();
+            crate::input::playing::handle(key, mode)
+        }
+        AppState::Won { .. } | AppState::Failed { .. } => {
+            crate::input::playing::handle(key, Mode::Normal)
+        }
+    };
+
+    let Some(cmd) = cmd else { return };
+
     match cmd {
         Command::PrevDifficulty => {
             if let AppState::Menu { difficulty } = state {
@@ -161,6 +176,16 @@ impl Game {
 
     pub fn is_pencil_mode(&self) -> bool {
         self.pencil_mode
+    }
+
+    pub fn current_mode(&self) -> Mode {
+        if self.pencil_mode {
+            Mode::Pencil
+        } else if self.hint_mode {
+            Mode::Hint
+        } else {
+            Mode::Normal
+        }
     }
 
     pub fn puzzle(&self) -> &sudoku_core::Grid {
