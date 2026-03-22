@@ -7,7 +7,7 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-pub use board::{BitmaskGrid, Cell, Grid, PEERS, is_valid};
+pub use board::{BitmaskGrid, Cell, Grid, PEERS, Solution, is_valid};
 pub use checker::{find_conflicts_at, find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;
@@ -34,7 +34,9 @@ mod tests {
         }
         assert!(has_empty);
 
-        assert!(is_solved(&solution));
+        let solution_grid: Grid =
+            core::array::from_fn(|r| core::array::from_fn(|c| Cell::Given(solution[r][c])));
+        assert!(is_solved(&solution_grid));
     }
 
     #[test]

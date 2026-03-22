@@ -17,6 +17,7 @@ impl Cell {
 }
 
 pub type Grid = [[Cell; 9]; 9];
+pub type Solution = [[u8; 9]; 9];
 
 pub const ALL_VALUES: u16 = 0x3FE;
 

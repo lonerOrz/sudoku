@@ -1,9 +1,13 @@
 // generator.rs: 数独谜题生成
 
-use crate::board::{Cell, Grid};
+use crate::board::{Cell, Grid, Solution};
 use crate::difficulty::Difficulty;
 use crate::solver::{count_solutions, solve};
 use rand::{Rng, seq::SliceRandom, thread_rng};
+
+fn grid_to_solution(grid: &Grid) -> Solution {
+    core::array::from_fn(|r| core::array::from_fn(|c| grid[r][c].value().unwrap()))
+}
 
 fn apply_transformations(grid: &mut Grid) {
     let mut rng = thread_rng();
@@ -68,7 +72,7 @@ fn apply_transformations(grid: &mut Grid) {
     }
 }
 
-pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
+pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
     let mut grid: Grid = [[Cell::Empty; 9]; 9];
     solve(&mut grid);
     apply_transformations(&mut grid);
@@ -99,5 +103,5 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
         }
     }
 
-    (puzzle, solution)
+    (puzzle, grid_to_solution(&solution))
 }

@@ -7,7 +7,9 @@ mod terminal;
 mod ui;
 
 use state::{AppState, HistoryEntry};
-use sudoku_core::{Cell, Difficulty, find_conflicts_at, find_errors, generate, has_empty};
+use sudoku_core::{
+    Cell, Difficulty, Solution, find_conflicts_at, find_errors, generate, has_empty,
+};
 
 fn main() -> std::io::Result<()> {
     let mut terminal = terminal::init()?;
@@ -37,10 +39,11 @@ fn main() -> std::io::Result<()> {
                                 }
                                 input::menu::Action::Start => {
                                     if let AppState::Menu { difficulty } = &state {
-                                        let (puzzle, _solution) = generate(*difficulty);
+                                        let (puzzle, solution) = generate(*difficulty);
                                         let errors = error_vec_to_array(find_errors(&puzzle));
                                         state = AppState::Playing {
                                             puzzle,
+                                            solution,
                                             cursor_row: 4,
                                             cursor_col: 4,
                                             errors,

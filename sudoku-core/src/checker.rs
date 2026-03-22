@@ -31,12 +31,12 @@ pub fn has_empty(grid: &Grid) -> bool {
 
 pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(usize, usize)> {
     let mut errors = Vec::new();
-    let mut added = 0u16;
+    let mut added = 0u128;
 
     for c in 0..9 {
         if c != col && grid[row][c].value() == Some(val) {
             let idx = row * 9 + c;
-            let bit = 1u16 << idx;
+            let bit = 1u128 << idx;
             if added & bit == 0 {
                 errors.push((row, c));
                 added |= bit;
@@ -47,7 +47,7 @@ pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(u
     for r in 0..9 {
         if r != row && grid[r][col].value() == Some(val) {
             let idx = r * 9 + col;
-            let bit = 1u16 << idx;
+            let bit = 1u128 << idx;
             if added & bit == 0 {
                 errors.push((r, col));
                 added |= bit;
@@ -63,7 +63,7 @@ pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(u
             let c = box_c + dc;
             if r != row && c != col && grid[r][c].value() == Some(val) {
                 let idx = r * 9 + c;
-                let bit = 1u16 << idx;
+                let bit = 1u128 << idx;
                 if added & bit == 0 {
                     errors.push((r, c));
                     added |= bit;

@@ -1,6 +1,6 @@
 // state.rs: 应用状态
 
-use sudoku_core::{Difficulty, Grid};
+use sudoku_core::{Difficulty, Grid, Solution};
 
 #[derive(Clone)]
 pub struct HistoryEntry {
@@ -17,6 +17,7 @@ pub enum AppState {
     },
     Playing {
         puzzle: Grid,
+        solution: Solution,
         cursor_row: usize,
         cursor_col: usize,
         errors: [bool; 81],
