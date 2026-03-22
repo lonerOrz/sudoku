@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
+use crate::board::{BitmaskGrid, Grid, ALL_VALUES};
 
 pub fn is_solved(grid: &Grid) -> bool {
     let masks = BitmaskGrid::from_grid(grid);
@@ -53,11 +53,10 @@ pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(u
         for dc in 0..3 {
             let r = box_r + dr;
             let c = box_c + dc;
-            if r != row && c != col && grid[r][c].value() == Some(val) {
-                if !errors.contains(&(r, c)) {
-                    errors.push((r, c));
-                    has_conflict = true;
-                }
+            if r != row && c != col && grid[r][c].value() == Some(val) && !errors.contains(&(r, c))
+            {
+                errors.push((r, c));
+                has_conflict = true;
             }
         }
     }
