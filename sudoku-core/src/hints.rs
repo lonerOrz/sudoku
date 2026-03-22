@@ -4,23 +4,6 @@
 
 use crate::board::{BitmaskGrid, Grid};
 
-pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
-    if grid[row][col].value().is_some() {
-        return vec![];
-    }
-    let masks = BitmaskGrid::from_grid(grid);
-    let mask = masks.candidates(row, col);
-    let mut result = Vec::with_capacity(9);
-    let mut m = mask;
-    while m != 0 {
-        let lsb = m & m.wrapping_neg();
-        m &= m - 1;
-        let val = lsb.trailing_zeros() as u8;
-        result.push(val);
-    }
-    result
-}
-
 pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
     let masks = BitmaskGrid::from_grid(grid);
     for r in 0..9 {
