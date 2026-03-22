@@ -15,11 +15,14 @@ pub enum AppState {
         errors: Vec<(usize, usize)>,
         difficulty: Difficulty,
         mistakes: u8,
+        start_time: std::time::Instant,
     },
     Won {
         difficulty: Difficulty,
+        elapsed_secs: u64,
     },
     Failed {
         difficulty: Difficulty,
+        elapsed_secs: u64,
     },
 }

@@ -17,6 +17,7 @@ pub fn draw(
     cursor_col: usize,
     errors: &[(usize, usize)],
     mistakes: u8,
+    start_time: std::time::Instant,
 ) {
     let area = f.size();
 
@@ -30,7 +31,7 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let info = render_info(mistakes);
+    let info = render_info(mistakes, start_time);
     let info_width = info
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -91,10 +92,11 @@ pub fn draw(
     );
 }
 
-pub fn draw_won(f: &mut Frame, difficulty: Difficulty) {
+pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
     let area = f.size();
 
     let label = difficulty.label();
+    let time_str = format_time(elapsed_secs);
 
     let content = vec![
         Line::from(vec![Span::styled(
@@ -105,6 +107,7 @@ pub fn draw_won(f: &mut Frame, difficulty: Difficulty) {
         )]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw(format!("You completed {}!", label))]),
+        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::styled(
             "Press q to return to menu",
@@ -124,10 +127,11 @@ pub fn draw_won(f: &mut Frame, difficulty: Difficulty) {
     f.render_widget(paragraph, v_chunks[1]);
 }
 
-pub fn draw_failed(f: &mut Frame, difficulty: Difficulty) {
+pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
     let area = f.size();
 
     let label = difficulty.label();
+    let time_str = format_time(elapsed_secs);
 
     let content = vec![
         Line::from(vec![Span::styled(
@@ -138,6 +142,7 @@ pub fn draw_failed(f: &mut Frame, difficulty: Difficulty) {
         )]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw(format!("Too many mistakes on {}!", label))]),
+        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::styled(
             "Press q to return to menu",
@@ -157,7 +162,17 @@ pub fn draw_failed(f: &mut Frame, difficulty: Difficulty) {
     f.render_widget(paragraph, v_chunks[1]);
 }
 
-fn render_info(mistakes: u8) -> Vec<Line<'static>> {
+fn format_time(total_secs: u64) -> String {
+    let hours = total_secs / 3600;
+    let mins = (total_secs % 3600) / 60;
+    let secs = total_secs % 60;
+    format!("{:02}:{:02}:{:02}", hours, mins, secs)
+}
+
+fn render_info(mistakes: u8, start_time: std::time::Instant) -> Vec<Line<'static>> {
+    let elapsed = start_time.elapsed().as_secs();
+    let time_str = format_time(elapsed);
+
     vec![
         Line::from(vec![Span::styled(
             "Info",
@@ -166,7 +181,7 @@ fn render_info(mistakes: u8) -> Vec<Line<'static>> {
                 .add_modifier(ratatui::style::Modifier::BOLD),
         )]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw("Timer: 00:00")]),
+        Line::from(vec![Span::raw(format!("Timer: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
         Line::from(vec![Span::raw("")]),
