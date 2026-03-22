@@ -7,7 +7,7 @@ use ratatui::{
 };
 use sudoku_core::Difficulty;
 
-use crate::constants::{self, difficulty_color, MENU_HEIGHT, MENU_WIDTH};
+use crate::constants::{self, MENU_HEIGHT, MENU_WIDTH, difficulty_color};
 
 pub fn draw(f: &mut Frame, difficulty: Difficulty) {
     let area = center(MENU_WIDTH, MENU_HEIGHT, f.size());
