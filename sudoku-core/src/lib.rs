@@ -16,6 +16,7 @@ pub use solver::{count_solutions, solve};
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::needless_range_loop)]
     use super::*;
 
     #[test]

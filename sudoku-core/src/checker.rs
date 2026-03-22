@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{BitmaskGrid, Grid, ALL_VALUES};
+use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
 
 pub fn is_solved(grid: &Grid) -> bool {
     let masks = BitmaskGrid::from_grid(grid);
