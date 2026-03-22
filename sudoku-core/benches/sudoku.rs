@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use sudoku_core::{count_solutions, generate, solve, Difficulty};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use sudoku_core::{Difficulty, count_solutions, generate, solve};
 
 fn generate_all_difficulties(c: &mut Criterion) {
     let mut group = c.benchmark_group("generate");
@@ -87,11 +87,7 @@ fn shuffle_entropy(c: &mut Criterion) {
                 .iter()
                 .map(|&c| {
                     let p = c as f64 / total;
-                    if p > 0.0 {
-                        -p * p.log2()
-                    } else {
-                        0.0
-                    }
+                    if p > 0.0 { -p * p.log2() } else { 0.0 }
                 })
                 .sum::<f64>()
                 / 81.0;
