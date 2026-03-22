@@ -7,7 +7,7 @@ mod terminal;
 mod ui;
 
 use state::AppState;
-use sudoku_core::{find_errors, Cell, Difficulty, generate, has_empty};
+use sudoku_core::{Cell, Difficulty, find_errors, generate, has_empty};
 
 fn main() -> std::io::Result<()> {
     let mut terminal = terminal::init()?;
@@ -115,22 +115,30 @@ fn error_vec_to_array(errors: Vec<(usize, usize)>) -> [bool; 81] {
 fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
     match action {
         input::playing::Action::MoveLeft => {
-            if let AppState::Playing { cursor_col, .. } = state && *cursor_col > 0 {
+            if let AppState::Playing { cursor_col, .. } = state
+                && *cursor_col > 0
+            {
                 *cursor_col -= 1;
             }
         }
         input::playing::Action::MoveRight => {
-            if let AppState::Playing { cursor_col, .. } = state && *cursor_col < 8 {
+            if let AppState::Playing { cursor_col, .. } = state
+                && *cursor_col < 8
+            {
                 *cursor_col += 1;
             }
         }
         input::playing::Action::MoveUp => {
-            if let AppState::Playing { cursor_row, .. } = state && *cursor_row > 0 {
+            if let AppState::Playing { cursor_row, .. } = state
+                && *cursor_row > 0
+            {
                 *cursor_row -= 1;
             }
         }
         input::playing::Action::MoveDown => {
-            if let AppState::Playing { cursor_row, .. } = state && *cursor_row < 8 {
+            if let AppState::Playing { cursor_row, .. } = state
+                && *cursor_row < 8
+            {
                 *cursor_row += 1;
             }
         }
