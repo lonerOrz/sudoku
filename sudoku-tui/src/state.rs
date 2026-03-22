@@ -152,6 +152,7 @@ pub enum AppState {
         conflicts: Conflicts,
         difficulty: Difficulty,
         mistakes: u8,
+        hints_used: u8,
         start_time: std::time::Instant,
         elapsed_secs: u64,
         paused: bool,

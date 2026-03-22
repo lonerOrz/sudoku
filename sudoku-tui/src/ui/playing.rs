@@ -14,6 +14,7 @@ const CELL_H: usize = 3;
 pub struct GameInfo {
     pub difficulty: Difficulty,
     pub mistakes: u8,
+    pub hints_used: u8,
     pub elapsed_secs: u64,
     pub paused: bool,
     pub pencil_mode: bool,
@@ -50,6 +51,8 @@ impl GameInfo {
             Line::from(vec![Span::raw("")]),
             Line::from(vec![Span::raw(format!("Mistakes: {}/5", self.mistakes))]),
             Line::from(vec![Span::raw("")]),
+            Line::from(vec![Span::raw(format!("Hints used: {}", self.hints_used))]),
+            Line::from(vec![Span::raw("")]),
             Line::from(vec![Span::raw("Mode: "), mode]),
         ]
     }
@@ -75,6 +78,7 @@ pub struct DrawParams<'a> {
     pub cursor_col: usize,
     pub conflicts: &'a Conflicts,
     pub mistakes: u8,
+    pub hints_used: u8,
     pub difficulty: Difficulty,
     pub elapsed_secs: u64,
     pub paused: bool,
@@ -106,6 +110,7 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
     let info = GameInfo {
         difficulty: params.difficulty,
         mistakes: params.mistakes,
+        hints_used: params.hints_used,
         elapsed_secs: params.elapsed_secs,
         paused: params.paused,
         pencil_mode: params.pencil_mode,

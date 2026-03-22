@@ -55,6 +55,7 @@ fn main() -> std::io::Result<()> {
                                             conflicts,
                                             difficulty: *difficulty,
                                             mistakes: 0,
+                                            hints_used: 0,
                                             start_time: std::time::Instant::now(),
                                             elapsed_secs: 0,
                                             paused: false,
@@ -174,6 +175,7 @@ fn handle_place_hint(state: &mut AppState) {
             conflicts,
             history,
             hint_mode,
+            hints_used,
             ..
         } = state
         {
@@ -184,6 +186,7 @@ fn handle_place_hint(state: &mut AppState) {
             pencil_marks[r][c].clear();
             clear_peers(pencil_marks, r, c, v);
             *conflicts = compute_conflicts(puzzle);
+            *hints_used += 1;
             *hint_mode = false;
         }
     }
