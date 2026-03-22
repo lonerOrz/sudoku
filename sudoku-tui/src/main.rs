@@ -44,6 +44,7 @@ fn main() -> std::io::Result<()> {
                                         cursor_col: 4,
                                         errors,
                                         difficulty: *difficulty,
+                                        mistakes: 0,
                                     };
                                 }
                             }
@@ -52,6 +53,13 @@ fn main() -> std::io::Result<()> {
                     }
                 }
                 AppState::Won { .. } => {
+                    if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
+                        state = AppState::Menu {
+                            difficulty: Difficulty::Easy,
+                        };
+                    }
+                }
+                AppState::Failed { .. } => {
                     if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
                         state = AppState::Menu {
                             difficulty: Difficulty::Easy,
@@ -101,6 +109,7 @@ fn main() -> std::io::Result<()> {
                                     cursor_col,
                                     errors,
                                     difficulty,
+                                    mistakes,
                                     ..
                                 } = &mut state
                                 {
@@ -110,7 +119,14 @@ fn main() -> std::io::Result<()> {
                                     if !already_has_n && !matches!(cell, Cell::Given(_)) {
                                         *cell = Cell::UserInput(n);
                                         *errors = find_errors(puzzle);
-                                        if errors.is_empty() && !has_empty(puzzle) {
+                                        if errors.contains(&(*cursor_row, *cursor_col)) {
+                                            *mistakes += 1;
+                                            if *mistakes >= 5 {
+                                                state = AppState::Failed {
+                                                    difficulty: *difficulty,
+                                                };
+                                            }
+                                        } else if errors.is_empty() && !has_empty(puzzle) {
                                             state = AppState::Won {
                                                 difficulty: *difficulty,
                                             };

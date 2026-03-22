@@ -16,6 +16,7 @@ pub fn draw(
     cursor_row: usize,
     cursor_col: usize,
     errors: &[(usize, usize)],
+    mistakes: u8,
 ) {
     let area = f.size();
 
@@ -29,7 +30,7 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let info = render_info();
+    let info = render_info(mistakes);
     let info_width = info
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -123,7 +124,40 @@ pub fn draw_won(f: &mut Frame, difficulty: Difficulty) {
     f.render_widget(paragraph, v_chunks[1]);
 }
 
-fn render_info() -> Vec<Line<'static>> {
+pub fn draw_failed(f: &mut Frame, difficulty: Difficulty) {
+    let area = f.size();
+
+    let label = difficulty.label();
+
+    let content = vec![
+        Line::from(vec![Span::styled(
+            "Game Over",
+            Style::default()
+                .fg(Color::Red)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Too many mistakes on {}!", label))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::styled(
+            "Press q to return to menu",
+            Style::default().fg(Color::Cyan),
+        )]),
+    ];
+
+    let v_chunks = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(content.len() as u16),
+        Constraint::Min(0),
+    ])
+    .split(area);
+
+    let paragraph = Paragraph::new(content).alignment(Alignment::Center);
+
+    f.render_widget(paragraph, v_chunks[1]);
+}
+
+fn render_info(mistakes: u8) -> Vec<Line<'static>> {
     vec![
         Line::from(vec![Span::styled(
             "Info",
@@ -134,7 +168,7 @@ fn render_info() -> Vec<Line<'static>> {
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw("Timer: 00:00")]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw("Mistakes: 0/5")]),
+        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw("Mode: Normal")]),
     ]
