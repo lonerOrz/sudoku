@@ -48,30 +48,48 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
     let mut errors = Vec::new();
-    let mut seen = [[false; 9]; 9];
 
     for r in 0..9 {
+        let mut seen_row = [false; 9];
+        let mut positions_row = Vec::new();
         for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
-                if seen[r][val as usize - 1] {
-                    errors.push((r, c));
+                let v = val as usize - 1;
+                if seen_row[v] {
+                    for &(or, oc) in &positions_row {
+                        if !errors.contains(&(or, oc)) {
+                            errors.push((or, oc));
+                        }
+                    }
+                    if !errors.contains(&(r, c)) {
+                        errors.push((r, c));
+                    }
                 } else {
-                    seen[r][val as usize - 1] = true;
+                    seen_row[v] = true;
+                    positions_row.push((r, c));
                 }
             }
         }
     }
 
     for c in 0..9 {
-        seen = [[false; 9]; 9];
+        let mut seen_row = [false; 9];
+        let mut positions_row = Vec::new();
         for r in 0..9 {
             if let Some(val) = grid[r][c].value() {
-                if seen[c][val as usize - 1] {
+                let v = val as usize - 1;
+                if seen_row[v] {
+                    for &(or, oc) in &positions_row {
+                        if !errors.contains(&(or, oc)) {
+                            errors.push((or, oc));
+                        }
+                    }
                     if !errors.contains(&(r, c)) {
                         errors.push((r, c));
                     }
                 } else {
-                    seen[c][val as usize - 1] = true;
+                    seen_row[v] = true;
+                    positions_row.push((r, c));
                 }
             }
         }
@@ -79,18 +97,26 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
 
     for box_r in (0..9).step_by(3) {
         for box_c in (0..9).step_by(3) {
-            seen = [[false; 9]; 9];
+            let mut seen_row = [false; 9];
+            let mut positions_row = Vec::new();
             for dr in 0..3 {
                 for dc in 0..3 {
                     let r = box_r + dr;
                     let c = box_c + dc;
                     if let Some(val) = grid[r][c].value() {
-                        if seen[0][val as usize - 1] {
+                        let v = val as usize - 1;
+                        if seen_row[v] {
+                            for &(or, oc) in &positions_row {
+                                if !errors.contains(&(or, oc)) {
+                                    errors.push((or, oc));
+                                }
+                            }
                             if !errors.contains(&(r, c)) {
                                 errors.push((r, c));
                             }
                         } else {
-                            seen[0][val as usize - 1] = true;
+                            seen_row[v] = true;
+                            positions_row.push((r, c));
                         }
                     }
                 }
