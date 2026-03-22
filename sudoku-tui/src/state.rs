@@ -2,6 +2,14 @@
 
 use sudoku_core::{Difficulty, Grid};
 
+#[derive(Clone)]
+pub struct HistoryEntry {
+    pub puzzle: Grid,
+    pub cursor_row: usize,
+    pub cursor_col: usize,
+    pub mistakes: u8,
+}
+
 #[allow(clippy::large_enum_variant)]
 pub enum AppState {
     Menu {
@@ -17,6 +25,7 @@ pub enum AppState {
         start_time: std::time::Instant,
         elapsed_secs: u64,
         paused: bool,
+        history: Vec<HistoryEntry>,
     },
     Won {
         difficulty: Difficulty,

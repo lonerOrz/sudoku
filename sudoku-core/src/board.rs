@@ -18,6 +18,68 @@ impl Cell {
 
 pub type Grid = [[Cell; 9]; 9];
 
+pub const ALL_VALUES: u16 = 0x3FE;
+
+#[derive(Clone)]
+pub struct BitmaskGrid {
+    pub rows: [u16; 9],
+    pub cols: [u16; 9],
+    pub boxes: [u16; 9],
+}
+
+impl Default for BitmaskGrid {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl BitmaskGrid {
+    pub fn new() -> Self {
+        Self {
+            rows: [0; 9],
+            cols: [0; 9],
+            boxes: [0; 9],
+        }
+    }
+
+    pub fn from_grid(grid: &Grid) -> Self {
+        let mut masks = Self::new();
+        for (r, row) in grid.iter().take(9).enumerate() {
+            for (c, cell) in row.iter().take(9).enumerate() {
+                if let Some(v) = cell.value() {
+                    let bit = 1u16 << v;
+                    masks.rows[r] |= bit;
+                    masks.cols[c] |= bit;
+                    masks.boxes[(r / 3) * 3 + c / 3] |= bit;
+                }
+            }
+        }
+        masks
+    }
+
+    #[inline]
+    pub fn candidates(&self, r: usize, c: usize) -> u16 {
+        let b = (r / 3) * 3 + c / 3;
+        ALL_VALUES & !(self.rows[r] | self.cols[c] | self.boxes[b])
+    }
+
+    #[inline]
+    pub fn place(&mut self, r: usize, c: usize, v: u8) {
+        let bit = 1u16 << v;
+        self.rows[r] |= bit;
+        self.cols[c] |= bit;
+        self.boxes[(r / 3) * 3 + c / 3] |= bit;
+    }
+
+    #[inline]
+    pub fn remove(&mut self, r: usize, c: usize, v: u8) {
+        let bit = 1u16 << v;
+        self.rows[r] &= !bit;
+        self.cols[c] &= !bit;
+        self.boxes[(r / 3) * 3 + c / 3] &= !bit;
+    }
+}
+
 const SENTINEL: u8 = u8::MAX;
 
 const fn calc_peers() -> [[u8; 20]; 81] {

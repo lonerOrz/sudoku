@@ -6,7 +6,7 @@ mod state;
 mod terminal;
 mod ui;
 
-use state::AppState;
+use state::{AppState, HistoryEntry};
 use sudoku_core::{Cell, Difficulty, find_errors, generate, has_empty};
 
 fn main() -> std::io::Result<()> {
@@ -49,6 +49,7 @@ fn main() -> std::io::Result<()> {
                                             start_time: std::time::Instant::now(),
                                             elapsed_secs: 0,
                                             paused: false,
+                                            history: vec![],
                                         };
                                     }
                                 }
@@ -89,6 +90,9 @@ fn main() -> std::io::Result<()> {
                                         *paused = !*paused;
                                     }
                                 }
+                                input::playing::Action::Undo => {
+                                    handle_undo(&mut state);
+                                }
                                 _ if !*paused => {
                                     handle_playing_action(&mut state, action);
                                 }
@@ -110,6 +114,46 @@ fn error_vec_to_array(errors: Vec<(usize, usize)>) -> [bool; 81] {
         arr[r * 9 + c] = true;
     }
     arr
+}
+
+fn handle_undo(state: &mut AppState) {
+    if let AppState::Playing {
+        puzzle,
+        cursor_row,
+        cursor_col,
+        errors,
+        mistakes,
+        history,
+        ..
+    } = state
+        && let Some(entry) = history.pop()
+    {
+        *puzzle = entry.puzzle;
+        *cursor_row = entry.cursor_row;
+        *cursor_col = entry.cursor_col;
+        *mistakes = entry.mistakes;
+        *errors = error_vec_to_array(find_errors(puzzle));
+    }
+}
+
+fn save_history(state: &AppState) -> Option<HistoryEntry> {
+    if let AppState::Playing {
+        puzzle,
+        cursor_row,
+        cursor_col,
+        mistakes,
+        ..
+    } = state
+    {
+        Some(HistoryEntry {
+            puzzle: *puzzle,
+            cursor_row: *cursor_row,
+            cursor_col: *cursor_col,
+            mistakes: *mistakes,
+        })
+    } else {
+        None
+    }
 }
 
 fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
@@ -143,6 +187,7 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
             }
         }
         input::playing::Action::PlaceNumber(n) => {
+            let history_entry = save_history(state);
             if let AppState::Playing {
                 puzzle,
                 cursor_row,
@@ -151,12 +196,17 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                 difficulty,
                 mistakes,
                 start_time,
+                history,
                 ..
             } = state
             {
                 let cell = &mut puzzle[*cursor_row][*cursor_col];
                 let already_has_n = matches!(cell, Cell::UserInput(v) if *v == n);
                 if !already_has_n && !matches!(cell, Cell::Given(_)) {
+                    if let Some(entry) = history_entry {
+                        history.push(entry);
+                    }
+
                     *cell = Cell::UserInput(n);
                     *errors = error_vec_to_array(find_errors(puzzle));
                     let cursor_idx = *cursor_row * 9 + *cursor_col;
@@ -178,16 +228,21 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
             }
         }
         input::playing::Action::Erase => {
+            let history_entry = save_history(state);
             if let AppState::Playing {
                 puzzle,
                 cursor_row,
                 cursor_col,
                 errors,
+                history,
                 ..
             } = state
             {
                 let cell = &mut puzzle[*cursor_row][*cursor_col];
                 if matches!(cell, Cell::UserInput(_)) {
+                    if let Some(entry) = history_entry {
+                        history.push(entry);
+                    }
                     *cell = Cell::Empty;
                     *errors = error_vec_to_array(find_errors(puzzle));
                 }

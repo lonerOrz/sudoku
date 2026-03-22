@@ -1,62 +1,6 @@
-// solver.rs: 数独解题算法 - bitmask + MRV优化
+// solver.rs: 数独解题算法
 
-use crate::board::{Cell, Grid};
-
-const ALL_VALUES: u16 = 0x3FE;
-
-#[derive(Clone)]
-struct BitmaskGrid {
-    rows: [u16; 9],
-    cols: [u16; 9],
-    boxes: [u16; 9],
-}
-
-impl BitmaskGrid {
-    fn new() -> Self {
-        Self {
-            rows: [0; 9],
-            cols: [0; 9],
-            boxes: [0; 9],
-        }
-    }
-
-    fn from_grid(grid: &Grid) -> Self {
-        let mut masks = Self::new();
-        for (r, row) in grid.iter().take(9).enumerate() {
-            for (c, cell) in row.iter().take(9).enumerate() {
-                if let Some(v) = cell.value() {
-                    let bit = 1u16 << v;
-                    masks.rows[r] |= bit;
-                    masks.cols[c] |= bit;
-                    masks.boxes[(r / 3) * 3 + c / 3] |= bit;
-                }
-            }
-        }
-        masks
-    }
-
-    #[inline]
-    fn candidates(&self, r: usize, c: usize) -> u16 {
-        let b = (r / 3) * 3 + c / 3;
-        ALL_VALUES & !(self.rows[r] | self.cols[c] | self.boxes[b])
-    }
-
-    #[inline]
-    fn place(&mut self, r: usize, c: usize, v: u8) {
-        let bit = 1u16 << v;
-        self.rows[r] |= bit;
-        self.cols[c] |= bit;
-        self.boxes[(r / 3) * 3 + c / 3] |= bit;
-    }
-
-    #[inline]
-    fn remove(&mut self, r: usize, c: usize, v: u8) {
-        let bit = 1u16 << v;
-        self.rows[r] &= !bit;
-        self.cols[c] &= !bit;
-        self.boxes[(r / 3) * 3 + c / 3] &= !bit;
-    }
-}
+use crate::board::{BitmaskGrid, Cell, Grid};
 
 #[inline]
 fn get_value(grid: &Grid, idx: usize) -> Option<u8> {

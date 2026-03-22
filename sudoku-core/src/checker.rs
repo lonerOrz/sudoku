@@ -2,25 +2,20 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::Grid;
-
-const ALL_VALUES: u16 = 0x3FE;
+use crate::board::{BitmaskGrid, Grid, ALL_VALUES};
 
 pub fn is_solved(grid: &Grid) -> bool {
-    let mut masks = ([0u16; 9], [0u16; 9], [0u16; 9]);
+    let masks = BitmaskGrid::from_grid(grid);
     for r in 0..9 {
         for c in 0..9 {
-            if let Some(v) = grid[r][c].value() {
-                let bit = 1u16 << v;
-                masks.0[r] |= bit;
-                masks.1[c] |= bit;
-                masks.2[(r / 3) * 3 + c / 3] |= bit;
-            } else {
+            if grid[r][c].value().is_none() {
                 return false;
             }
         }
     }
-    true
+    masks.rows.iter().all(|&m| m == ALL_VALUES)
+        && masks.cols.iter().all(|&m| m == ALL_VALUES)
+        && masks.boxes.iter().all(|&m| m == ALL_VALUES)
 }
 
 pub fn has_empty(grid: &Grid) -> bool {
@@ -38,23 +33,8 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {
         return vec![];
     }
-
-    let mut rows = [0u16; 9];
-    let mut cols = [0u16; 9];
-    let mut boxes = [0u16; 9];
-
-    for r in 0..9 {
-        for c in 0..9 {
-            if let Some(v) = grid[r][c].value() {
-                let bit = 1u16 << v;
-                rows[r] |= bit;
-                cols[c] |= bit;
-                boxes[(r / 3) * 3 + c / 3] |= bit;
-            }
-        }
-    }
-
-    let mask = ALL_VALUES & !(rows[row] | cols[col] | boxes[(row / 3) * 3 + col / 3]);
+    let masks = BitmaskGrid::from_grid(grid);
+    let mask = masks.candidates(row, col);
     let mut result = Vec::with_capacity(9);
     let mut m = mask;
     while m != 0 {

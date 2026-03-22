@@ -7,7 +7,7 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-pub use board::{Cell, Grid, PEERS, is_valid};
+pub use board::{BitmaskGrid, Cell, Grid, PEERS, is_valid};
 pub use checker::{find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;

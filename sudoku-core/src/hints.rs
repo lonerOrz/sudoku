@@ -1,49 +1,8 @@
-// hints.rs: 数独提示技巧 - bitmask优化版本
+// hints.rs: 数独提示技巧
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::Grid;
-
-const ALL_VALUES: u16 = 0x3FE;
-
-#[derive(Clone)]
-struct BitmaskGrid {
-    rows: [u16; 9],
-    cols: [u16; 9],
-    boxes: [u16; 9],
-}
-
-impl BitmaskGrid {
-    fn from_grid(grid: &Grid) -> Self {
-        let mut masks = Self {
-            rows: [0; 9],
-            cols: [0; 9],
-            boxes: [0; 9],
-        };
-        for (r, row) in grid.iter().enumerate().take(9) {
-            for (c, cell) in row.iter().enumerate().take(9) {
-                if let Some(v) = cell.value() {
-                    let bit = 1u16 << v;
-                    masks.rows[r] |= bit;
-                    masks.cols[c] |= bit;
-                    masks.boxes[(r / 3) * 3 + c / 3] |= bit;
-                }
-            }
-        }
-        masks
-    }
-
-    #[inline]
-    fn candidates(&self, r: usize, c: usize) -> u16 {
-        let b = (r / 3) * 3 + c / 3;
-        ALL_VALUES & !(self.rows[r] | self.cols[c] | self.boxes[b])
-    }
-
-    #[inline]
-    fn count_bits(mask: u16) -> u8 {
-        mask.count_ones() as u8
-    }
-}
+use crate::board::{BitmaskGrid, Grid};
 
 pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {
@@ -68,7 +27,7 @@ pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
         for c in 0..9 {
             if grid[r][c].value().is_none() {
                 let mask = masks.candidates(r, c);
-                if BitmaskGrid::count_bits(mask) == 1 {
+                if mask.count_ones() == 1 {
                     let val = mask.trailing_zeros() as u8;
                     return Some(((r, c), val));
                 }

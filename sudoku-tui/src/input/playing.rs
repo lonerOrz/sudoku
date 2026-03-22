@@ -5,7 +5,6 @@ use crossterm::event::KeyCode;
 use super::controls::Control;
 
 #[derive(Debug, Clone, Copy)]
-#[allow(dead_code)]
 pub enum Action {
     MoveLeft,
     MoveRight,
@@ -48,6 +47,10 @@ pub fn controls() -> &'static [Control] {
         Control {
             key: "0/Del",
             label: "Erase",
+        },
+        Control {
+            key: "u",
+            label: "Undo",
         },
         Control {
             key: "Space",
