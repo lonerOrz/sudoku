@@ -117,6 +117,7 @@ impl Game {
             pencil_marks,
             pencil_mode: false,
             hint_mode: false,
+
             cursor_row: 4,
             cursor_col: 4,
             conflicts,
@@ -319,7 +320,10 @@ impl Game {
             return None;
         }
 
-        let v = self.solution[r][c];
+        let value = self.solution[r][c];
+        if value == 0 {
+            return None;
+        }
 
         let entry = HistoryEntry {
             puzzle: self.puzzle,
@@ -330,12 +334,19 @@ impl Game {
         };
         self.history.push(entry);
 
-        self.puzzle[r][c] = Cell::UserInput(v);
+        self.puzzle[r][c] = Cell::UserInput(value);
         self.pencil_marks[r][c].clear();
-        clear_peers(&mut self.pencil_marks, r, c, v);
+        clear_peers(&mut self.pencil_marks, r, c, value);
         self.conflicts = compute_conflicts(&self.puzzle);
         self.hints_used += 1;
         self.hint_mode = false;
+
+        if !has_empty(&self.puzzle) && !has_conflicts(&self.conflicts) {
+            return Some(AppState::Won {
+                difficulty: self.difficulty,
+                elapsed_secs: self.start_time.elapsed().as_secs(),
+            });
+        }
 
         None
     }
@@ -375,6 +386,7 @@ mod tests {
             pencil_marks,
             pencil_mode: false,
             hint_mode: false,
+
             cursor_row: 4,
             cursor_col: 4,
             conflicts,
@@ -488,7 +500,7 @@ mod tests {
         game.toggle_pencil_mode();
         assert!(game.is_pencil_mode());
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
         game.place_number(5);
 
@@ -517,7 +529,7 @@ mod tests {
     fn test_place_correct_number() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         let solution_value = game.solution()[row][col];
@@ -530,7 +542,7 @@ mod tests {
     fn test_place_wrong_number_increments_mistakes() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         let solution_value = game.solution()[row][col];
@@ -570,7 +582,7 @@ mod tests {
     fn test_erase_user_input() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         game.place_number(5);
@@ -601,7 +613,7 @@ mod tests {
     fn test_hint_mode_places_correct_number() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         game.toggle_hint_mode();
@@ -619,7 +631,7 @@ mod tests {
     fn test_hint_only_works_in_hint_mode() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         let result = game.place_hint();
@@ -642,7 +654,7 @@ mod tests {
     fn test_undo_restores_state() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         let original_cell = game.puzzle()[row][col];
@@ -662,7 +674,7 @@ mod tests {
     fn test_undo_restores_mistakes() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         if game.solution()[row][col] != 1 {
             move_to_cell(&mut game, row, col);
         } else {
@@ -737,7 +749,7 @@ mod tests {
     fn test_place_same_number_again() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         let solution_value = game.solution()[row][col];
@@ -751,11 +763,11 @@ mod tests {
     fn test_history_is_saved() {
         let mut game = create_empty_game();
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row, col);
 
         game.place_number(5);
-        let (row2, col2) = find_empty_cell(&mut game).unwrap_or((row, col));
+        let (row2, col2) = find_empty_cell(&mut game).expect("Game should have empty cells");
         move_to_cell(&mut game, row2, col2);
         game.place_number(6);
 
@@ -769,7 +781,7 @@ mod tests {
 
         let has_conflicts_before = has_conflicts(game.conflicts());
 
-        let (row, col) = find_empty_cell(&mut game).unwrap();
+        let (row, col) = find_empty_cell(&mut game).expect("Game should have empty cells");
         if game.solution()[row][col] != 1 {
             move_to_cell(&mut game, row, col);
         } else {
