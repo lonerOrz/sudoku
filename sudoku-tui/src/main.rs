@@ -26,10 +26,10 @@ fn main() -> std::io::Result<()> {
             if should_quit(&event) {
                 break;
             }
-            if let crossterm::event::Event::Key(key) = event {
-                if !handle_key(&mut state, key.code) {
-                    break;
-                }
+            if let crossterm::event::Event::Key(key) = event
+                && !handle_key(&mut state, key.code)
+            {
+                break;
             }
         }
     }

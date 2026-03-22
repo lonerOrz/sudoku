@@ -12,10 +12,9 @@ pub fn handle_global(event: &Event) -> Option<Action> {
         modifiers,
         ..
     }) = event
+        && modifiers.contains(KeyModifiers::CONTROL)
     {
-        if modifiers.contains(KeyModifiers::CONTROL) {
-            return Some(Action::Quit);
-        }
+        return Some(Action::Quit);
     }
     None
 }

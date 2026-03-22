@@ -8,8 +8,7 @@ use ratatui::{
 };
 use sudoku_core::{Cell, Conflicts, Difficulty, Grid};
 
-const CELL_W: usize = 7;
-const CELL_H: usize = 3;
+const GRID_HEIGHT: u16 = 37;
 
 pub struct GameInfo {
     pub difficulty: Difficulty,
@@ -343,201 +342,260 @@ fn render_controls(controls: &[Control]) -> Line<'static> {
 }
 
 fn render_grid(params: &CellRenderParams) -> Vec<Line<'static>> {
-    let mut lines = Vec::new();
+    let mut lines = Vec::with_capacity(GRID_HEIGHT as usize);
 
-    lines.push(h_line(LineKind::Top));
+    for visual_row in 0..GRID_HEIGHT {
+        let row_kind = classify_row(visual_row);
 
-    for cell_row in 0..9 {
-        for inner_row in 0..CELL_H {
-            lines.push(content_line(params, cell_row, inner_row));
-        }
-
-        if cell_row == 8 {
-            lines.push(h_line(LineKind::Bottom));
-        } else if (cell_row + 1) % 3 == 0 {
-            lines.push(h_line(LineKind::Thick));
-        } else {
-            lines.push(h_line(LineKind::Thin));
+        match row_kind {
+            RowKind::ThickBorder(border_idx) => {
+                lines.push(thick_horizontal_line(border_idx));
+            }
+            RowKind::ThinBorder => {
+                lines.push(thin_horizontal_line());
+            }
+            RowKind::CellRow(grid_row, sub_row) => {
+                lines.push(render_cell_row(params, grid_row, sub_row));
+            }
         }
     }
 
     lines
 }
 
-enum LineKind {
-    Top,
-    Bottom,
-    Thin,
-    Thick,
+#[derive(Debug)]
+enum RowKind {
+    ThickBorder(u8),
+    ThinBorder,
+    CellRow(usize, usize),
 }
 
-fn h_line(kind: LineKind) -> Line<'static> {
-    let mut s = String::new();
-
-    let (left, right, fill) = match kind {
-        LineKind::Top => ('┌', '┐', '─'),
-        LineKind::Bottom => ('└', '┘', '─'),
-        LineKind::Thin => ('├', '┤', '─'),
-        LineKind::Thick => ('├', '┤', '═'),
-    };
-
-    s.push(left);
-
-    for col in 0..9 {
-        for _ in 0..CELL_W {
-            s.push(fill);
-        }
-
-        if col < 8 {
-            let ch = match kind {
-                LineKind::Top => '┬',
-                LineKind::Bottom => '┴',
-                LineKind::Thin => '┼',
-                LineKind::Thick => {
-                    if (col + 1) % 3 == 0 {
-                        '╬'
-                    } else {
-                        '╪'
-                    }
-                }
+fn classify_row(visual: u16) -> RowKind {
+    match visual {
+        0 => RowKind::ThickBorder(0),
+        12 => RowKind::ThickBorder(1),
+        24 => RowKind::ThickBorder(2),
+        36 => RowKind::ThickBorder(3),
+        4 | 8 | 16 | 20 | 28 | 32 => RowKind::ThinBorder,
+        _ => {
+            let section = (visual / 12) as usize;
+            let offset = visual % 12;
+            let (cell_in_section, sub_row) = if offset <= 3 {
+                (0, (offset - 1) as usize)
+            } else if offset <= 7 {
+                (1, (offset - 5) as usize)
+            } else {
+                (2, (offset - 9) as usize)
             };
-            s.push(ch);
+            let grid_row = section * 3 + cell_in_section;
+            RowKind::CellRow(grid_row, sub_row)
         }
     }
-
-    s.push(right);
-    Line::from(s)
 }
 
-fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) -> Line<'static> {
-    let mut spans = Vec::new();
-    let puzzle = params.puzzle;
-    let solution = params.solution;
-    let pencil_marks = params.pencil_marks;
-    let pencil_mode = params.pencil_mode;
-    let cursor_row = params.cursor_row;
-    let cursor_col = params.cursor_col;
-    let conflicts = params.conflicts;
+enum ColKind {
+    ThickBorder,
+    ThinBorder,
+    Cell(usize),
+}
 
-    let selected_value = puzzle[cursor_row][cursor_col].value();
+fn classify_col(seg: usize) -> ColKind {
+    match seg {
+        0 | 6 | 12 | 18 => ColKind::ThickBorder,
+        2 | 4 | 8 | 10 | 14 | 16 => ColKind::ThinBorder,
+        1 => ColKind::Cell(0),
+        3 => ColKind::Cell(1),
+        5 => ColKind::Cell(2),
+        7 => ColKind::Cell(3),
+        9 => ColKind::Cell(4),
+        11 => ColKind::Cell(5),
+        13 => ColKind::Cell(6),
+        15 => ColKind::Cell(7),
+        17 => ColKind::Cell(8),
+        _ => ColKind::ThinBorder,
+    }
+}
 
-    for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
-        let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
-        let cell = puzzle[cell_row][cell_col];
-        let conflict_type = conflicts[cell_row][cell_col];
-        let has_conflict = !conflict_type.is_empty();
-        let cell_value = cell.value();
-        let is_same_value = cell_value.is_some() && cell_value == selected_value;
+fn thick_horizontal_line(border_idx: u8) -> Line<'static> {
+    let (left, thick_cross, thin_cross, right) = match border_idx {
+        0 => ('╔', '╦', '╤', '╗'),
+        3 => ('╚', '╩', '╧', '╝'),
+        _ => ('╠', '╬', '╪', '╣'),
+    };
 
-        let is_wrong = if let Cell::UserInput(v) = cell {
-            solution[cell_row][cell_col] != v
+    let mut s = String::with_capacity(80);
+    s.push(left);
+    for box_idx in 0..3 {
+        for cell_idx in 0..3 {
+            s.push_str("═══════");
+            if cell_idx < 2 {
+                s.push(thin_cross);
+            }
+        }
+        if box_idx < 2 {
+            s.push(thick_cross);
+        }
+    }
+    s.push(right);
+
+    Line::from(Span::styled(s, Style::default().fg(Color::White)))
+}
+
+fn thin_horizontal_line() -> Line<'static> {
+    let mut s = String::with_capacity(80);
+    s.push('║');
+    for box_idx in 0..3 {
+        for cell_idx in 0..3 {
+            s.push_str("───────");
+            if cell_idx < 2 {
+                s.push('┼');
+            }
+        }
+        if box_idx < 2 {
+            s.push('║');
+        }
+    }
+    s.push('║');
+
+    Line::from(Span::styled(s, Style::default().fg(Color::DarkGray)))
+}
+
+fn render_cell_row(params: &CellRenderParams, grid_row: usize, sub_row: usize) -> Line<'static> {
+    let mut spans = Vec::with_capacity(19);
+    for seg in 0..19 {
+        let col_kind = classify_col(seg);
+        match col_kind {
+            ColKind::ThickBorder => {
+                spans.push(Span::styled("║", Style::default().fg(Color::White)));
+            }
+            ColKind::ThinBorder => {
+                spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
+            }
+            ColKind::Cell(grid_col) => {
+                spans.push(render_grid_cell(params, grid_row, grid_col, sub_row));
+            }
+        }
+    }
+    Line::from(spans)
+}
+
+fn render_grid_cell(
+    params: &CellRenderParams,
+    grid_row: usize,
+    grid_col: usize,
+    sub_row: usize,
+) -> Span<'static> {
+    let cell = params.puzzle[grid_row][grid_col];
+    let is_cursor = grid_row == params.cursor_row && grid_col == params.cursor_col;
+    let conflict_type = params.conflicts[grid_row][grid_col];
+    let has_conflict = !conflict_type.is_empty();
+    let selected_value = params.puzzle[params.cursor_row][params.cursor_col].value();
+    let is_same_value = cell.value().is_some() && cell.value() == selected_value && !is_cursor;
+
+    let is_wrong = if let Cell::UserInput(v) = cell {
+        params.solution[grid_row][grid_col] != v
+    } else {
+        false
+    };
+
+    let bg = if is_cursor {
+        if params.pencil_mode {
+            Color::Green
         } else {
-            false
-        };
+            Color::Blue
+        }
+    } else if has_conflict && !is_wrong {
+        Color::Red
+    } else if is_same_value {
+        Color::DarkGray
+    } else {
+        Color::Reset
+    };
 
-        let bg = if is_cursor {
-            if pencil_mode {
-                Color::Green
+    render_cell_content(
+        cell,
+        &params.pencil_marks[grid_row][grid_col],
+        sub_row,
+        bg,
+        is_cursor,
+        is_wrong,
+    )
+}
+
+fn render_cell_content(
+    cell: Cell,
+    pencil_marks: &[u8],
+    sub_row: usize,
+    bg: Color,
+    is_cursor: bool,
+    is_wrong: bool,
+) -> Span<'static> {
+    let fg_for_bg = if bg == Color::Cyan || bg == Color::Green || bg == Color::Blue {
+        Color::Black
+    } else if bg == Color::Magenta {
+        Color::White
+    } else {
+        Color::Reset
+    };
+
+    let fg = if is_wrong {
+        Color::Red
+    } else {
+        match cell {
+            Cell::Given(_) => Color::White,
+            Cell::UserInput(_) => Color::Cyan,
+            Cell::Empty => {
+                if is_cursor && !pencil_marks.is_empty() {
+                    Color::Cyan
+                } else {
+                    Color::DarkGray
+                }
+            }
+        }
+    };
+
+    let content = match cell {
+        Cell::Given(v) | Cell::UserInput(v) => {
+            if sub_row == 1 {
+                format!("   {}   ", char::from_digit(v as u32, 10).unwrap_or('?'))
             } else {
-                Color::Blue
-            }
-        } else if has_conflict && !is_wrong {
-            Color::Red
-        } else if is_same_value {
-            Color::DarkGray
-        } else {
-            Color::Reset
-        };
-
-        let sep_char = if cell_col == 0 || cell_col % 3 == 0 {
-            "┃"
-        } else {
-            "│"
-        };
-        let sep_fg = if cell_col == 0 || cell_col % 3 == 0 {
-            Color::White
-        } else {
-            Color::DarkGray
-        };
-        spans.push(Span::styled(sep_char, Style::default().fg(sep_fg)));
-
-        let content = if inner_row == 1 {
-            match cell {
-                Cell::Given(v) | Cell::UserInput(v) => {
-                    format!("   {}   ", char::from_digit(v as u32, 10).unwrap())
-                }
-                Cell::Empty => {
-                    let marks = &pencil_marks[cell_row][cell_col];
-                    if marks.is_empty() {
-                        if is_cursor {
-                            "   ·   ".to_string()
-                        } else {
-                            "       ".to_string()
-                        }
-                    } else {
-                        let base = (inner_row * 3 + 1) as u8;
-                        let c0 = if marks.contains(&base) {
-                            (b'0' + base) as char
-                        } else {
-                            ' '
-                        };
-                        let c1 = if marks.contains(&(base + 1)) {
-                            (b'0' + base + 1) as char
-                        } else {
-                            ' '
-                        };
-                        let c2 = if marks.contains(&(base + 2)) {
-                            (b'0' + base + 2) as char
-                        } else {
-                            ' '
-                        };
-                        format!(" {} {} {} ", c0, c1, c2)
-                    }
-                }
-            }
-        } else {
-            let marks = &pencil_marks[cell_row][cell_col];
-            if marks.is_empty() {
                 "       ".to_string()
+            }
+        }
+        Cell::Empty => {
+            if pencil_marks.is_empty() {
+                if is_cursor && sub_row == 1 {
+                    "   ·   ".to_string()
+                } else {
+                    "       ".to_string()
+                }
             } else {
-                let base = (inner_row * 3 + 1) as u8;
-                let c0 = if marks.contains(&base) {
+                let base = (sub_row * 3 + 1) as u8;
+                let c0 = if pencil_marks.contains(&base) {
                     (b'0' + base) as char
                 } else {
                     ' '
                 };
-                let c1 = if marks.contains(&(base + 1)) {
+                let c1 = if pencil_marks.contains(&(base + 1)) {
                     (b'0' + base + 1) as char
                 } else {
                     ' '
                 };
-                let c2 = if marks.contains(&(base + 2)) {
+                let c2 = if pencil_marks.contains(&(base + 2)) {
                     (b'0' + base + 2) as char
                 } else {
                     ' '
                 };
                 format!(" {} {} {} ", c0, c1, c2)
             }
-        };
+        }
+    };
 
-        let fg = if is_wrong {
-            Color::Red
-        } else {
-            match cell {
-                Cell::Given(_) => Color::White,
-                Cell::UserInput(_) => Color::Cyan,
-                Cell::Empty => {
-                    if is_cursor && !pencil_marks[cell_row][cell_col].is_empty() {
-                        Color::Cyan
-                    } else {
-                        Color::DarkGray
-                    }
-                }
-            }
-        };
-        spans.push(Span::styled(content, Style::default().fg(fg).bg(bg)));
-    }
-    spans.push(Span::styled("┃", Style::default().fg(Color::White)));
+    let final_fg = if fg_for_bg != Color::Reset {
+        fg_for_bg
+    } else {
+        fg
+    };
 
-    Line::from(spans)
+    Span::styled(content, Style::default().fg(final_fg).bg(bg))
 }
