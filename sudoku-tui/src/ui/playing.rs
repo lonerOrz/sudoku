@@ -419,11 +419,15 @@ fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) ->
     let cursor_col = params.cursor_col;
     let conflicts = params.conflicts;
 
+    let selected_value = puzzle[cursor_row][cursor_col].value();
+
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
         let cell = puzzle[cell_row][cell_col];
         let conflict_type = conflicts[cell_row][cell_col];
         let has_conflict = !conflict_type.is_empty();
+        let cell_value = cell.value();
+        let is_same_value = cell_value.is_some() && cell_value == selected_value;
 
         let is_wrong = if let Cell::UserInput(v) = cell {
             solution[cell_row][cell_col] != v
@@ -439,6 +443,8 @@ fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) ->
             }
         } else if has_conflict && !is_wrong {
             Color::Red
+        } else if is_same_value {
+            Color::DarkGray
         } else {
             Color::Reset
         };
