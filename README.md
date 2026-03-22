@@ -12,8 +12,8 @@ High-performance Sudoku puzzle generation and solving library.
 | `generate(Difficulty::Expert)` | O(n²) | 178 µs |
 | `solve` | O(n!) | 99.8 µs |
 | `count_solutions` | O(n!) | 2.05 µs |
-| `compute_conflicts` | O(n²) | 909 ns |
-| `find_clue` | O(n²) | 96 ns |
+| `compute_conflicts` | O(n²) | 788 ns |
+| `find_clue` | O(n²) | 99 ns |
 | `shuffle_chi_square` | O(k·n²) | 8.59 ms |
 | `shuffle_entropy` | O(k·n²) | 8.55 ms |
 

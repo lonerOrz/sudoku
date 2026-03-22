@@ -199,92 +199,75 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
     let mut added = 0u128;
 
     for r in 0..9 {
-        let mut seen = [false; 9];
-        let mut positions = Vec::new();
+        let mut mask = 0u16;
         for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
-                let v = val as usize - 1;
-                if seen[v] {
-                    for &(or, oc) in &positions {
-                        let idx = or * 9 + oc;
-                        let bit = 1u128 << idx;
-                        if added & bit == 0 {
-                            errors.push((or, oc));
-                            added |= bit;
+                let bit = 1u16 << val;
+                if mask & bit != 0 {
+                    for c2 in 0..9 {
+                        if grid[r][c2].value() == Some(val) {
+                            let idx = r * 9 + c2;
+                            let idx_bit = 1u128 << idx;
+                            if added & idx_bit == 0 {
+                                errors.push((r, c2));
+                                added |= idx_bit;
+                            }
                         }
                     }
-                    let idx = r * 9 + c;
-                    let bit = 1u128 << idx;
-                    if added & bit == 0 {
-                        errors.push((r, c));
-                        added |= bit;
-                    }
-                } else {
-                    seen[v] = true;
-                    positions.push((r, c));
                 }
+                mask |= bit;
             }
         }
     }
 
     for c in 0..9 {
-        let mut seen = [false; 9];
-        let mut positions = Vec::new();
+        let mut mask = 0u16;
         for r in 0..9 {
             if let Some(val) = grid[r][c].value() {
-                let v = val as usize - 1;
-                if seen[v] {
-                    for &(or, oc) in &positions {
-                        let idx = or * 9 + oc;
-                        let bit = 1u128 << idx;
-                        if added & bit == 0 {
-                            errors.push((or, oc));
-                            added |= bit;
+                let bit = 1u16 << val;
+                if mask & bit != 0 {
+                    for r2 in 0..9 {
+                        if grid[r2][c].value() == Some(val) {
+                            let idx = r2 * 9 + c;
+                            let idx_bit = 1u128 << idx;
+                            if added & idx_bit == 0 {
+                                errors.push((r2, c));
+                                added |= idx_bit;
+                            }
                         }
                     }
-                    let idx = r * 9 + c;
-                    let bit = 1u128 << idx;
-                    if added & bit == 0 {
-                        errors.push((r, c));
-                        added |= bit;
-                    }
-                } else {
-                    seen[v] = true;
-                    positions.push((r, c));
                 }
+                mask |= bit;
             }
         }
     }
 
     for box_r in (0..9).step_by(3) {
         for box_c in (0..9).step_by(3) {
-            let mut seen = [false; 9];
-            let mut positions = Vec::new();
+            let mut mask = 0u16;
             for dr in 0..3 {
                 for dc in 0..3 {
                     let r = box_r + dr;
                     let c = box_c + dc;
                     if let Some(val) = grid[r][c].value() {
-                        let v = val as usize - 1;
-                        if seen[v] {
-                            for &(or, oc) in &positions {
-                                let idx = or * 9 + oc;
-                                let bit = 1u128 << idx;
-                                if added & bit == 0 {
-                                    errors.push((or, oc));
-                                    added |= bit;
+                        let bit = 1u16 << val;
+                        if mask & bit != 0 {
+                            for dr2 in 0..3 {
+                                for dc2 in 0..3 {
+                                    let r2 = box_r + dr2;
+                                    let c2 = box_c + dc2;
+                                    if grid[r2][c2].value() == Some(val) {
+                                        let idx = r2 * 9 + c2;
+                                        let idx_bit = 1u128 << idx;
+                                        if added & idx_bit == 0 {
+                                            errors.push((r2, c2));
+                                            added |= idx_bit;
+                                        }
+                                    }
                                 }
                             }
-                            let idx = r * 9 + c;
-                            let bit = 1u128 << idx;
-                            if added & bit == 0 {
-                                errors.push((r, c));
-                                added |= bit;
-                            }
-                        } else {
-                            seen[v] = true;
-                            positions.push((r, c));
                         }
+                        mask |= bit;
                     }
                 }
             }
