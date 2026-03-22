@@ -47,6 +47,7 @@ fn main() -> std::io::Result<()> {
                                             difficulty: *difficulty,
                                             mistakes: 0,
                                             start_time: std::time::Instant::now(),
+                                            elapsed_secs: 0,
                                             paused: false,
                                         };
                                     }
@@ -84,7 +85,21 @@ fn main() -> std::io::Result<()> {
                                     };
                                 }
                                 input::playing::Action::Pause => {
-                                    if let AppState::Playing { paused, .. } = &mut state {
+                                    if let AppState::Playing {
+                                        paused,
+                                        start_time,
+                                        elapsed_secs,
+                                        ..
+                                    } = &mut state
+                                    {
+                                        if *paused {
+                                            // 恢复：调整锚点
+                                            *start_time = std::time::Instant::now()
+                                                - std::time::Duration::from_secs(*elapsed_secs);
+                                        } else {
+                                            // 暂停：保存快照
+                                            *elapsed_secs = start_time.elapsed().as_secs();
+                                        }
                                         *paused = !*paused;
                                     }
                                 }
@@ -138,18 +153,19 @@ fn main() -> std::io::Result<()> {
                                                 if errors.contains(&(*cursor_row, *cursor_col)) {
                                                     *mistakes += 1;
                                                     if *mistakes >= 5 {
-                                                        let elapsed =
-                                                            start_time.elapsed().as_secs();
                                                         state = AppState::Failed {
                                                             difficulty: *difficulty,
-                                                            elapsed_secs: elapsed,
+                                                            elapsed_secs: start_time
+                                                                .elapsed()
+                                                                .as_secs(),
                                                         };
                                                     }
                                                 } else if errors.is_empty() && !has_empty(puzzle) {
-                                                    let elapsed = start_time.elapsed().as_secs();
                                                     state = AppState::Won {
                                                         difficulty: *difficulty,
-                                                        elapsed_secs: elapsed,
+                                                        elapsed_secs: start_time
+                                                            .elapsed()
+                                                            .as_secs(),
                                                     };
                                                 }
                                             }

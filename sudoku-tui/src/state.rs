@@ -17,6 +17,7 @@ pub enum AppState {
         difficulty: Difficulty,
         mistakes: u8,
         start_time: std::time::Instant,
+        elapsed_secs: u64,
         paused: bool,
     },
     Won {

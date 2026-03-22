@@ -18,7 +18,7 @@ pub fn draw(
     cursor_col: usize,
     errors: &[(usize, usize)],
     mistakes: u8,
-    start_time: std::time::Instant,
+    elapsed_secs: u64,
     paused: bool,
 ) {
     let area = f.size();
@@ -33,11 +33,10 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let elapsed = start_time.elapsed().as_secs();
     let info = if paused {
-        render_info_paused(mistakes, elapsed)
+        render_info_paused(mistakes, elapsed_secs)
     } else {
-        render_info(mistakes, elapsed)
+        render_info(mistakes, elapsed_secs)
     };
     let info_height = info.len() as u16;
 
@@ -115,7 +114,10 @@ pub fn draw(
                     .add_modifier(ratatui::style::Modifier::BOLD),
             )]),
             Line::from(""),
-            Line::from(vec![Span::raw(format!("Time: {}", format_time(elapsed)))]),
+            Line::from(vec![Span::raw(format!(
+                "Time: {}",
+                format_time(elapsed_secs)
+            ))]),
             Line::from(""),
             Line::from(vec![
                 Span::raw("Press "),

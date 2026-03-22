@@ -13,9 +13,15 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
             errors,
             mistakes,
             start_time,
+            elapsed_secs,
             paused,
             ..
         } => {
+            let display_elapsed = if *paused {
+                *elapsed_secs
+            } else {
+                start_time.elapsed().as_secs()
+            };
             playing::draw(
                 f,
                 puzzle,
@@ -23,7 +29,7 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
                 *cursor_col,
                 errors,
                 *mistakes,
-                *start_time,
+                display_elapsed,
                 *paused,
             );
         }
