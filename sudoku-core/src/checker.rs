@@ -29,6 +29,46 @@ pub fn has_empty(grid: &Grid) -> bool {
     false
 }
 
+pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(usize, usize)> {
+    let mut errors = Vec::new();
+    let mut has_conflict = false;
+
+    for c in 0..9 {
+        if c != col && grid[row][c].value() == Some(val) {
+            errors.push((row, c));
+            has_conflict = true;
+        }
+    }
+
+    for r in 0..9 {
+        if r != row && grid[r][col].value() == Some(val) {
+            errors.push((r, col));
+            has_conflict = true;
+        }
+    }
+
+    let box_r = (row / 3) * 3;
+    let box_c = (col / 3) * 3;
+    for dr in 0..3 {
+        for dc in 0..3 {
+            let r = box_r + dr;
+            let c = box_c + dc;
+            if r != row && c != col && grid[r][c].value() == Some(val) {
+                if !errors.contains(&(r, c)) {
+                    errors.push((r, c));
+                    has_conflict = true;
+                }
+            }
+        }
+    }
+
+    if has_conflict {
+        errors.insert(0, (row, col));
+    }
+
+    errors
+}
+
 pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {
         return vec![];

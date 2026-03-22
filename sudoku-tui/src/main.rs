@@ -7,7 +7,7 @@ mod terminal;
 mod ui;
 
 use state::{AppState, HistoryEntry};
-use sudoku_core::{Cell, Difficulty, find_errors, generate, has_empty};
+use sudoku_core::{Cell, Difficulty, find_conflicts_at, find_errors, generate, has_empty};
 
 fn main() -> std::io::Result<()> {
     let mut terminal = terminal::init()?;
@@ -208,9 +208,9 @@ fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
                     }
 
                     *cell = Cell::UserInput(n);
-                    *errors = error_vec_to_array(find_errors(puzzle));
-                    let cursor_idx = *cursor_row * 9 + *cursor_col;
-                    if errors[cursor_idx] {
+                    *errors =
+                        error_vec_to_array(find_conflicts_at(puzzle, *cursor_row, *cursor_col, n));
+                    if !errors.iter().all(|&e| !e) {
                         *mistakes += 1;
                         if *mistakes >= 5 {
                             *state = AppState::Failed {

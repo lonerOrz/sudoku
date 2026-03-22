@@ -8,7 +8,7 @@ pub mod hints;
 pub mod solver;
 
 pub use board::{BitmaskGrid, Cell, Grid, PEERS, is_valid};
-pub use checker::{find_errors, has_empty, is_solved, possible_values};
+pub use checker::{find_conflicts_at, find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;
 pub use hints::{find_hidden_single, find_naked_single};
@@ -121,8 +121,14 @@ mod tests {
         grid[4][0] = Cell::Given(3);
 
         let errors = find_errors(&grid);
-        assert!(errors.contains(&(0, 0)), "First 3 in column should be error");
-        assert!(errors.contains(&(4, 0)), "Second 3 in column should be error");
+        assert!(
+            errors.contains(&(0, 0)),
+            "First 3 in column should be error"
+        );
+        assert!(
+            errors.contains(&(4, 0)),
+            "Second 3 in column should be error"
+        );
     }
 
     #[test]
