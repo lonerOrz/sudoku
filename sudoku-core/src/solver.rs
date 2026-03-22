@@ -1,18 +1,9 @@
 // solver.rs: 数独解题算法
 
-use crate::board::{Cell, Grid};
-use crate::checker::is_valid;
+use crate::board::{Cell, Grid, is_valid};
 
-#[allow(clippy::needless_range_loop)]
-fn find_empty(grid: &Grid) -> Option<(usize, usize)> {
-    for r in 0..9 {
-        for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                return Some((r, c));
-            }
-        }
-    }
-    None
+fn find_empty(grid: &Grid) -> Option<usize> {
+    (0..81).find(|&idx| grid[idx / 9][idx % 9].value().is_none())
 }
 
 fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
@@ -20,12 +11,12 @@ fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
         return;
     }
 
-    if let Some((r, c)) = find_empty(grid) {
+    if let Some(idx) = find_empty(grid) {
         for val in 1..=9 {
-            if is_valid(grid, r, c, val) {
-                grid[r][c] = Cell::Given(val);
+            if is_valid(grid, idx, val) {
+                grid[idx / 9][idx % 9] = Cell::Given(val);
                 count_solutions_inner(grid, count, max_count);
-                grid[r][c] = Cell::Empty;
+                grid[idx / 9][idx % 9] = Cell::Empty;
             }
         }
     } else {
@@ -33,18 +24,17 @@ fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
     }
 }
 
-/// 解数独（回溯算法）
 pub fn solve(grid: &mut Grid) -> bool {
-    if let Some((r, c)) = find_empty(grid) {
+    if let Some(idx) = find_empty(grid) {
         for val in 1..=9 {
-            if is_valid(grid, r, c, val) {
-                grid[r][c] = Cell::Given(val);
+            if is_valid(grid, idx, val) {
+                grid[idx / 9][idx % 9] = Cell::Given(val);
 
                 if solve(grid) {
                     return true;
                 }
 
-                grid[r][c] = Cell::Empty;
+                grid[idx / 9][idx % 9] = Cell::Empty;
             }
         }
         return false;

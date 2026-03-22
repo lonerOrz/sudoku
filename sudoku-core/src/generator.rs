@@ -15,16 +15,17 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let empty_cells = 81 - target_givens;
     let mut puzzle = solution;
 
-    let mut positions: Vec<(usize, usize)> =
-        (0..9).flat_map(|r| (0..9).map(move |c| (r, c))).collect();
+    let mut positions: Vec<usize> = (0..81).collect();
     positions.shuffle(&mut thread_rng());
 
     let mut removed = 0;
-    for (r, c) in positions {
+    for idx in positions {
         if removed >= empty_cells {
             break;
         }
 
+        let r = idx / 9;
+        let c = idx % 9;
         let backup = puzzle[r][c];
         puzzle[r][c] = Cell::Empty;
 

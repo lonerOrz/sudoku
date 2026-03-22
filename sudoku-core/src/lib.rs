@@ -7,9 +7,8 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-// 重新导出常用类型和函数
-pub use board::{Cell, Grid};
-pub use checker::{find_errors, has_empty, is_solved, is_valid, possible_values};
+pub use board::{Cell, Grid, is_valid};
+pub use checker::{find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;
 pub use hints::{find_hidden_single, find_naked_single};
@@ -52,22 +51,12 @@ mod tests {
     }
 
     #[test]
-    fn test_peers_count() {
-        assert_eq!(board::peers(4, 4).count(), 24);
-    }
-
-    #[test]
-    fn test_peers_not_include_self() {
-        assert!(!board::peers(4, 4).any(|(r, c)| r == 4 && c == 4));
-    }
-
-    #[test]
     fn test_is_valid_same_row() {
         let mut grid: Grid = [[Cell::Empty; 9]; 9];
         grid[0][0] = Cell::Given(5);
 
-        assert!(!is_valid(&grid, 0, 3, 5));
-        assert!(is_valid(&grid, 0, 3, 3));
+        assert!(!is_valid(&grid, 3, 5));
+        assert!(is_valid(&grid, 3, 3));
     }
 
     #[test]
@@ -75,8 +64,8 @@ mod tests {
         let mut grid: Grid = [[Cell::Empty; 9]; 9];
         grid[0][0] = Cell::Given(5);
 
-        assert!(!is_valid(&grid, 5, 0, 5));
-        assert!(is_valid(&grid, 5, 0, 3));
+        assert!(!is_valid(&grid, 45, 5));
+        assert!(is_valid(&grid, 45, 3));
     }
 
     #[test]
@@ -84,8 +73,8 @@ mod tests {
         let mut grid: Grid = [[Cell::Empty; 9]; 9];
         grid[0][0] = Cell::Given(5);
 
-        assert!(!is_valid(&grid, 2, 2, 5));
-        assert!(is_valid(&grid, 4, 4, 5));
+        assert!(!is_valid(&grid, 20, 5));
+        assert!(is_valid(&grid, 40, 5));
     }
 
     #[test]

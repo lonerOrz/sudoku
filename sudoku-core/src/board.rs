@@ -1,6 +1,5 @@
 // board.rs: 数独棋盘数据结构
 
-/// 单元格状态
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Cell {
     Given(u8),
@@ -17,21 +16,94 @@ impl Cell {
     }
 }
 
-/// 九宫格数独类型
 pub type Grid = [[Cell; 9]; 9];
 
-/// 返回 (row, col) 的所有"同行同列同宫"格子（不含自身）
-pub fn peers(row: usize, col: usize) -> impl Iterator<Item = (usize, usize)> {
-    let box_row = (row / 3) * 3;
-    let box_col = (col / 3) * 3;
+const SENTINEL: u8 = u8::MAX;
 
-    let row_peers = (0..9).map(move |c| (row, c));
-    let col_peers = (0..9).map(move |r| (r, col));
-    let box_peers =
-        (box_row..box_row + 3).flat_map(move |r| (box_col..box_col + 3).map(move |c| (r, c)));
+const fn calc_peers() -> [[u8; 20]; 81] {
+    let mut result = [[SENTINEL; 20]; 81];
+    let mut i = 0;
 
-    row_peers
-        .chain(col_peers)
-        .chain(box_peers)
-        .filter(move |&(r, c)| r != row || c != col)
+    while i < 81 {
+        let r = i / 9;
+        let c = i % 9;
+        let box_r = (r / 3) * 3;
+        let box_c = (c / 3) * 3;
+        let mut count = 0;
+        let mut j = 0;
+        while j < 9 {
+            if j != c {
+                result[i][count] = (r * 9 + j) as u8;
+                count += 1;
+            }
+            j += 1;
+        }
+
+        j = 0;
+        while j < 9 {
+            if j != r {
+                let idx = j * 9 + c;
+                let mut duplicate = false;
+                let mut k = 0;
+                while k < count {
+                    if result[i][k] == idx as u8 {
+                        duplicate = true;
+                        break;
+                    }
+                    k += 1;
+                }
+                if !duplicate {
+                    result[i][count] = idx as u8;
+                    count += 1;
+                }
+            }
+            j += 1;
+        }
+
+        j = 0;
+        while j < 3 {
+            let mut k = 0;
+            while k < 3 {
+                let idx = (box_r + j) * 9 + (box_c + k);
+                if idx != i {
+                    let mut duplicate = false;
+                    let mut m = 0;
+                    while m < count {
+                        if result[i][m] == idx as u8 {
+                            duplicate = true;
+                            break;
+                        }
+                        m += 1;
+                    }
+                    if !duplicate {
+                        result[i][count] = idx as u8;
+                        count += 1;
+                    }
+                }
+                k += 1;
+            }
+            j += 1;
+        }
+
+        i += 1;
+    }
+
+    result
+}
+
+pub static PEERS: [[u8; 20]; 81] = calc_peers();
+
+#[inline]
+pub fn is_valid(grid: &Grid, idx: usize, val: u8) -> bool {
+    for &peer in &PEERS[idx] {
+        if peer == SENTINEL {
+            break;
+        }
+        if let Some(v) = grid[(peer / 9) as usize][(peer % 9) as usize].value()
+            && v == val
+        {
+            return false;
+        }
+    }
+    true
 }
