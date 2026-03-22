@@ -20,34 +20,60 @@ pub fn compute_conflicts(grid: &Grid) -> Conflicts {
     let mut conflicts: Conflicts = [[ConflictType::empty(); 9]; 9];
 
     for r in 0..9 {
+        let mut seen = 0u16;
         for c in 0..9 {
-            let Some(val) = grid[r][c].value() else {
-                continue;
-            };
-
-            for c2 in 0..9 {
-                if c2 != c && grid[r][c2].value() == Some(val) {
-                    conflicts[r][c].insert(ConflictType::ROW);
-                    conflicts[r][c2].insert(ConflictType::ROW);
+            if let Some(val) = grid[r][c].value() {
+                let bit = 1u16 << val;
+                if seen & bit != 0 {
+                    for c2 in 0..9 {
+                        if grid[r][c2].value() == Some(val) {
+                            conflicts[r][c2].insert(ConflictType::ROW);
+                        }
+                    }
                 }
+                seen |= bit;
             }
+        }
+    }
 
-            for r2 in 0..9 {
-                if r2 != r && grid[r2][c].value() == Some(val) {
-                    conflicts[r][c].insert(ConflictType::COL);
-                    conflicts[r2][c].insert(ConflictType::COL);
+    for c in 0..9 {
+        let mut seen = 0u16;
+        for r in 0..9 {
+            if let Some(val) = grid[r][c].value() {
+                let bit = 1u16 << val;
+                if seen & bit != 0 {
+                    for r2 in 0..9 {
+                        if grid[r2][c].value() == Some(val) {
+                            conflicts[r2][c].insert(ConflictType::COL);
+                        }
+                    }
                 }
+                seen |= bit;
             }
+        }
+    }
 
-            let box_r = (r / 3) * 3;
-            let box_c = (c / 3) * 3;
+    for box_r in (0..9).step_by(3) {
+        for box_c in (0..9).step_by(3) {
+            let mut seen = 0u16;
             for dr in 0..3 {
                 for dc in 0..3 {
-                    let r2 = box_r + dr;
-                    let c2 = box_c + dc;
-                    if (r2 != r || c2 != c) && grid[r2][c2].value() == Some(val) {
-                        conflicts[r][c].insert(ConflictType::BOX);
-                        conflicts[r2][c2].insert(ConflictType::BOX);
+                    let r = box_r + dr;
+                    let c = box_c + dc;
+                    if let Some(val) = grid[r][c].value() {
+                        let bit = 1u16 << val;
+                        if seen & bit != 0 {
+                            for dr2 in 0..3 {
+                                for dc2 in 0..3 {
+                                    let r2 = box_r + dr2;
+                                    let c2 = box_c + dc2;
+                                    if grid[r2][c2].value() == Some(val) {
+                                        conflicts[r2][c2].insert(ConflictType::BOX);
+                                    }
+                                }
+                            }
+                        }
+                        seen |= bit;
                     }
                 }
             }
@@ -195,84 +221,51 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
 }
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
-    let mut errors = Vec::new();
-    let mut added = 0u128;
+    let mut row_masks = [0u16; 9];
+    let mut col_masks = [0u16; 9];
+    let mut box_masks = [0u16; 9];
+    let mut error_mask = 0u128;
 
     for r in 0..9 {
-        let mut mask = 0u16;
         for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
                 let bit = 1u16 << val;
-                if mask & bit != 0 {
-                    for c2 in 0..9 {
-                        if grid[r][c2].value() == Some(val) {
-                            let idx = r * 9 + c2;
-                            let idx_bit = 1u128 << idx;
-                            if added & idx_bit == 0 {
-                                errors.push((r, c2));
-                                added |= idx_bit;
-                            }
-                        }
-                    }
-                }
-                mask |= bit;
+                let b = (r / 3) * 3 + c / 3;
+                row_masks[r] |= bit;
+                col_masks[c] |= bit;
+                box_masks[b] |= bit;
             }
         }
     }
 
-    for c in 0..9 {
-        let mut mask = 0u16;
-        for r in 0..9 {
+    for r in 0..9 {
+        for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
                 let bit = 1u16 << val;
-                if mask & bit != 0 {
-                    for r2 in 0..9 {
-                        if grid[r2][c].value() == Some(val) {
-                            let idx = r2 * 9 + c;
-                            let idx_bit = 1u128 << idx;
-                            if added & idx_bit == 0 {
-                                errors.push((r2, c));
-                                added |= idx_bit;
-                            }
-                        }
-                    }
-                }
-                mask |= bit;
-            }
-        }
-    }
-
-    for box_r in (0..9).step_by(3) {
-        for box_c in (0..9).step_by(3) {
-            let mut mask = 0u16;
-            for dr in 0..3 {
-                for dc in 0..3 {
-                    let r = box_r + dr;
-                    let c = box_c + dc;
-                    if let Some(val) = grid[r][c].value() {
-                        let bit = 1u16 << val;
-                        if mask & bit != 0 {
-                            for dr2 in 0..3 {
-                                for dc2 in 0..3 {
-                                    let r2 = box_r + dr2;
-                                    let c2 = box_c + dc2;
-                                    if grid[r2][c2].value() == Some(val) {
-                                        let idx = r2 * 9 + c2;
-                                        let idx_bit = 1u128 << idx;
-                                        if added & idx_bit == 0 {
-                                            errors.push((r2, c2));
-                                            added |= idx_bit;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        mask |= bit;
+                let b = (r / 3) * 3 + c / 3;
+                let count = (row_masks[r] & bit != 0) as u8
+                    + (col_masks[c] & bit != 0) as u8
+                    + (box_masks[b] & bit != 0) as u8;
+                if count > 1 {
+                    let idx = r * 9 + c;
+                    let idx_bit = 1u128 << idx;
+                    if error_mask & idx_bit == 0 {
+                        error_mask |= idx_bit;
                     }
                 }
             }
         }
     }
 
+    let mut errors = Vec::new();
+    let mut idx = 0u128;
+    while idx < 81 {
+        if error_mask & (1u128 << idx) != 0 {
+            let r = idx as usize / 9;
+            let c = idx as usize % 9;
+            errors.push((r, c));
+        }
+        idx += 1;
+    }
     errors
 }
