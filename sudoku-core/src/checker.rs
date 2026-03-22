@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
+use crate::board::{BitmaskGrid, Grid, ALL_VALUES};
 
 pub fn is_solved(grid: &Grid) -> bool {
     let masks = BitmaskGrid::from_grid(grid);
@@ -31,19 +31,27 @@ pub fn has_empty(grid: &Grid) -> bool {
 
 pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(usize, usize)> {
     let mut errors = Vec::new();
-    let mut has_conflict = false;
+    let mut added = 0u16;
 
     for c in 0..9 {
         if c != col && grid[row][c].value() == Some(val) {
-            errors.push((row, c));
-            has_conflict = true;
+            let idx = row * 9 + c;
+            let bit = 1u16 << idx;
+            if added & bit == 0 {
+                errors.push((row, c));
+                added |= bit;
+            }
         }
     }
 
     for r in 0..9 {
         if r != row && grid[r][col].value() == Some(val) {
-            errors.push((r, col));
-            has_conflict = true;
+            let idx = r * 9 + col;
+            let bit = 1u16 << idx;
+            if added & bit == 0 {
+                errors.push((r, col));
+                added |= bit;
+            }
         }
     }
 
@@ -53,15 +61,18 @@ pub fn find_conflicts_at(grid: &Grid, row: usize, col: usize, val: u8) -> Vec<(u
         for dc in 0..3 {
             let r = box_r + dr;
             let c = box_c + dc;
-            if r != row && c != col && grid[r][c].value() == Some(val) && !errors.contains(&(r, c))
-            {
-                errors.push((r, c));
-                has_conflict = true;
+            if r != row && c != col && grid[r][c].value() == Some(val) {
+                let idx = r * 9 + c;
+                let bit = 1u16 << idx;
+                if added & bit == 0 {
+                    errors.push((r, c));
+                    added |= bit;
+                }
             }
         }
     }
 
-    if has_conflict {
+    if !errors.is_empty() {
         errors.insert(0, (row, col));
     }
 
