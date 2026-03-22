@@ -1,32 +1,22 @@
-// input/menu.rs: 菜单输入处理
-
+use crate::command::Command;
+use crate::state::Control;
 use crossterm::event::KeyCode;
 
-use super::controls::Control;
-
-#[derive(Debug, Clone, Copy)]
-pub enum Action {
-    PrevDifficulty,
-    NextDifficulty,
-    Start,
-    Back,
-}
-
-pub fn handle(key: KeyCode) -> Option<Action> {
+pub fn handle(key: KeyCode) -> Option<Command> {
     match key {
-        KeyCode::Left => Some(Action::PrevDifficulty),
-        KeyCode::Right => Some(Action::NextDifficulty),
-        KeyCode::Enter | KeyCode::Char(' ') => Some(Action::Start),
-        KeyCode::Char('q') | KeyCode::Esc => Some(Action::Back),
+        KeyCode::Left => Some(Command::PrevDifficulty),
+        KeyCode::Right => Some(Command::NextDifficulty),
+        KeyCode::Enter => Some(Command::StartGame),
+        KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
         _ => None,
     }
 }
 
-pub fn controls() -> &'static [Control] {
-    &[
+pub fn controls() -> Vec<Control> {
+    vec![
         Control {
             key: "←/→",
-            label: "Change",
+            label: "Select",
         },
         Control {
             key: "Enter",

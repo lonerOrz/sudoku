@@ -1,5 +1,4 @@
-// main.rs: 应用入口和事件循环
-
+mod command;
 mod constants;
 mod game;
 mod input;
@@ -7,11 +6,12 @@ mod state;
 mod terminal;
 mod ui;
 
+use crate::command::Command;
 use crate::input::global::should_quit;
 use crate::input::menu;
 use crate::input::playing;
 use crate::state::AppState;
-use game::{init_menu, start_game, update};
+use game::{apply_command, init_menu};
 use sudoku_core::Difficulty;
 
 fn main() -> std::io::Result<()> {
@@ -38,54 +38,42 @@ fn main() -> std::io::Result<()> {
 }
 
 fn handle_key(state: &mut AppState, key: crossterm::event::KeyCode) -> bool {
-    match state {
-        AppState::Menu { difficulty } => {
-            if let Some(action) = menu::handle(key) {
-                match action {
-                    menu::Action::PrevDifficulty => {
-                        *difficulty = difficulty.prev();
-                    }
-                    menu::Action::NextDifficulty => {
-                        *difficulty = difficulty.next();
-                    }
-                    menu::Action::Start => {
-                        *state = start_game(*difficulty);
-                    }
-                    menu::Action::Back => {
-                        return false;
-                    }
+    let quit = match state {
+        AppState::Menu { .. } => {
+            if let Some(cmd) = menu::handle(key) {
+                if matches!(cmd, Command::Quit) {
+                    true
+                } else {
+                    apply_command(state, cmd);
+                    false
                 }
+            } else {
+                false
             }
         }
         AppState::Playing(game) => {
-            if let Some(action) = playing::handle(key)
-                && is_action_allowed(&action, game.is_paused())
-            {
-                update(state, action);
+            if game.is_paused() {
+                if key == crossterm::event::KeyCode::Char(' ') {
+                    apply_command(state, Command::Pause);
+                } else if key == crossterm::event::KeyCode::Char('q')
+                    || key == crossterm::event::KeyCode::Esc
+                {
+                    apply_command(state, Command::Quit);
+                }
+                false
+            } else if let Some(cmd) = playing::handle(key) {
+                apply_command(state, cmd);
+                false
+            } else {
+                false
             }
         }
         AppState::Won { .. } | AppState::Failed { .. } => {
-            if let Some(playing::Action::Quit) = playing::handle(key) {
-                *state = init_menu(Difficulty::Easy);
+            if let Some(cmd) = playing::handle(key) {
+                apply_command(state, cmd);
             }
+            false
         }
-    }
-    true
-}
-
-fn is_action_allowed(action: &playing::Action, paused: bool) -> bool {
-    match action {
-        playing::Action::Quit
-        | playing::Action::Pause
-        | playing::Action::TogglePencilMode
-        | playing::Action::ToggleHintMode
-        | playing::Action::PlaceHint
-        | playing::Action::Undo => true,
-        playing::Action::MoveLeft
-        | playing::Action::MoveRight
-        | playing::Action::MoveUp
-        | playing::Action::MoveDown
-        | playing::Action::PlaceNumber(_)
-        | playing::Action::Erase => !paused,
-    }
+    };
+    !quit
 }

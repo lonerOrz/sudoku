@@ -1,6 +1,6 @@
 // game.rs: 游戏逻辑层
 
-use crate::input::playing::Action;
+use crate::command::Command;
 use crate::state::{AppState, HistoryEntry, PencilMarks};
 use sudoku_core::{Cell, Difficulty, clear_peers, compute_conflicts, generate, has_empty};
 
@@ -12,74 +12,93 @@ pub fn start_game(difficulty: Difficulty) -> AppState {
     AppState::Playing(Game::new(difficulty))
 }
 
-pub fn update(state: &mut AppState, action: Action) {
-    match action {
-        Action::Quit => {
-            *state = AppState::Menu {
-                difficulty: Difficulty::Easy,
-            };
-        }
-        Action::Pause => {
-            if let AppState::Playing(game) = state {
-                game.toggle_pause();
+pub fn apply_command(state: &mut AppState, cmd: Command) {
+    match cmd {
+        Command::PrevDifficulty => {
+            if let AppState::Menu { difficulty } = state {
+                *difficulty = difficulty.prev();
             }
         }
-        Action::TogglePencilMode => {
-            if let AppState::Playing(game) = state {
-                game.toggle_pencil_mode();
+        Command::NextDifficulty => {
+            if let AppState::Menu { difficulty } = state {
+                *difficulty = difficulty.next();
             }
         }
-        Action::ToggleHintMode => {
-            if let AppState::Playing(game) = state {
-                game.toggle_hint_mode();
+        Command::StartGame => {
+            if let AppState::Menu { difficulty } = state {
+                let diff = *difficulty;
+                *state = start_game(diff);
             }
         }
-        Action::PlaceHint => {
-            if let AppState::Playing(game) = state
-                && game.is_hint_mode()
-                && !game.is_paused()
-                && let Some(new_state) = game.place_hint()
-            {
-                *state = new_state;
+        Command::Quit => {
+            if matches!(
+                state,
+                AppState::Menu { .. }
+                    | AppState::Playing(_)
+                    | AppState::Won { .. }
+                    | AppState::Failed { .. }
+            ) {
+                *state = init_menu(Difficulty::Easy);
             }
         }
-        Action::Undo => {
-            if let AppState::Playing(game) = state
-                && let Some(new_state) = game.undo()
-            {
-                *state = new_state;
-            }
-        }
-        Action::MoveLeft => {
+
+        Command::MoveLeft => {
             if let AppState::Playing(game) = state {
                 game.move_cursor(0, -1);
             }
         }
-        Action::MoveRight => {
+        Command::MoveRight => {
             if let AppState::Playing(game) = state {
                 game.move_cursor(0, 1);
             }
         }
-        Action::MoveUp => {
+        Command::MoveUp => {
             if let AppState::Playing(game) = state {
                 game.move_cursor(-1, 0);
             }
         }
-        Action::MoveDown => {
+        Command::MoveDown => {
             if let AppState::Playing(game) = state {
                 game.move_cursor(1, 0);
             }
         }
-        Action::PlaceNumber(n) => {
+        Command::PlaceNumber(n) => {
             if let AppState::Playing(game) = state
                 && let Some(new_state) = game.place_number(n)
             {
                 *state = new_state;
             }
         }
-        Action::Erase => {
+        Command::Erase => {
             if let AppState::Playing(game) = state {
                 game.erase();
+            }
+        }
+        Command::Undo => {
+            if let AppState::Playing(game) = state {
+                game.undo();
+            }
+        }
+        Command::Pause => {
+            if let AppState::Playing(game) = state {
+                game.toggle_pause();
+            }
+        }
+        Command::TogglePencilMode => {
+            if let AppState::Playing(game) = state {
+                game.toggle_pencil_mode();
+            }
+        }
+        Command::ToggleHintMode => {
+            if let AppState::Playing(game) = state {
+                game.toggle_hint_mode();
+            }
+        }
+        Command::PlaceHint => {
+            if let AppState::Playing(game) = state
+                && let Some(new_state) = game.place_hint()
+            {
+                *state = new_state;
             }
         }
     }
