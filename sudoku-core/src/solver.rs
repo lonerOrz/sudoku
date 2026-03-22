@@ -38,7 +38,7 @@ pub fn solve(grid: &mut Grid) -> bool {
     if let Some((r, c)) = find_empty(grid) {
         for val in 1..=9 {
             if is_valid(grid, r, c, val) {
-                grid[r][c] = Cell::UserInput(val);
+                grid[r][c] = Cell::Given(val);
 
                 if solve(grid) {
                     return true;
