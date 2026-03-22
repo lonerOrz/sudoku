@@ -71,62 +71,49 @@ pub fn draw(
     } else {
         render_controls()
     };
-    let hints_width = hints.to_string().len() as u16;
-    let hints_h = Layout::horizontal([
-        Constraint::Min(0),
-        Constraint::Length(hints_width),
-        Constraint::Min(0),
-    ])
-    .split(main_chunks[1]);
-
-    let hints_v = Layout::vertical([
-        Constraint::Min(0),
-        Constraint::Length(1),
-        Constraint::Min(0),
-    ])
-    .split(hints_h[1]);
-
+    let hints_rect = calc_hints_rect(main_chunks[1], &hints);
     f.render_widget(
         Paragraph::new(vec![hints])
             .alignment(Alignment::Center)
             .wrap(ratatui::widgets::Wrap { trim: false }),
-        hints_v[1],
+        hints_rect,
     );
 
     if paused {
         let popup = center_rect(30, 7, grid_v[1]);
         f.render_widget(ratatui::widgets::Clear, popup);
-
-        let block = Block::bordered()
-            .title(" Paused ")
-            .border_type(BorderType::Rounded)
-            .style(Style::default().fg(Color::Yellow));
-
-        let text = Paragraph::new(vec![
-            Line::from(""),
-            Line::from(vec![Span::styled(
-                "PAUSED",
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(ratatui::style::Modifier::BOLD),
-            )]),
-            Line::from(""),
-            Line::from(vec![Span::raw(format!(
-                "Time: {}",
-                format_time(elapsed_secs)
-            ))]),
-            Line::from(""),
-            Line::from(vec![
-                Span::raw("Press "),
-                Span::styled("Space", Style::default().fg(Color::Cyan)),
-                Span::raw(" to resume"),
-            ]),
-        ])
-        .block(block)
-        .alignment(Alignment::Center);
-
-        f.render_widget(text, popup);
+        f.render_widget(render_pause_popup(elapsed_secs), popup);
     }
+}
+
+fn render_pause_popup(elapsed_secs: u64) -> Paragraph<'static> {
+    let block = Block::bordered()
+        .title(" Paused ")
+        .border_type(BorderType::Rounded)
+        .style(Style::default().fg(Color::Yellow));
+
+    Paragraph::new(vec![
+        Line::from(""),
+        Line::from(vec![Span::styled(
+            "PAUSED",
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(ratatui::style::Modifier::BOLD),
+        )]),
+        Line::from(""),
+        Line::from(vec![Span::raw(format!(
+            "Time: {}",
+            format_time(elapsed_secs)
+        ))]),
+        Line::from(""),
+        Line::from(vec![
+            Span::raw("Press "),
+            Span::styled("Space", Style::default().fg(Color::Cyan)),
+            Span::raw(" to resume"),
+        ]),
+    ])
+    .block(block)
+    .alignment(Alignment::Center)
 }
 
 pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
@@ -215,6 +202,28 @@ fn center_rect(width: u16, height: u16, area: ratatui::prelude::Rect) -> ratatui
     .split(vert[1]);
 
     horiz[1]
+}
+
+fn calc_hints_rect(
+    bottom_area: ratatui::prelude::Rect,
+    hints: &Line<'_>,
+) -> ratatui::prelude::Rect {
+    let width = hints.width() as u16;
+    let horiz = Layout::horizontal([
+        Constraint::Min(0),
+        Constraint::Length(width),
+        Constraint::Min(0),
+    ])
+    .split(bottom_area);
+
+    let vert = Layout::vertical([
+        Constraint::Min(0),
+        Constraint::Length(1),
+        Constraint::Min(0),
+    ])
+    .split(horiz[1]);
+
+    vert[1]
 }
 
 fn format_time(total_secs: u64) -> String {
