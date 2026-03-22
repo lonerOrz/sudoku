@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{BitmaskGrid, Grid, ALL_VALUES};
+use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
 
 pub fn is_solved(grid: &Grid) -> bool {
     let masks = BitmaskGrid::from_grid(grid);
@@ -98,48 +98,61 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
     let mut errors = Vec::new();
+    let mut added = 0u128;
 
     for r in 0..9 {
-        let mut seen_row = [false; 9];
-        let mut positions_row = Vec::new();
+        let mut seen = [false; 9];
+        let mut positions = Vec::new();
         for c in 0..9 {
             if let Some(val) = grid[r][c].value() {
                 let v = val as usize - 1;
-                if seen_row[v] {
-                    for &(or, oc) in &positions_row {
-                        if !errors.contains(&(or, oc)) {
+                if seen[v] {
+                    for &(or, oc) in &positions {
+                        let idx = or * 9 + oc;
+                        let bit = 1u128 << idx;
+                        if added & bit == 0 {
                             errors.push((or, oc));
+                            added |= bit;
                         }
                     }
-                    if !errors.contains(&(r, c)) {
+                    let idx = r * 9 + c;
+                    let bit = 1u128 << idx;
+                    if added & bit == 0 {
                         errors.push((r, c));
+                        added |= bit;
                     }
                 } else {
-                    seen_row[v] = true;
-                    positions_row.push((r, c));
+                    seen[v] = true;
+                    positions.push((r, c));
                 }
             }
         }
     }
 
     for c in 0..9 {
-        let mut seen_row = [false; 9];
-        let mut positions_row = Vec::new();
+        let mut seen = [false; 9];
+        let mut positions = Vec::new();
         for r in 0..9 {
             if let Some(val) = grid[r][c].value() {
                 let v = val as usize - 1;
-                if seen_row[v] {
-                    for &(or, oc) in &positions_row {
-                        if !errors.contains(&(or, oc)) {
+                if seen[v] {
+                    for &(or, oc) in &positions {
+                        let idx = or * 9 + oc;
+                        let bit = 1u128 << idx;
+                        if added & bit == 0 {
                             errors.push((or, oc));
+                            added |= bit;
                         }
                     }
-                    if !errors.contains(&(r, c)) {
+                    let idx = r * 9 + c;
+                    let bit = 1u128 << idx;
+                    if added & bit == 0 {
                         errors.push((r, c));
+                        added |= bit;
                     }
                 } else {
-                    seen_row[v] = true;
-                    positions_row.push((r, c));
+                    seen[v] = true;
+                    positions.push((r, c));
                 }
             }
         }
@@ -147,26 +160,32 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
 
     for box_r in (0..9).step_by(3) {
         for box_c in (0..9).step_by(3) {
-            let mut seen_row = [false; 9];
-            let mut positions_row = Vec::new();
+            let mut seen = [false; 9];
+            let mut positions = Vec::new();
             for dr in 0..3 {
                 for dc in 0..3 {
                     let r = box_r + dr;
                     let c = box_c + dc;
                     if let Some(val) = grid[r][c].value() {
                         let v = val as usize - 1;
-                        if seen_row[v] {
-                            for &(or, oc) in &positions_row {
-                                if !errors.contains(&(or, oc)) {
+                        if seen[v] {
+                            for &(or, oc) in &positions {
+                                let idx = or * 9 + oc;
+                                let bit = 1u128 << idx;
+                                if added & bit == 0 {
                                     errors.push((or, oc));
+                                    added |= bit;
                                 }
                             }
-                            if !errors.contains(&(r, c)) {
+                            let idx = r * 9 + c;
+                            let bit = 1u128 << idx;
+                            if added & bit == 0 {
                                 errors.push((r, c));
+                                added |= bit;
                             }
                         } else {
-                            seen_row[v] = true;
-                            positions_row.push((r, c));
+                            seen[v] = true;
+                            positions.push((r, c));
                         }
                     }
                 }
