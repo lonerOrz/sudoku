@@ -110,7 +110,30 @@ mod tests {
         grid[0][1] = Cell::Given(5);
 
         let errors = find_errors(&grid);
-        assert!(errors.contains(&(0, 1)));
+        assert!(errors.contains(&(0, 0)), "First 5 in row should be error");
+        assert!(errors.contains(&(0, 1)), "Second 5 in row should be error");
+    }
+
+    #[test]
+    fn test_find_errors_column() {
+        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        grid[0][0] = Cell::Given(3);
+        grid[4][0] = Cell::Given(3);
+
+        let errors = find_errors(&grid);
+        assert!(errors.contains(&(0, 0)), "First 3 in column should be error");
+        assert!(errors.contains(&(4, 0)), "Second 3 in column should be error");
+    }
+
+    #[test]
+    fn test_find_errors_box() {
+        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        grid[0][0] = Cell::Given(7);
+        grid[1][2] = Cell::Given(7);
+
+        let errors = find_errors(&grid);
+        assert!(errors.contains(&(0, 0)), "First 7 in box should be error");
+        assert!(errors.contains(&(1, 2)), "Second 7 in box should be error");
     }
 
     #[test]
