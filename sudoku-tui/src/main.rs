@@ -7,6 +7,7 @@ mod state;
 mod terminal;
 mod ui;
 
+use crate::input::global::should_quit;
 use crate::input::menu;
 use crate::input::playing;
 use crate::state::AppState;
@@ -22,10 +23,13 @@ fn main() -> std::io::Result<()> {
 
         if crossterm::event::poll(std::time::Duration::from_millis(500))? {
             let event = crossterm::event::read()?;
-            if let crossterm::event::Event::Key(key) = event
-                && !handle_key(&mut state, key.code)
-            {
+            if should_quit(&event) {
                 break;
+            }
+            if let crossterm::event::Event::Key(key) = event {
+                if !handle_key(&mut state, key.code) {
+                    break;
+                }
             }
         }
     }
