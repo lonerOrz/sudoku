@@ -1,3 +1,5 @@
+// main.rs: 应用入口和状态管理
+
 mod config;
 mod constants;
 mod input;
@@ -56,7 +58,7 @@ fn main() -> std::io::Result<()> {
                             }
                         }
                     }
-                    AppState::Won { .. } => {
+                    AppState::Won { .. } | AppState::Failed { .. } => {
                         if let Some(input::playing::Action::Quit) = input::playing::handle(key.code)
                         {
                             state = AppState::Menu {
@@ -64,19 +66,7 @@ fn main() -> std::io::Result<()> {
                             };
                         }
                     }
-                    AppState::Failed { .. } => {
-                        if let Some(input::playing::Action::Quit) = input::playing::handle(key.code)
-                        {
-                            state = AppState::Menu {
-                                difficulty: Difficulty::Easy,
-                            };
-                        }
-                    }
-                    AppState::Playing { .. } => {
-                        let paused = match &state {
-                            AppState::Playing { paused, .. } => *paused,
-                            _ => false,
-                        };
+                    AppState::Playing { paused, .. } => {
                         if let Some(action) = input::playing::handle(key.code) {
                             match action {
                                 input::playing::Action::Quit => {
@@ -93,102 +83,17 @@ fn main() -> std::io::Result<()> {
                                     } = &mut state
                                     {
                                         if *paused {
-                                            // 恢复：调整锚点
                                             *start_time = std::time::Instant::now()
                                                 - std::time::Duration::from_secs(*elapsed_secs);
                                         } else {
-                                            // 暂停：保存快照
                                             *elapsed_secs = start_time.elapsed().as_secs();
                                         }
                                         *paused = !*paused;
                                     }
                                 }
-                                _ if !paused => match action {
-                                    input::playing::Action::MoveLeft => {
-                                        if let AppState::Playing { cursor_col, .. } = &mut state
-                                            && *cursor_col > 0
-                                        {
-                                            *cursor_col -= 1;
-                                        }
-                                    }
-                                    input::playing::Action::MoveRight => {
-                                        if let AppState::Playing { cursor_col, .. } = &mut state
-                                            && *cursor_col < 8
-                                        {
-                                            *cursor_col += 1;
-                                        }
-                                    }
-                                    input::playing::Action::MoveUp => {
-                                        if let AppState::Playing { cursor_row, .. } = &mut state
-                                            && *cursor_row > 0
-                                        {
-                                            *cursor_row -= 1;
-                                        }
-                                    }
-                                    input::playing::Action::MoveDown => {
-                                        if let AppState::Playing { cursor_row, .. } = &mut state
-                                            && *cursor_row < 8
-                                        {
-                                            *cursor_row += 1;
-                                        }
-                                    }
-                                    input::playing::Action::PlaceNumber(n) => {
-                                        if let AppState::Playing {
-                                            puzzle,
-                                            cursor_row,
-                                            cursor_col,
-                                            errors,
-                                            difficulty,
-                                            mistakes,
-                                            start_time,
-                                            ..
-                                        } = &mut state
-                                        {
-                                            let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                            let already_has_n =
-                                                matches!(cell, Cell::UserInput(v) if *v == n);
-                                            if !already_has_n && !matches!(cell, Cell::Given(_)) {
-                                                *cell = Cell::UserInput(n);
-                                                *errors = find_errors(puzzle);
-                                                if errors.contains(&(*cursor_row, *cursor_col)) {
-                                                    *mistakes += 1;
-                                                    if *mistakes >= 5 {
-                                                        state = AppState::Failed {
-                                                            difficulty: *difficulty,
-                                                            elapsed_secs: start_time
-                                                                .elapsed()
-                                                                .as_secs(),
-                                                        };
-                                                    }
-                                                } else if errors.is_empty() && !has_empty(puzzle) {
-                                                    state = AppState::Won {
-                                                        difficulty: *difficulty,
-                                                        elapsed_secs: start_time
-                                                            .elapsed()
-                                                            .as_secs(),
-                                                    };
-                                                }
-                                            }
-                                        }
-                                    }
-                                    input::playing::Action::Erase => {
-                                        if let AppState::Playing {
-                                            puzzle,
-                                            cursor_row,
-                                            cursor_col,
-                                            errors,
-                                            ..
-                                        } = &mut state
-                                        {
-                                            let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                            if matches!(cell, Cell::UserInput(_)) {
-                                                *cell = Cell::Empty;
-                                                *errors = find_errors(puzzle);
-                                            }
-                                        }
-                                    }
-                                    _ => {}
-                                },
+                                _ if !*paused => {
+                                    handle_playing_action(&mut state, action);
+                                }
                                 _ => {}
                             }
                         }
@@ -199,4 +104,88 @@ fn main() -> std::io::Result<()> {
     }
 
     terminal::cleanup()
+}
+
+fn handle_playing_action(state: &mut AppState, action: input::playing::Action) {
+    match action {
+        input::playing::Action::MoveLeft => {
+            if let AppState::Playing { cursor_col, .. } = state
+                && *cursor_col > 0
+            {
+                *cursor_col -= 1;
+            }
+        }
+        input::playing::Action::MoveRight => {
+            if let AppState::Playing { cursor_col, .. } = state
+                && *cursor_col < 8
+            {
+                *cursor_col += 1;
+            }
+        }
+        input::playing::Action::MoveUp => {
+            if let AppState::Playing { cursor_row, .. } = state
+                && *cursor_row > 0
+            {
+                *cursor_row -= 1;
+            }
+        }
+        input::playing::Action::MoveDown => {
+            if let AppState::Playing { cursor_row, .. } = state
+                && *cursor_row < 8
+            {
+                *cursor_row += 1;
+            }
+        }
+        input::playing::Action::PlaceNumber(n) => {
+            if let AppState::Playing {
+                puzzle,
+                cursor_row,
+                cursor_col,
+                errors,
+                difficulty,
+                mistakes,
+                start_time,
+                ..
+            } = state
+            {
+                let cell = &mut puzzle[*cursor_row][*cursor_col];
+                let already_has_n = matches!(cell, Cell::UserInput(v) if *v == n);
+                if !already_has_n && !matches!(cell, Cell::Given(_)) {
+                    *cell = Cell::UserInput(n);
+                    *errors = find_errors(puzzle);
+                    if errors.contains(&(*cursor_row, *cursor_col)) {
+                        *mistakes += 1;
+                        if *mistakes >= 5 {
+                            *state = AppState::Failed {
+                                difficulty: *difficulty,
+                                elapsed_secs: start_time.elapsed().as_secs(),
+                            };
+                        }
+                    } else if errors.is_empty() && !has_empty(puzzle) {
+                        *state = AppState::Won {
+                            difficulty: *difficulty,
+                            elapsed_secs: start_time.elapsed().as_secs(),
+                        };
+                    }
+                }
+            }
+        }
+        input::playing::Action::Erase => {
+            if let AppState::Playing {
+                puzzle,
+                cursor_row,
+                cursor_col,
+                errors,
+                ..
+            } = state
+            {
+                let cell = &mut puzzle[*cursor_row][*cursor_col];
+                if matches!(cell, Cell::UserInput(_)) {
+                    *cell = Cell::Empty;
+                    *errors = find_errors(puzzle);
+                }
+            }
+        }
+        _ => {}
+    }
 }
