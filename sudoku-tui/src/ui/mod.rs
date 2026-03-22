@@ -13,33 +13,18 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
             errors,
             mistakes,
             start_time,
-            ..
-        } => playing::draw(
-            f,
-            puzzle,
-            *cursor_row,
-            *cursor_col,
-            errors,
-            *mistakes,
-            *start_time,
-        ),
-        AppState::Paused {
-            puzzle,
-            cursor_row,
-            cursor_col,
-            errors,
-            mistakes,
-            elapsed_secs,
+            paused,
             ..
         } => {
-            playing::draw_paused(
+            playing::draw(
                 f,
                 puzzle,
                 *cursor_row,
                 *cursor_col,
                 errors,
                 *mistakes,
-                *elapsed_secs,
+                *start_time,
+                *paused,
             );
         }
         AppState::Won {

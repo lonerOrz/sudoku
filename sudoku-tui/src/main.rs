@@ -47,6 +47,7 @@ fn main() -> std::io::Result<()> {
                                             difficulty: *difficulty,
                                             mistakes: 0,
                                             start_time: std::time::Instant::now(),
+                                            paused: false,
                                         };
                                     }
                                 }
@@ -70,44 +71,11 @@ fn main() -> std::io::Result<()> {
                             };
                         }
                     }
-                    AppState::Paused { .. } => {
-                        if let Some(input::playing::Action::Pause) =
-                            input::playing::handle(key.code)
-                        {
-                            if let AppState::Paused {
-                                puzzle,
-                                solution,
-                                cursor_row,
-                                cursor_col,
-                                errors,
-                                difficulty,
-                                mistakes,
-                                elapsed_secs,
-                            } = &state
-                            {
-                                let paused_duration = std::time::Instant::now().elapsed().as_secs();
-                                let total_elapsed = *elapsed_secs + paused_duration;
-                                state = AppState::Playing {
-                                    puzzle: *puzzle,
-                                    solution: *solution,
-                                    cursor_row: *cursor_row,
-                                    cursor_col: *cursor_col,
-                                    errors: errors.clone(),
-                                    difficulty: *difficulty,
-                                    mistakes: *mistakes,
-                                    start_time: std::time::Instant::now()
-                                        - std::time::Duration::from_secs(total_elapsed),
-                                };
-                            }
-                        } else if let Some(input::playing::Action::Quit) =
-                            input::playing::handle(key.code)
-                        {
-                            state = AppState::Menu {
-                                difficulty: Difficulty::Easy,
-                            };
-                        }
-                    }
                     AppState::Playing { .. } => {
+                        let paused = match &state {
+                            AppState::Playing { paused, .. } => *paused,
+                            _ => false,
+                        };
                         if let Some(action) = input::playing::handle(key.code) {
                             match action {
                                 input::playing::Action::Quit => {
@@ -116,111 +84,95 @@ fn main() -> std::io::Result<()> {
                                     };
                                 }
                                 input::playing::Action::Pause => {
-                                    if let AppState::Playing {
-                                        puzzle,
-                                        solution,
-                                        cursor_row,
-                                        cursor_col,
-                                        errors,
-                                        difficulty,
-                                        mistakes,
-                                        start_time,
-                                    } = &state
-                                    {
-                                        let elapsed = start_time.elapsed().as_secs();
-                                        state = AppState::Paused {
-                                            puzzle: *puzzle,
-                                            solution: *solution,
-                                            cursor_row: *cursor_row,
-                                            cursor_col: *cursor_col,
-                                            errors: errors.clone(),
-                                            difficulty: *difficulty,
-                                            mistakes: *mistakes,
-                                            elapsed_secs: elapsed,
-                                        };
+                                    if let AppState::Playing { paused, .. } = &mut state {
+                                        *paused = !*paused;
                                     }
                                 }
-                                input::playing::Action::MoveLeft => {
-                                    if let AppState::Playing { cursor_col, .. } = &mut state
-                                        && *cursor_col > 0
-                                    {
-                                        *cursor_col -= 1;
+                                _ if !paused => match action {
+                                    input::playing::Action::MoveLeft => {
+                                        if let AppState::Playing { cursor_col, .. } = &mut state
+                                            && *cursor_col > 0
+                                        {
+                                            *cursor_col -= 1;
+                                        }
                                     }
-                                }
-                                input::playing::Action::MoveRight => {
-                                    if let AppState::Playing { cursor_col, .. } = &mut state
-                                        && *cursor_col < 8
-                                    {
-                                        *cursor_col += 1;
+                                    input::playing::Action::MoveRight => {
+                                        if let AppState::Playing { cursor_col, .. } = &mut state
+                                            && *cursor_col < 8
+                                        {
+                                            *cursor_col += 1;
+                                        }
                                     }
-                                }
-                                input::playing::Action::MoveUp => {
-                                    if let AppState::Playing { cursor_row, .. } = &mut state
-                                        && *cursor_row > 0
-                                    {
-                                        *cursor_row -= 1;
+                                    input::playing::Action::MoveUp => {
+                                        if let AppState::Playing { cursor_row, .. } = &mut state
+                                            && *cursor_row > 0
+                                        {
+                                            *cursor_row -= 1;
+                                        }
                                     }
-                                }
-                                input::playing::Action::MoveDown => {
-                                    if let AppState::Playing { cursor_row, .. } = &mut state
-                                        && *cursor_row < 8
-                                    {
-                                        *cursor_row += 1;
+                                    input::playing::Action::MoveDown => {
+                                        if let AppState::Playing { cursor_row, .. } = &mut state
+                                            && *cursor_row < 8
+                                        {
+                                            *cursor_row += 1;
+                                        }
                                     }
-                                }
-                                input::playing::Action::PlaceNumber(n) => {
-                                    if let AppState::Playing {
-                                        puzzle,
-                                        cursor_row,
-                                        cursor_col,
-                                        errors,
-                                        difficulty,
-                                        mistakes,
-                                        start_time,
-                                        ..
-                                    } = &mut state
-                                    {
-                                        let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                        let already_has_n =
-                                            matches!(cell, Cell::UserInput(v) if *v == n);
-                                        if !already_has_n && !matches!(cell, Cell::Given(_)) {
-                                            *cell = Cell::UserInput(n);
-                                            *errors = find_errors(puzzle);
-                                            if errors.contains(&(*cursor_row, *cursor_col)) {
-                                                *mistakes += 1;
-                                                if *mistakes >= 5 {
+                                    input::playing::Action::PlaceNumber(n) => {
+                                        if let AppState::Playing {
+                                            puzzle,
+                                            cursor_row,
+                                            cursor_col,
+                                            errors,
+                                            difficulty,
+                                            mistakes,
+                                            start_time,
+                                            ..
+                                        } = &mut state
+                                        {
+                                            let cell = &mut puzzle[*cursor_row][*cursor_col];
+                                            let already_has_n =
+                                                matches!(cell, Cell::UserInput(v) if *v == n);
+                                            if !already_has_n && !matches!(cell, Cell::Given(_)) {
+                                                *cell = Cell::UserInput(n);
+                                                *errors = find_errors(puzzle);
+                                                if errors.contains(&(*cursor_row, *cursor_col)) {
+                                                    *mistakes += 1;
+                                                    if *mistakes >= 5 {
+                                                        let elapsed =
+                                                            start_time.elapsed().as_secs();
+                                                        state = AppState::Failed {
+                                                            difficulty: *difficulty,
+                                                            elapsed_secs: elapsed,
+                                                        };
+                                                    }
+                                                } else if errors.is_empty() && !has_empty(puzzle) {
                                                     let elapsed = start_time.elapsed().as_secs();
-                                                    state = AppState::Failed {
+                                                    state = AppState::Won {
                                                         difficulty: *difficulty,
                                                         elapsed_secs: elapsed,
                                                     };
                                                 }
-                                            } else if errors.is_empty() && !has_empty(puzzle) {
-                                                let elapsed = start_time.elapsed().as_secs();
-                                                state = AppState::Won {
-                                                    difficulty: *difficulty,
-                                                    elapsed_secs: elapsed,
-                                                };
                                             }
                                         }
                                     }
-                                }
-                                input::playing::Action::Erase => {
-                                    if let AppState::Playing {
-                                        puzzle,
-                                        cursor_row,
-                                        cursor_col,
-                                        errors,
-                                        ..
-                                    } = &mut state
-                                    {
-                                        let cell = &mut puzzle[*cursor_row][*cursor_col];
-                                        if matches!(cell, Cell::UserInput(_)) {
-                                            *cell = Cell::Empty;
-                                            *errors = find_errors(puzzle);
+                                    input::playing::Action::Erase => {
+                                        if let AppState::Playing {
+                                            puzzle,
+                                            cursor_row,
+                                            cursor_col,
+                                            errors,
+                                            ..
+                                        } = &mut state
+                                        {
+                                            let cell = &mut puzzle[*cursor_row][*cursor_col];
+                                            if matches!(cell, Cell::UserInput(_)) {
+                                                *cell = Cell::Empty;
+                                                *errors = find_errors(puzzle);
+                                            }
                                         }
                                     }
-                                }
+                                    _ => {}
+                                },
                                 _ => {}
                             }
                         }
