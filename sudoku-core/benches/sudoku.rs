@@ -1,5 +1,5 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
-use sudoku_core::{Difficulty, Grid, PEERS, generate};
+use sudoku_core::{Difficulty, Grid, count_solutions, generate, solve};
 
 fn generate_all_difficulties(c: &mut Criterion) {
     let mut group = c.benchmark_group("generate");
@@ -24,85 +24,24 @@ fn generate_all_difficulties(c: &mut Criterion) {
 
 fn solve_grid(c: &mut Criterion) {
     let (puzzle, _solution) = generate(Difficulty::Expert);
-    let grid = puzzle;
 
     c.bench_function("solve_expert_puzzle", |b| {
         b.iter(|| {
-            let mut g = grid;
-            solve_backtrack(&mut g);
+            let mut g = puzzle;
+            solve(black_box(&mut g));
         });
     });
-}
-
-fn solve_backtrack(grid: &mut Grid) -> bool {
-    if let Some(idx) = find_empty(grid) {
-        for val in 1..=9 {
-            if is_valid(grid, idx, val) {
-                grid[idx / 9][idx % 9] = sudoku_core::Cell::Given(val);
-                if solve_backtrack(grid) {
-                    return true;
-                }
-                grid[idx / 9][idx % 9] = sudoku_core::Cell::Empty;
-            }
-        }
-        false
-    } else {
-        true
-    }
-}
-
-fn find_empty(grid: &Grid) -> Option<usize> {
-    for idx in 0..81 {
-        if grid[idx / 9][idx % 9].value().is_none() {
-            return Some(idx);
-        }
-    }
-    None
-}
-
-fn is_valid(grid: &Grid, idx: usize, val: u8) -> bool {
-    for &peer in &PEERS[idx] {
-        if peer == u8::MAX {
-            break;
-        }
-        if let Some(v) = grid[(peer / 9) as usize][(peer % 9) as usize].value() {
-            if v == val {
-                return false;
-            }
-        }
-    }
-    true
 }
 
 fn uniqueness_check(c: &mut Criterion) {
     let (puzzle, _solution) = generate(Difficulty::Medium);
-    let grid = puzzle;
 
     c.bench_function("count_solutions_medium", |b| {
         b.iter(|| {
-            let mut g = grid;
-            let mut count = 0;
-            count_solutions_inner(&mut g, &mut count, 2);
+            let mut g = puzzle;
+            count_solutions(black_box(&mut g));
         });
     });
-}
-
-fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
-    if *count >= max_count {
-        return;
-    }
-
-    if let Some(idx) = find_empty(grid) {
-        for val in 1..=9 {
-            if is_valid(grid, idx, val) {
-                grid[idx / 9][idx % 9] = sudoku_core::Cell::Given(val);
-                count_solutions_inner(grid, count, max_count);
-                grid[idx / 9][idx % 9] = sudoku_core::Cell::Empty;
-            }
-        }
-    } else {
-        *count += 1;
-    }
 }
 
 fn shuffle_quality(c: &mut Criterion) {
