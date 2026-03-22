@@ -21,7 +21,7 @@ fn solve_inner(grid: &mut Grid, masks: &mut BitmaskGrid) -> bool {
                 best_count = count;
                 best_idx = idx;
                 best_mask = mask;
-                if count == 1 {
+                if count <= 2 {
                     break;
                 }
             }
@@ -78,7 +78,7 @@ fn count_inner(grid: &mut Grid, masks: &mut BitmaskGrid, count: &mut usize, max:
                 best_count = count_cands;
                 best_idx = idx;
                 best_mask = mask;
-                if count_cands == 1 {
+                if count_cands <= 2 {
                     break;
                 }
             }
