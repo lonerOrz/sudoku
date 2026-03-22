@@ -18,6 +18,7 @@ pub fn draw(
     cursor_col: usize,
     errors: &[(usize, usize)],
     mistakes: u8,
+    difficulty: Difficulty,
     elapsed_secs: u64,
     paused: bool,
 ) {
@@ -33,11 +34,7 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let info = if paused {
-        render_info_paused(mistakes, elapsed_secs)
-    } else {
-        render_info(mistakes, elapsed_secs)
-    };
+    let info = render_info(difficulty, mistakes, elapsed_secs, paused);
     let info_height = info.len() as u16;
 
     let total_width = grid_width + 20;
@@ -227,8 +224,18 @@ fn format_time(total_secs: u64) -> String {
     format!("{:02}:{:02}:{:02}", hours, mins, secs)
 }
 
-fn render_info(mistakes: u8, elapsed_secs: u64) -> Vec<Line<'static>> {
+fn render_info(
+    difficulty: Difficulty,
+    mistakes: u8,
+    elapsed_secs: u64,
+    paused: bool,
+) -> Vec<Line<'static>> {
     let time_str = format_time(elapsed_secs);
+    let mode = if paused {
+        Span::styled("PAUSED", Style::default().fg(Color::Yellow))
+    } else {
+        Span::raw("Normal")
+    };
 
     vec![
         Line::from(vec![Span::styled(
@@ -238,33 +245,16 @@ fn render_info(mistakes: u8, elapsed_secs: u64) -> Vec<Line<'static>> {
                 .add_modifier(ratatui::style::Modifier::BOLD),
         )]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Timer: {}", time_str))]),
+        Line::from(vec![Span::raw(format!(
+            "Difficulty: {}",
+            difficulty.label()
+        ))]),
+        Line::from(vec![Span::raw("")]),
+        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
         Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw("Mode: Normal")]),
-    ]
-}
-
-fn render_info_paused(mistakes: u8, elapsed_secs: u64) -> Vec<Line<'static>> {
-    let time_str = format_time(elapsed_secs);
-
-    vec![
-        Line::from(vec![Span::styled(
-            "Info",
-            Style::default()
-                .fg(Color::White)
-                .add_modifier(ratatui::style::Modifier::BOLD),
-        )]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Timer: {}", time_str))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::styled(
-            "Mode: PAUSED",
-            Style::default().fg(Color::Yellow),
-        )]),
+        Line::from(vec![Span::raw("Mode: "), mode]),
     ]
 }
 

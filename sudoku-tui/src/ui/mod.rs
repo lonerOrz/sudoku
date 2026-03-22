@@ -12,6 +12,7 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
             cursor_col,
             errors,
             mistakes,
+            difficulty,
             start_time,
             elapsed_secs,
             paused,
@@ -29,6 +30,7 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
                 *cursor_col,
                 errors,
                 *mistakes,
+                *difficulty,
                 display_elapsed,
                 *paused,
             );
