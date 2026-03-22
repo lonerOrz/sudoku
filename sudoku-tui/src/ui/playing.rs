@@ -65,6 +65,7 @@ pub struct CellRenderParams<'a> {
     pub solution: &'a [[u8; 9]; 9],
     pub pencil_marks: &'a PencilMarks,
     pub pencil_mode: bool,
+    pub hint_mode: bool,
     pub cursor_row: usize,
     pub cursor_col: usize,
     pub conflicts: &'a Conflicts,
@@ -98,6 +99,7 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
         solution: params.solution,
         pencil_marks: params.pencil_marks,
         pencil_mode: params.pencil_mode,
+        hint_mode: params.hint_mode,
         cursor_row: params.cursor_row,
         cursor_col: params.cursor_col,
         conflicts: params.conflicts,
@@ -501,6 +503,8 @@ fn render_grid_cell(
     let bg = if is_cursor {
         if params.pencil_mode {
             Color::Green
+        } else if params.hint_mode {
+            Color::Cyan
         } else {
             Color::Blue
         }
@@ -530,7 +534,20 @@ fn render_cell_content(
     is_cursor: bool,
     is_wrong: bool,
 ) -> Span<'static> {
-    let fg_for_bg = if bg == Color::Cyan || bg == Color::Green || bg == Color::Blue {
+    if is_wrong {
+        let content = if sub_row == 1 {
+            if let Cell::UserInput(v) = cell {
+                format!("   {}   ", char::from_digit(v as u32, 10).unwrap_or('?'))
+            } else {
+                "       ".to_string()
+            }
+        } else {
+            "       ".to_string()
+        };
+        return Span::styled(content, Style::default().fg(Color::Red).bg(bg));
+    }
+
+    let fg_for_bg = if bg == Color::Blue || bg == Color::Green {
         Color::Black
     } else if bg == Color::Magenta {
         Color::White
@@ -538,20 +555,28 @@ fn render_cell_content(
         Color::Reset
     };
 
-    let fg = if is_wrong {
-        Color::Red
-    } else {
-        match cell {
-            Cell::Given(_) => Color::White,
-            Cell::UserInput(_) => Color::Cyan,
-            Cell::Empty => {
-                if is_cursor && !pencil_marks.is_empty() {
-                    Color::Cyan
-                } else {
-                    Color::DarkGray
-                }
+    let fg = match cell {
+        Cell::Given(_) => Color::White,
+        Cell::UserInput(_) => Color::LightGreen,
+        Cell::Empty => {
+            if is_cursor && !pencil_marks.is_empty() {
+                Color::Cyan
+            } else {
+                Color::DarkGray
             }
         }
+    };
+
+    let final_fg = if is_cursor {
+        if bg == Color::Green || bg == Color::Cyan {
+            Color::Black
+        } else {
+            fg
+        }
+    } else if fg_for_bg != Color::Reset {
+        fg_for_bg
+    } else {
+        fg
     };
 
     let content = match cell {
@@ -589,12 +614,6 @@ fn render_cell_content(
                 format!(" {} {} {} ", c0, c1, c2)
             }
         }
-    };
-
-    let final_fg = if fg_for_bg != Color::Reset {
-        fg_for_bg
-    } else {
-        fg
     };
 
     Span::styled(content, Style::default().fg(final_fg).bg(bg))

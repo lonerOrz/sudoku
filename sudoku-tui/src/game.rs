@@ -864,7 +864,7 @@ mod tests {
 
         game.place_number(5);
 
-        assert!(true);
+        assert!(!game.conflicts().is_empty() || game.puzzle[row][col] != Cell::Empty);
     }
 
     #[test]
