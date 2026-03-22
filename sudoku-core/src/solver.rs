@@ -6,18 +6,24 @@ fn find_empty(grid: &Grid) -> Option<usize> {
     (0..81).find(|&idx| grid[idx / 9][idx % 9].value().is_none())
 }
 
+fn candidates(grid: &Grid, idx: usize) -> Vec<u8> {
+    let (r, c) = (idx / 9, idx % 9);
+    if grid[r][c].value().is_some() {
+        return vec![];
+    }
+    (1..=9).filter(|&val| is_valid(grid, idx, val)).collect()
+}
+
 fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
     if *count >= max_count {
         return;
     }
 
     if let Some(idx) = find_empty(grid) {
-        for val in 1..=9 {
-            if is_valid(grid, idx, val) {
-                grid[idx / 9][idx % 9] = Cell::Given(val);
-                count_solutions_inner(grid, count, max_count);
-                grid[idx / 9][idx % 9] = Cell::Empty;
-            }
+        for val in candidates(grid, idx) {
+            grid[idx / 9][idx % 9] = Cell::Given(val);
+            count_solutions_inner(grid, count, max_count);
+            grid[idx / 9][idx % 9] = Cell::Empty;
         }
     } else {
         *count += 1;
@@ -26,16 +32,14 @@ fn count_solutions_inner(grid: &mut Grid, count: &mut usize, max_count: usize) {
 
 pub fn solve(grid: &mut Grid) -> bool {
     if let Some(idx) = find_empty(grid) {
-        for val in 1..=9 {
-            if is_valid(grid, idx, val) {
-                grid[idx / 9][idx % 9] = Cell::Given(val);
+        for val in candidates(grid, idx) {
+            grid[idx / 9][idx % 9] = Cell::Given(val);
 
-                if solve(grid) {
-                    return true;
-                }
-
-                grid[idx / 9][idx % 9] = Cell::Empty;
+            if solve(grid) {
+                return true;
             }
+
+            grid[idx / 9][idx % 9] = Cell::Empty;
         }
         return false;
     }

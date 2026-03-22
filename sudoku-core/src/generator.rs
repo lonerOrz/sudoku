@@ -3,7 +3,7 @@
 use crate::board::{Cell, Grid};
 use crate::difficulty::Difficulty;
 use crate::solver::{count_solutions, solve};
-use rand::{thread_rng, Rng};
+use rand::{Rng, thread_rng};
 
 pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let mut grid: Grid = [[Cell::Empty; 9]; 9];
