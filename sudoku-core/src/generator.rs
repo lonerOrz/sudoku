@@ -14,21 +14,26 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Grid) {
     let empty_cells = 81 - target_givens;
     let mut puzzle = solution;
 
+    let mut positions: Vec<(usize, usize)> =
+        (0..9).flat_map(|r| (0..9).map(move |c| (r, c))).collect();
+    for i in (1..positions.len()).rev() {
+        let j = i % 13;
+        positions.swap(i, j);
+    }
+
     let mut removed = 0;
-    for r in 0..9 {
-        for c in 0..9 {
-            if removed >= empty_cells {
-                break;
-            }
+    for (r, c) in positions {
+        if removed >= empty_cells {
+            break;
+        }
 
-            let backup = puzzle[r][c];
-            puzzle[r][c] = Cell::Empty;
+        let backup = puzzle[r][c];
+        puzzle[r][c] = Cell::Empty;
 
-            if count_solutions(&mut puzzle) != 1 {
-                puzzle[r][c] = backup;
-            } else {
-                removed += 1;
-            }
+        if count_solutions(&mut puzzle) != 1 {
+            puzzle[r][c] = backup;
+        } else {
+            removed += 1;
         }
     }
 

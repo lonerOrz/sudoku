@@ -1,6 +1,5 @@
 // main.rs: 应用入口和状态管理
 
-mod config;
 mod constants;
 mod input;
 mod state;
@@ -28,21 +27,20 @@ fn main() -> std::io::Result<()> {
                             match action {
                                 input::menu::Action::PrevDifficulty => {
                                     if let AppState::Menu { difficulty } = &mut state {
-                                        *difficulty = config::cycle(*difficulty, false);
+                                        *difficulty = constants::cycle(*difficulty, false);
                                     }
                                 }
                                 input::menu::Action::NextDifficulty => {
                                     if let AppState::Menu { difficulty } = &mut state {
-                                        *difficulty = config::cycle(*difficulty, true);
+                                        *difficulty = constants::cycle(*difficulty, true);
                                     }
                                 }
                                 input::menu::Action::Start => {
                                     if let AppState::Menu { difficulty } = &state {
-                                        let (puzzle, solution) = generate(*difficulty);
+                                        let (puzzle, _solution) = generate(*difficulty);
                                         let errors = find_errors(&puzzle);
                                         state = AppState::Playing {
                                             puzzle,
-                                            solution,
                                             cursor_row: 4,
                                             cursor_col: 4,
                                             errors,

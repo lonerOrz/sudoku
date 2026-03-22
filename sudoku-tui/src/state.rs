@@ -9,8 +9,6 @@ pub enum AppState {
     },
     Playing {
         puzzle: Grid,
-        #[allow(dead_code)]
-        solution: Grid,
         cursor_row: usize,
         cursor_col: usize,
         errors: Vec<(usize, usize)>,

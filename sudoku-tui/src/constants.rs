@@ -5,6 +5,7 @@ use ratatui::{
     style::Color,
     widgets::Paragraph,
 };
+use sudoku_core::Difficulty;
 
 pub const MENU_WIDTH: u16 = 55;
 pub const MENU_HEIGHT: u16 = 18;
@@ -29,4 +30,17 @@ pub fn title_widget() -> Paragraph<'static> {
         })
         .collect();
     Paragraph::new(lines).alignment(Alignment::Center)
+}
+
+pub fn cycle(d: Difficulty, forward: bool) -> Difficulty {
+    if forward { d.next() } else { d.prev() }
+}
+
+pub fn difficulty_color(d: Difficulty) -> Color {
+    match d {
+        Difficulty::Easy => Color::Green,
+        Difficulty::Medium => Color::Yellow,
+        Difficulty::Hard => Color::Red,
+        Difficulty::Expert => Color::Magenta,
+    }
 }

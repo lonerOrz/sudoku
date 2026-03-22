@@ -15,33 +15,18 @@ pub fn is_valid(grid: &Grid, row: usize, col: usize, val: u8) -> bool {
 }
 
 /// 检查数独是否已完成且正确
-#[allow(clippy::needless_range_loop)]
 pub fn is_solved(grid: &Grid) -> bool {
-    for r in 0..9 {
-        for c in 0..9 {
-            if let Some(val) = grid[r][c].value() {
-                if !is_valid(grid, r, c, val) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-    }
-    true
+    (0..9).all(|r| {
+        (0..9).all(|c| match grid[r][c].value() {
+            Some(val) => is_valid(grid, r, c, val),
+            None => false,
+        })
+    })
 }
 
 /// 检查是否还有空格
-#[allow(clippy::needless_range_loop)]
 pub fn has_empty(grid: &Grid) -> bool {
-    for r in 0..9 {
-        for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                return true;
-            }
-        }
-    }
-    false
+    (0..9).any(|r| (0..9).any(|c| grid[r][c].value().is_none()))
 }
 
 /// 计算 (row, col) 位置可能的数字

@@ -7,8 +7,7 @@ use ratatui::{
 };
 use sudoku_core::Difficulty;
 
-use crate::config;
-use crate::constants::{self, MENU_HEIGHT, MENU_WIDTH};
+use crate::constants::{self, MENU_HEIGHT, MENU_WIDTH, difficulty_color};
 
 pub fn draw(f: &mut Frame, difficulty: Difficulty) {
     let area = center(MENU_WIDTH, MENU_HEIGHT, f.size());
@@ -35,7 +34,7 @@ fn center(width: u16, height: u16, area: Rect) -> Rect {
 
 fn selector(difficulty: Difficulty) -> Paragraph<'static> {
     let label = difficulty.label();
-    let color = config::color(difficulty);
+    let color = difficulty_color(difficulty);
     let (min, max) = difficulty.givens_range();
 
     let content = vec![
