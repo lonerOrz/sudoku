@@ -32,10 +32,6 @@ pub fn title_widget() -> Paragraph<'static> {
     Paragraph::new(lines).alignment(Alignment::Center)
 }
 
-pub fn cycle(d: Difficulty, forward: bool) -> Difficulty {
-    if forward { d.next() } else { d.prev() }
-}
-
 pub fn difficulty_color(d: Difficulty) -> Color {
     match d {
         Difficulty::Easy => Color::Green,

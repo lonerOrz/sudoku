@@ -1,6 +1,7 @@
 // state.rs: 应用状态
 
-use sudoku_core::{Conflicts, Difficulty, Grid, Solution};
+use crate::game::Game;
+use sudoku_core::Difficulty;
 
 pub type PencilMarks = [[Vec<u8>; 9]; 9];
 
@@ -12,7 +13,7 @@ pub struct Control {
 
 #[derive(Clone)]
 pub struct HistoryEntry {
-    pub puzzle: Grid,
+    pub puzzle: sudoku_core::Grid,
     pub pencil_marks: PencilMarks,
     pub cursor_row: usize,
     pub cursor_col: usize,
@@ -23,14 +24,10 @@ impl AppState {
     pub fn controls(&self) -> &'static [Control] {
         match self {
             AppState::Menu { .. } => MENU_CONTROLS,
-            AppState::Playing { paused: true, .. } => PAUSED_CONTROLS,
-            AppState::Playing {
-                hint_mode: true, ..
-            } => HINT_CONTROLS,
-            AppState::Playing {
-                pencil_mode: true, ..
-            } => PENCIL_CONTROLS,
-            AppState::Playing { .. } => NORMAL_CONTROLS,
+            AppState::Playing(game) if game.is_paused() => PAUSED_CONTROLS,
+            AppState::Playing(game) if game.is_hint_mode() => HINT_CONTROLS,
+            AppState::Playing(game) if game.is_pencil_mode() => PENCIL_CONTROLS,
+            AppState::Playing(_) => NORMAL_CONTROLS,
             AppState::Won { .. } | AppState::Failed { .. } => END_CONTROLS,
         }
     }
@@ -141,24 +138,7 @@ pub enum AppState {
     Menu {
         difficulty: Difficulty,
     },
-    Playing {
-        puzzle: Grid,
-        solution: Solution,
-        pencil_marks: PencilMarks,
-        pencil_mode: bool,
-        hint_mode: bool,
-        cursor_row: usize,
-        cursor_col: usize,
-        conflicts: Conflicts,
-        difficulty: Difficulty,
-        mistakes: u8,
-        hints_used: u8,
-        undo_used: u8,
-        start_time: std::time::Instant,
-        elapsed_secs: u64,
-        paused: bool,
-        history: Vec<HistoryEntry>,
-    },
+    Playing(Game),
     Won {
         difficulty: Difficulty,
         elapsed_secs: u64,

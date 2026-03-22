@@ -7,46 +7,24 @@ use playing::DrawParams;
 pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
     match state {
         AppState::Menu { difficulty } => menu::draw(f, *difficulty),
-        AppState::Playing {
-            puzzle,
-            solution,
-            pencil_marks,
-            pencil_mode,
-            hint_mode,
-            cursor_row,
-            cursor_col,
-            conflicts,
-            mistakes,
-            hints_used,
-            undo_used,
-            difficulty,
-            start_time,
-            elapsed_secs,
-            paused,
-            ..
-        } => {
-            let display_elapsed = if *paused {
-                *elapsed_secs
-            } else {
-                start_time.elapsed().as_secs()
-            };
+        AppState::Playing(game) => {
             playing::draw(
                 f,
                 &DrawParams {
-                    puzzle,
-                    solution,
-                    pencil_marks,
-                    pencil_mode: *pencil_mode,
-                    hint_mode: *hint_mode,
-                    cursor_row: *cursor_row,
-                    cursor_col: *cursor_col,
-                    conflicts,
-                    mistakes: *mistakes,
-                    hints_used: *hints_used,
-                    undo_used: *undo_used,
-                    difficulty: *difficulty,
-                    elapsed_secs: display_elapsed,
-                    paused: *paused,
+                    puzzle: game.puzzle(),
+                    solution: game.solution(),
+                    pencil_marks: game.pencil_marks(),
+                    pencil_mode: game.is_pencil_mode(),
+                    hint_mode: game.is_hint_mode(),
+                    cursor_row: game.cursor_row(),
+                    cursor_col: game.cursor_col(),
+                    conflicts: game.conflicts(),
+                    mistakes: game.mistakes(),
+                    hints_used: game.hints_used(),
+                    undo_used: game.undo_used(),
+                    difficulty: game.difficulty(),
+                    elapsed_secs: game.elapsed_secs(),
+                    paused: game.is_paused(),
                     controls: state.controls(),
                 },
             );
