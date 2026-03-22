@@ -2,3 +2,6 @@
 name = "sudoku-core"
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+rand = "0.8"
