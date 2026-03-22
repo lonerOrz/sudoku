@@ -2,8 +2,6 @@
 
 use crossterm::event::KeyCode;
 
-use super::controls::Control;
-
 #[derive(Debug, Clone, Copy)]
 pub enum Action {
     MoveLeft,
@@ -15,6 +13,8 @@ pub enum Action {
     Undo,
     Pause,
     TogglePencilMode,
+    ToggleHintMode,
+    PlaceHint,
     Quit,
 }
 
@@ -31,40 +31,9 @@ pub fn handle(key: KeyCode) -> Option<Action> {
         KeyCode::Char('u') | KeyCode::Char('U') => Some(Action::Undo),
         KeyCode::Char(' ') => Some(Action::Pause),
         KeyCode::Char('p') | KeyCode::Char('P') => Some(Action::TogglePencilMode),
+        KeyCode::Char('h') | KeyCode::Char('H') => Some(Action::ToggleHintMode),
+        KeyCode::Char('?') => Some(Action::PlaceHint),
         KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
         _ => None,
     }
-}
-
-pub fn controls() -> &'static [Control] {
-    &[
-        Control {
-            key: "←↑↓→",
-            label: "Move",
-        },
-        Control {
-            key: "1-9",
-            label: "Place",
-        },
-        Control {
-            key: "0/Del",
-            label: "Erase",
-        },
-        Control {
-            key: "u",
-            label: "Undo",
-        },
-        Control {
-            key: "Space",
-            label: "Pause",
-        },
-        Control {
-            key: "p",
-            label: "Pencil",
-        },
-        Control {
-            key: "q",
-            label: "Quit",
-        },
-    ]
 }

@@ -22,7 +22,7 @@ pub fn clear_peers(pencil_marks: &mut [[Vec<u8>; 9]; 9], row: usize, col: usize,
 pub use checker::{find_conflicts_at, find_errors, has_empty, is_solved, possible_values};
 pub use difficulty::Difficulty;
 pub use generator::generate;
-pub use hints::{find_hidden_single, find_naked_single};
+pub use hints::{Clue, find_clue, find_hidden_single, find_naked_single};
 pub use solver::{count_solutions, solve};
 
 #[cfg(test)]

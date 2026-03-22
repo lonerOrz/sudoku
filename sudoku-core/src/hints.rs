@@ -2,9 +2,27 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{BitmaskGrid, Grid};
+use crate::board::{BitmaskGrid, Grid, Solution};
 
-pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+#[derive(Clone, Debug)]
+pub struct Clue {
+    pub target_row: usize,
+    pub target_col: usize,
+    pub value: u8,
+    pub technique: &'static str,
+}
+
+pub fn find_clue(grid: &Grid, solution: &Solution) -> Option<Clue> {
+    if let Some(clue) = find_naked_single(grid) {
+        return Some(clue);
+    }
+    if let Some(clue) = find_hidden_single(grid) {
+        return Some(clue);
+    }
+    find_direct_reveal(grid, solution)
+}
+
+pub fn find_naked_single(grid: &Grid) -> Option<Clue> {
     let masks = BitmaskGrid::from_grid(grid);
     for r in 0..9 {
         for c in 0..9 {
@@ -12,7 +30,12 @@ pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
                 let mask = masks.candidates(r, c);
                 if mask.count_ones() == 1 {
                     let val = mask.trailing_zeros() as u8;
-                    return Some(((r, c), val));
+                    return Some(Clue {
+                        target_row: r,
+                        target_col: c,
+                        value: val,
+                        technique: "Naked Single",
+                    });
                 }
             }
         }
@@ -20,7 +43,7 @@ pub fn find_naked_single(grid: &Grid) -> Option<((usize, usize), u8)> {
     None
 }
 
-pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
+pub fn find_hidden_single(grid: &Grid) -> Option<Clue> {
     let masks = BitmaskGrid::from_grid(grid);
 
     for r in 0..9 {
@@ -42,7 +65,12 @@ pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
                     }
                 }
                 if count == 1 {
-                    return Some(((r, pos), val));
+                    return Some(Clue {
+                        target_row: r,
+                        target_col: pos,
+                        value: val as u8,
+                        technique: "Hidden Single",
+                    });
                 }
             }
         }
@@ -67,7 +95,12 @@ pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
                     }
                 }
                 if count == 1 {
-                    return Some(((pos, c), val));
+                    return Some(Clue {
+                        target_row: pos,
+                        target_col: c,
+                        value: val as u8,
+                        technique: "Hidden Single",
+                    });
                 }
             }
         }
@@ -101,12 +134,33 @@ pub fn find_hidden_single(grid: &Grid) -> Option<((usize, usize), u8)> {
                         }
                     }
                     if count == 1 {
-                        return Some((pos, val));
+                        return Some(Clue {
+                            target_row: pos.0,
+                            target_col: pos.1,
+                            value: val as u8,
+                            technique: "Hidden Single",
+                        });
                     }
                 }
             }
         }
     }
 
+    None
+}
+
+pub fn find_direct_reveal(grid: &Grid, solution: &Solution) -> Option<Clue> {
+    for r in 0..9 {
+        for c in 0..9 {
+            if grid[r][c].value().is_none() {
+                return Some(Clue {
+                    target_row: r,
+                    target_col: c,
+                    value: solution[r][c],
+                    technique: "Direct",
+                });
+            }
+        }
+    }
     None
 }

@@ -1,6 +1,6 @@
 // ui/playing.rs: 游戏界面
 
-use crate::state::PencilMarks;
+use crate::state::{Control, PencilMarks};
 use ratatui::{
     prelude::{Alignment, Constraint, Frame, Layout, Line, Span, Style},
     style::Color,
@@ -11,32 +11,88 @@ use sudoku_core::{Cell, Difficulty, Grid};
 const CELL_W: usize = 7;
 const CELL_H: usize = 3;
 
-#[allow(clippy::too_many_arguments)]
-pub fn draw(
-    f: &mut Frame,
-    puzzle: &Grid,
-    pencil_marks: &PencilMarks,
-    pencil_mode: bool,
-    cursor_row: usize,
-    cursor_col: usize,
-    errors: &[bool; 81],
-    mistakes: u8,
-    difficulty: Difficulty,
-    elapsed_secs: u64,
-    paused: bool,
-) {
+pub struct GameInfo {
+    pub difficulty: Difficulty,
+    pub mistakes: u8,
+    pub elapsed_secs: u64,
+    pub paused: bool,
+    pub pencil_mode: bool,
+    pub hint_mode: bool,
+}
+
+impl GameInfo {
+    pub fn render(&self) -> Vec<Line<'static>> {
+        let time_str = format_time(self.elapsed_secs);
+        let mode = if self.paused {
+            Span::styled("PAUSED", Style::default().fg(Color::Yellow))
+        } else if self.pencil_mode {
+            Span::styled("PENCIL", Style::default().fg(Color::Green))
+        } else if self.hint_mode {
+            Span::styled("HINT", Style::default().fg(Color::Cyan))
+        } else {
+            Span::raw("Normal")
+        };
+
+        vec![
+            Line::from(vec![Span::styled(
+                "Info",
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(ratatui::style::Modifier::BOLD),
+            )]),
+            Line::from(vec![Span::raw("")]),
+            Line::from(vec![Span::raw(format!(
+                "Difficulty: {}",
+                self.difficulty.label()
+            ))]),
+            Line::from(vec![Span::raw("")]),
+            Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
+            Line::from(vec![Span::raw("")]),
+            Line::from(vec![Span::raw(format!("Mistakes: {}/5", self.mistakes))]),
+            Line::from(vec![Span::raw("")]),
+            Line::from(vec![Span::raw("Mode: "), mode]),
+        ]
+    }
+}
+
+pub struct CellRenderParams<'a> {
+    pub puzzle: &'a Grid,
+    pub pencil_marks: &'a PencilMarks,
+    pub pencil_mode: bool,
+    pub cursor_row: usize,
+    pub cursor_col: usize,
+    pub errors: &'a [bool; 81],
+}
+
+pub struct DrawParams<'a> {
+    pub puzzle: &'a Grid,
+    pub pencil_marks: &'a PencilMarks,
+    pub pencil_mode: bool,
+    pub hint_mode: bool,
+    pub cursor_row: usize,
+    pub cursor_col: usize,
+    pub errors: &'a [bool; 81],
+    pub mistakes: u8,
+    pub difficulty: Difficulty,
+    pub elapsed_secs: u64,
+    pub paused: bool,
+    pub controls: &'a [Control],
+}
+
+pub fn draw(f: &mut Frame, params: &DrawParams) {
     let area = f.size();
 
     let main_chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).split(area);
 
-    let grid = render_grid(
-        puzzle,
-        pencil_marks,
-        pencil_mode,
-        cursor_row,
-        cursor_col,
-        errors,
-    );
+    let cell_params = CellRenderParams {
+        puzzle: params.puzzle,
+        pencil_marks: params.pencil_marks,
+        pencil_mode: params.pencil_mode,
+        cursor_row: params.cursor_row,
+        cursor_col: params.cursor_col,
+        errors: params.errors,
+    };
+    let grid = render_grid(&cell_params);
     let grid_width = grid
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -44,7 +100,15 @@ pub fn draw(
         .unwrap_or(0);
     let grid_height = grid.len() as u16;
 
-    let info = render_info(difficulty, mistakes, elapsed_secs, paused, pencil_mode);
+    let info = GameInfo {
+        difficulty: params.difficulty,
+        mistakes: params.mistakes,
+        elapsed_secs: params.elapsed_secs,
+        paused: params.paused,
+        pencil_mode: params.pencil_mode,
+        hint_mode: params.hint_mode,
+    }
+    .render();
     let info_height = info.len() as u16;
 
     let total_width = grid_width + 20;
@@ -76,11 +140,7 @@ pub fn draw(
     f.render_widget(Paragraph::new(grid).alignment(Alignment::Center), grid_v[1]);
     f.render_widget(Paragraph::new(info).alignment(Alignment::Left), info_v[1]);
 
-    let hints = if paused {
-        render_paused_controls()
-    } else {
-        render_controls()
-    };
+    let hints = render_controls(params.controls);
     let hints_rect = calc_hints_rect(main_chunks[1], &hints);
     f.render_widget(
         Paragraph::new(vec![hints])
@@ -89,10 +149,10 @@ pub fn draw(
         hints_rect,
     );
 
-    if paused {
+    if params.paused {
         let popup = center_rect(30, 7, grid_v[1]);
         f.render_widget(ratatui::widgets::Clear, popup);
-        f.render_widget(render_pause_popup(elapsed_secs), popup);
+        f.render_widget(render_pause_popup(params.elapsed_secs), popup);
     }
 }
 
@@ -126,13 +186,13 @@ fn render_pause_popup(elapsed_secs: u64) -> Paragraph<'static> {
     .alignment(Alignment::Center)
 }
 
-pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
+pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64, controls: &[Control]) {
     let area = f.size();
 
     let label = difficulty.label();
     let time_str = format_time(elapsed_secs);
 
-    let content = vec![
+    let mut content = vec![
         Line::from(vec![Span::styled(
             "Congratulations!",
             Style::default()
@@ -143,11 +203,9 @@ pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
         Line::from(vec![Span::raw(format!("You completed {}!", label))]),
         Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::styled(
-            "Press q to return to menu",
-            Style::default().fg(Color::Cyan),
-        )]),
     ];
+
+    content.push(render_controls_line(controls));
 
     let v_chunks = Layout::vertical([
         Constraint::Min(0),
@@ -161,13 +219,13 @@ pub fn draw_won(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
     f.render_widget(paragraph, v_chunks[1]);
 }
 
-pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
+pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64, controls: &[Control]) {
     let area = f.size();
 
     let label = difficulty.label();
     let time_str = format_time(elapsed_secs);
 
-    let content = vec![
+    let mut content = vec![
         Line::from(vec![Span::styled(
             "Game Over",
             Style::default()
@@ -178,11 +236,9 @@ pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
         Line::from(vec![Span::raw(format!("Too many mistakes on {}!", label))]),
         Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
         Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::styled(
-            "Press q to return to menu",
-            Style::default().fg(Color::Cyan),
-        )]),
     ];
+
+    content.push(render_controls_line(controls));
 
     let v_chunks = Layout::vertical([
         Constraint::Min(0),
@@ -194,6 +250,21 @@ pub fn draw_failed(f: &mut Frame, difficulty: Difficulty, elapsed_secs: u64) {
     let paragraph = Paragraph::new(content).alignment(Alignment::Center);
 
     f.render_widget(paragraph, v_chunks[1]);
+}
+
+fn render_controls_line(controls: &[Control]) -> Line<'static> {
+    let mut spans = Vec::new();
+    for (i, ctrl) in controls.iter().enumerate() {
+        if i > 0 {
+            spans.push(Span::raw("  "));
+        }
+        spans.push(Span::styled(ctrl.key, Style::default().fg(Color::Cyan)));
+        spans.push(Span::styled(
+            format!(" {}", ctrl.label),
+            Style::default().fg(Color::White),
+        ));
+    }
+    Line::from(spans)
 }
 
 fn center_rect(width: u16, height: u16, area: ratatui::prelude::Rect) -> ratatui::prelude::Rect {
@@ -243,48 +314,9 @@ fn format_time(total_secs: u64) -> String {
     format!("{:02}:{:02}:{:02}", hours, mins, secs)
 }
 
-fn render_info(
-    difficulty: Difficulty,
-    mistakes: u8,
-    elapsed_secs: u64,
-    paused: bool,
-    pencil_mode: bool,
-) -> Vec<Line<'static>> {
-    let time_str = format_time(elapsed_secs);
-    let mode = if paused {
-        Span::styled("PAUSED", Style::default().fg(Color::Yellow))
-    } else if pencil_mode {
-        Span::styled("PENCIL", Style::default().fg(Color::Green))
-    } else {
-        Span::raw("Normal")
-    };
-
-    vec![
-        Line::from(vec![Span::styled(
-            "Info",
-            Style::default()
-                .fg(Color::White)
-                .add_modifier(ratatui::style::Modifier::BOLD),
-        )]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!(
-            "Difficulty: {}",
-            difficulty.label()
-        ))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Time: {}", time_str))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw(format!("Mistakes: {}/5", mistakes))]),
-        Line::from(vec![Span::raw("")]),
-        Line::from(vec![Span::raw("Mode: "), mode]),
-    ]
-}
-
-fn render_controls() -> Line<'static> {
-    use crate::input::playing;
-
+fn render_controls(controls: &[Control]) -> Line<'static> {
     let mut spans = Vec::new();
-    for (i, ctrl) in playing::controls().iter().enumerate() {
+    for (i, ctrl) in controls.iter().enumerate() {
         if i > 0 {
             spans.push(Span::raw("  "));
         }
@@ -297,39 +329,14 @@ fn render_controls() -> Line<'static> {
     Line::from(spans)
 }
 
-fn render_paused_controls() -> Line<'static> {
-    Line::from(vec![
-        Span::styled("Space", Style::default().fg(Color::Cyan)),
-        Span::styled(" Resume  ", Style::default().fg(Color::White)),
-        Span::styled("q", Style::default().fg(Color::Cyan)),
-        Span::styled(" Quit", Style::default().fg(Color::White)),
-    ])
-}
-
-fn render_grid(
-    puzzle: &Grid,
-    pencil_marks: &PencilMarks,
-    pencil_mode: bool,
-    cursor_row: usize,
-    cursor_col: usize,
-    errors: &[bool; 81],
-) -> Vec<Line<'static>> {
+fn render_grid(params: &CellRenderParams) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     lines.push(h_line(LineKind::Top));
 
     for cell_row in 0..9 {
         for inner_row in 0..CELL_H {
-            lines.push(content_line(
-                puzzle,
-                pencil_marks,
-                pencil_mode,
-                cell_row,
-                inner_row,
-                cursor_row,
-                cursor_col,
-                errors,
-            ));
+            lines.push(content_line(params, cell_row, inner_row));
         }
 
         if cell_row == 8 {
@@ -389,17 +396,14 @@ fn h_line(kind: LineKind) -> Line<'static> {
     Line::from(s)
 }
 
-fn content_line(
-    puzzle: &Grid,
-    pencil_marks: &PencilMarks,
-    pencil_mode: bool,
-    cell_row: usize,
-    inner_row: usize,
-    cursor_row: usize,
-    cursor_col: usize,
-    errors: &[bool; 81],
-) -> Line<'static> {
+fn content_line(params: &CellRenderParams, cell_row: usize, inner_row: usize) -> Line<'static> {
     let mut spans = Vec::new();
+    let puzzle = params.puzzle;
+    let pencil_marks = params.pencil_marks;
+    let pencil_mode = params.pencil_mode;
+    let cursor_row = params.cursor_row;
+    let cursor_col = params.cursor_col;
+    let errors = params.errors;
 
     for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
         let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
