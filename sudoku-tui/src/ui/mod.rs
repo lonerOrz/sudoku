@@ -6,6 +6,11 @@ mod playing;
 pub fn draw(state: &crate::state::AppState, f: &mut ratatui::prelude::Frame) {
     match state {
         crate::state::AppState::Menu { difficulty } => menu::draw(f, *difficulty),
-        crate::state::AppState::Playing { puzzle, .. } => playing::draw(f, puzzle),
+        crate::state::AppState::Playing {
+            puzzle,
+            cursor_row,
+            cursor_col,
+            ..
+        } => playing::draw(f, puzzle, *cursor_row, *cursor_col),
     }
 }

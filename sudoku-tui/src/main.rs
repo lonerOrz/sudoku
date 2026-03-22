@@ -35,7 +35,12 @@ fn main() -> std::io::Result<()> {
                             input::menu::Action::Start => {
                                 if let AppState::Menu { difficulty } = &state {
                                     let (puzzle, solution) = sudoku_core::generate(*difficulty);
-                                    state = AppState::Playing { puzzle, solution };
+                                    state = AppState::Playing {
+                                        puzzle,
+                                        solution,
+                                        cursor_row: 4,
+                                        cursor_col: 4,
+                                    };
                                 }
                             }
                             input::menu::Action::Back => break,
@@ -43,10 +48,43 @@ fn main() -> std::io::Result<()> {
                     }
                 }
                 AppState::Playing { .. } => {
-                    if let Some(input::playing::Action::Quit) = input::playing::handle(key.code) {
-                        state = AppState::Menu {
-                            difficulty: sudoku_core::Difficulty::Easy,
-                        };
+                    if let Some(action) = input::playing::handle(key.code) {
+                        match action {
+                            input::playing::Action::Quit => {
+                                state = AppState::Menu {
+                                    difficulty: sudoku_core::Difficulty::Easy,
+                                };
+                            }
+                            input::playing::Action::MoveLeft => {
+                                if let AppState::Playing { cursor_col, .. } = &mut state
+                                    && *cursor_col > 0
+                                {
+                                    *cursor_col -= 1;
+                                }
+                            }
+                            input::playing::Action::MoveRight => {
+                                if let AppState::Playing { cursor_col, .. } = &mut state
+                                    && *cursor_col < 8
+                                {
+                                    *cursor_col += 1;
+                                }
+                            }
+                            input::playing::Action::MoveUp => {
+                                if let AppState::Playing { cursor_row, .. } = &mut state
+                                    && *cursor_row > 0
+                                {
+                                    *cursor_row -= 1;
+                                }
+                            }
+                            input::playing::Action::MoveDown => {
+                                if let AppState::Playing { cursor_row, .. } = &mut state
+                                    && *cursor_row < 8
+                                {
+                                    *cursor_row += 1;
+                                }
+                            }
+                            _ => {}
+                        }
                     }
                 }
             }

@@ -7,15 +7,15 @@ use ratatui::{
 };
 use sudoku_core::Cell;
 
-const CELL_W: usize = 6;
+const CELL_W: usize = 7;
 const CELL_H: usize = 3;
 
-pub fn draw(f: &mut Frame, puzzle: &sudoku_core::Grid) {
+pub fn draw(f: &mut Frame, puzzle: &sudoku_core::Grid, cursor_row: usize, cursor_col: usize) {
     let area = f.size();
 
     let main_chunks = Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).split(area);
 
-    let grid = render_grid(puzzle);
+    let grid = render_grid(puzzle, cursor_row, cursor_col);
     let grid_width = grid
         .iter()
         .map(|l| l.to_string().len() as u16)
@@ -118,14 +118,20 @@ fn render_controls() -> Line<'static> {
     Line::from(spans)
 }
 
-fn render_grid(puzzle: &sudoku_core::Grid) -> Vec<Line<'static>> {
+fn render_grid(
+    puzzle: &sudoku_core::Grid,
+    cursor_row: usize,
+    cursor_col: usize,
+) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     lines.push(h_line(LineKind::Top));
 
     for cell_row in 0..9 {
         for inner_row in 0..CELL_H {
-            lines.push(content_line(puzzle, cell_row, inner_row));
+            lines.push(content_line(
+                puzzle, cell_row, inner_row, cursor_row, cursor_col,
+            ));
         }
 
         if cell_row == 8 {
@@ -185,36 +191,59 @@ fn h_line(kind: LineKind) -> Line<'static> {
     Line::from(s)
 }
 
-fn content_line(puzzle: &sudoku_core::Grid, cell_row: usize, inner_row: usize) -> Line<'static> {
-    let mut s = String::new();
+fn content_line(
+    puzzle: &sudoku_core::Grid,
+    cell_row: usize,
+    inner_row: usize,
+    cursor_row: usize,
+    cursor_col: usize,
+) -> Line<'static> {
+    let mut spans = Vec::new();
 
-    for (cell_col, _) in puzzle[cell_row].iter().enumerate() {
-        let sep = if cell_col == 0 || cell_col % 3 == 0 {
-            '┃'
+    let center_row = CELL_H / 2;
+
+    for (cell_col, _) in puzzle[cell_row].iter().enumerate().take(9) {
+        let is_cursor = cell_row == cursor_row && cell_col == cursor_col;
+        let bg = if is_cursor { Color::Blue } else { Color::Reset };
+
+        let sep_char = if cell_col == 0 || cell_col % 3 == 0 {
+            "┃"
         } else {
-            '│'
+            "│"
         };
-        s.push(sep);
+        let sep_fg = if cell_col == 0 || cell_col % 3 == 0 {
+            Color::White
+        } else {
+            Color::DarkGray
+        };
+        spans.push(Span::styled(sep_char, Style::default().fg(sep_fg)));
 
         let cell = puzzle[cell_row][cell_col];
-        let center_row = CELL_H / 2;
-        let center_col = CELL_W / 2;
 
-        for inner_col in 0..CELL_W {
-            let ch = match cell {
-                Cell::Given(v) | Cell::UserInput(v) => {
-                    if inner_row == center_row && inner_col == center_col {
-                        char::from_digit(v as u32, 10).unwrap()
+        let content = if inner_row == center_row {
+            match cell {
+                Cell::Given(v) => format!("   {}   ", char::from_digit(v as u32, 10).unwrap()),
+                Cell::UserInput(v) => format!("   {}   ", char::from_digit(v as u32, 10).unwrap()),
+                Cell::Empty => {
+                    if is_cursor {
+                        "   ·   ".to_string()
                     } else {
-                        ' '
+                        "       ".to_string()
                     }
                 }
-                Cell::Empty => ' ',
-            };
-            s.push(ch);
-        }
-    }
-    s.push('┃');
+            }
+        } else {
+            "       ".to_string()
+        };
 
-    Line::from(s)
+        let fg = match cell {
+            Cell::Given(_) => Color::White,
+            Cell::UserInput(_) => Color::Cyan,
+            Cell::Empty => Color::White,
+        };
+        spans.push(Span::styled(content, Style::default().fg(fg).bg(bg)));
+    }
+    spans.push(Span::styled("┃", Style::default().fg(Color::White)));
+
+    Line::from(spans)
 }

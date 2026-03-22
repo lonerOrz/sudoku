@@ -4,6 +4,13 @@ use sudoku_core::{Difficulty, Grid};
 
 #[allow(clippy::large_enum_variant, dead_code)]
 pub enum AppState {
-    Menu { difficulty: Difficulty },
-    Playing { puzzle: Grid, solution: Grid },
+    Menu {
+        difficulty: Difficulty,
+    },
+    Playing {
+        puzzle: Grid,
+        solution: Grid,
+        cursor_row: usize,
+        cursor_col: usize,
+    },
 }
