@@ -87,6 +87,7 @@ pub struct DrawParams<'a> {
     pub elapsed_secs: u64,
     pub paused: bool,
     pub controls: &'a [Control],
+    pub candidates: Option<&'a [bool; 9]>,
 }
 
 pub fn draw(f: &mut Frame, params: &DrawParams) {
@@ -137,12 +138,25 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
     let side_chunks =
         Layout::horizontal([Constraint::Ratio(8, 10), Constraint::Ratio(2, 10)]).split(centered[1]);
 
-    let grid_v = Layout::vertical([
-        Constraint::Min(0),
-        Constraint::Length(grid_height),
-        Constraint::Min(0),
-    ])
-    .split(side_chunks[0]);
+    let (grid_rect, info_rect) = if params.candidates.is_some() {
+        let layout = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Length(grid_height),
+            Constraint::Length(5),
+            Constraint::Length(2),
+            Constraint::Min(0),
+        ])
+        .split(side_chunks[0]);
+        (layout[1], layout[2])
+    } else {
+        let layout = Layout::vertical([
+            Constraint::Min(0),
+            Constraint::Length(grid_height),
+            Constraint::Min(0),
+        ])
+        .split(side_chunks[0]);
+        (layout[1], layout[2])
+    };
 
     let info_v = Layout::vertical([
         Constraint::Min(0),
@@ -151,7 +165,18 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
     ])
     .split(side_chunks[1]);
 
-    f.render_widget(Paragraph::new(grid).alignment(Alignment::Center), grid_v[1]);
+    f.render_widget(Paragraph::new(grid).alignment(Alignment::Center), grid_rect);
+
+    if let Some(candidates) = params.candidates {
+        let candidate_bar = render_candidate_bar(candidates);
+        f.render_widget(
+            Paragraph::new(candidate_bar)
+                .alignment(Alignment::Center)
+                .wrap(ratatui::widgets::Wrap { trim: false }),
+            info_rect,
+        );
+    }
+
     f.render_widget(Paragraph::new(info).alignment(Alignment::Left), info_v[1]);
 
     let hints = render_controls(params.controls);
@@ -164,7 +189,7 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
     );
 
     if params.paused {
-        let popup = center_rect(30, 7, grid_v[1]);
+        let popup = center_rect(30, 7, grid_rect);
         f.render_widget(ratatui::widgets::Clear, popup);
         f.render_widget(render_pause_popup(params.elapsed_secs), popup);
     }
@@ -341,6 +366,33 @@ fn render_controls(controls: &[Control]) -> Line<'static> {
         ));
     }
     Line::from(spans)
+}
+
+fn render_candidate_bar(candidates: &[bool; 9]) -> Vec<Line<'static>> {
+    let top: Vec<Span> = vec![Span::raw("         ")];
+
+    let mut bottom = vec![Span::raw("  ")];
+    for i in 1..=9 {
+        let is_candidate = candidates[i - 1];
+        let num_str = i.to_string();
+
+        if is_candidate {
+            bottom.push(Span::styled(
+                format!("  [{}]  ", num_str),
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(ratatui::style::Modifier::BOLD),
+            ));
+        } else {
+            bottom.push(Span::styled(
+                format!("   {}   ", num_str),
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+    }
+    bottom.push(Span::raw("  "));
+
+    vec![Line::from(top), Line::from(bottom)]
 }
 
 fn render_grid(params: &CellRenderParams) -> Vec<Line<'static>> {

@@ -8,6 +8,11 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
     match state {
         AppState::Menu { difficulty } => menu::draw(f, *difficulty),
         AppState::Playing(game) => {
+            let candidates = if game.show_candidates() {
+                Some(&game.candidates())
+            } else {
+                None
+            };
             playing::draw(
                 f,
                 &DrawParams {
@@ -26,6 +31,7 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
                     elapsed_secs: game.elapsed_secs(),
                     paused: game.is_paused(),
                     controls: state.controls(),
+                    candidates,
                 },
             );
         }

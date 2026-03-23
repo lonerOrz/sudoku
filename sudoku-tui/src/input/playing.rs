@@ -29,6 +29,7 @@ fn handle_normal(key: KeyCode) -> Option<Command> {
         KeyCode::Char(' ') => Some(Command::Pause),
         KeyCode::Char('p') | KeyCode::Char('P') => Some(Command::TogglePencilMode),
         KeyCode::Char('h') | KeyCode::Char('H') => Some(Command::ToggleHintMode),
+        KeyCode::Char('n') | KeyCode::Char('N') => Some(Command::ToggleShowCandidates),
         KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
         _ => None,
     }
@@ -45,6 +46,7 @@ fn handle_pencil(key: KeyCode) -> Option<Command> {
             c.to_digit(10).map(|d| Command::PlaceNumber(d as u8))
         }
         KeyCode::Char('p') | KeyCode::Char('P') => Some(Command::TogglePencilMode),
+        KeyCode::Char('n') | KeyCode::Char('N') => Some(Command::ToggleShowCandidates),
         KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
         _ => None,
     }
@@ -58,6 +60,7 @@ fn handle_hint(key: KeyCode) -> Option<Command> {
         KeyCode::Down => Some(Command::MoveDown),
         KeyCode::Char('?') => Some(Command::PlaceHint),
         KeyCode::Char('h') | KeyCode::Char('H') => Some(Command::ToggleHintMode),
+        KeyCode::Char('n') | KeyCode::Char('N') => Some(Command::ToggleShowCandidates),
         KeyCode::Char('q') | KeyCode::Esc => Some(Command::Quit),
         _ => None,
     }

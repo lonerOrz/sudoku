@@ -11,6 +11,7 @@ pub enum Command {
     TogglePencilMode,
     ToggleHintMode,
     PlaceHint,
+    ToggleShowCandidates,
     StartGame,
     NextDifficulty,
     PrevDifficulty,

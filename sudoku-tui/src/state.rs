@@ -63,6 +63,10 @@ const NORMAL_CONTROLS: &[Control] = &[
         label: "Hint",
     },
     Control {
+        key: "n",
+        label: "Numbers",
+    },
+    Control {
         key: "q",
         label: "Quit",
     },
@@ -85,6 +89,10 @@ const PENCIL_CONTROLS: &[Control] = &[
         key: "p",
         label: "Exit",
     },
+    Control {
+        key: "n",
+        label: "Numbers",
+    },
 ];
 
 const HINT_CONTROLS: &[Control] = &[
@@ -99,6 +107,10 @@ const HINT_CONTROLS: &[Control] = &[
     Control {
         key: "h",
         label: "Exit",
+    },
+    Control {
+        key: "n",
+        label: "Numbers",
     },
 ];
 

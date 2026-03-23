@@ -109,6 +109,11 @@ pub fn handle_input(state: &mut AppState, key: KeyCode) {
                 game.toggle_hint_mode();
             }
         }
+        Command::ToggleShowCandidates => {
+            if let AppState::Playing(game) = state {
+                game.toggle_show_candidates();
+            }
+        }
         Command::PlaceHint => {
             if let AppState::Playing(game) = state
                 && let Some(new_state) = game.place_hint()
@@ -125,6 +130,7 @@ pub struct Game {
     pencil_marks: PencilMarks,
     pencil_mode: bool,
     hint_mode: bool,
+    show_candidates: bool,
     cursor_row: usize,
     cursor_col: usize,
     conflicts: sudoku_core::Conflicts,
@@ -151,6 +157,7 @@ impl Game {
             pencil_marks,
             pencil_mode: false,
             hint_mode: false,
+            show_candidates: false,
 
             cursor_row: 4,
             cursor_col: 4,
@@ -176,6 +183,14 @@ impl Game {
 
     pub fn is_pencil_mode(&self) -> bool {
         self.pencil_mode
+    }
+
+    pub fn show_candidates(&self) -> bool {
+        self.show_candidates
+    }
+
+    pub fn toggle_show_candidates(&mut self) {
+        self.show_candidates = !self.show_candidates;
     }
 
     pub fn current_mode(&self) -> Mode {
@@ -226,6 +241,17 @@ impl Game {
 
     pub fn undo_used(&self) -> u8 {
         self.undo_used
+    }
+
+    pub fn candidates(&self) -> [bool; 9] {
+        let mut result = [false; 9];
+        if matches!(self.puzzle[self.cursor_row][self.cursor_col], Cell::Empty) {
+            let vals = sudoku_core::possible_values(&self.puzzle, self.cursor_row, self.cursor_col);
+            for v in vals {
+                result[(v - 1) as usize] = true;
+            }
+        }
+        result
     }
 
     pub fn elapsed_secs(&self) -> u64 {
@@ -430,6 +456,7 @@ mod tests {
             pencil_marks,
             pencil_mode: false,
             hint_mode: false,
+            show_candidates: false,
 
             cursor_row: 4,
             cursor_col: 4,
@@ -626,6 +653,7 @@ mod tests {
             pencil_marks,
             pencil_mode: false,
             hint_mode: false,
+            show_candidates: false,
             cursor_row: 0,
             cursor_col: 0,
             conflicts,
