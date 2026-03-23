@@ -1,5 +1,6 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use sudoku_core::{Difficulty, compute_conflicts, count_solutions, find_clue, generate, solve};
+use sudoku_core::{find_errors, is_solved, is_valid, possible_values};
 
 fn generate_all_difficulties(c: &mut Criterion) {
     let mut group = c.benchmark_group("generate");
@@ -116,6 +117,55 @@ fn check_compute_conflicts(c: &mut Criterion) {
     });
 }
 
+fn check_find_errors(c: &mut Criterion) {
+    let (puzzle, _) = generate(Difficulty::Medium);
+
+    c.bench_function("find_errors_medium", |b| {
+        b.iter(|| {
+            find_errors(black_box(&puzzle));
+        });
+    });
+}
+
+fn check_possible_values(c: &mut Criterion) {
+    let (puzzle, _) = generate(Difficulty::Medium);
+
+    c.bench_function("possible_values_medium", |b| {
+        b.iter(|| {
+            possible_values(black_box(&puzzle), 4, 4);
+        });
+    });
+}
+
+fn check_is_solved(c: &mut Criterion) {
+    let (puzzle, solution) = generate(Difficulty::Medium);
+    let solved: sudoku_core::Grid = core::array::from_fn(|r| {
+        core::array::from_fn(|c| sudoku_core::Cell::Given(solution[r][c]))
+    });
+
+    c.bench_function("is_solved_true", |b| {
+        b.iter(|| {
+            is_solved(black_box(&solved));
+        });
+    });
+
+    c.bench_function("is_solved_false", |b| {
+        b.iter(|| {
+            is_solved(black_box(&puzzle));
+        });
+    });
+}
+
+fn check_is_valid(c: &mut Criterion) {
+    let (puzzle, _) = generate(Difficulty::Medium);
+
+    c.bench_function("is_valid_idx40_val5", |b| {
+        b.iter(|| {
+            is_valid(black_box(&puzzle), black_box(40), black_box(5));
+        });
+    });
+}
+
 criterion_group!(
     benches,
     generate_all_difficulties,
@@ -125,5 +175,9 @@ criterion_group!(
     shuffle_entropy,
     hint_find_clue,
     check_compute_conflicts,
+    check_find_errors,
+    check_possible_values,
+    check_is_solved,
+    check_is_valid,
 );
 criterion_main!(benches);
