@@ -14,7 +14,7 @@ High-performance Sudoku puzzle generation and solving library.
 | `count_solutions` | O(n!) | 4.25 µs |
 | `compute_conflicts` | O(n²) | 298 ns |
 | `find_clue` | O(n²) | 93 ns |
-| `find_errors` | O(n²) | 325 ns |
+| `find_errors` | O(n²) | 557 ns |
 | `possible_values` | O(n) | 120 ns |
 | `is_solved` | O(1) | 146 ns |
 | `is_valid` | O(1) | 37 ns |

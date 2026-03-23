@@ -222,6 +222,7 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
     let mut errors = Vec::new();
+    let mut added = 0u128;
 
     for r in 0..9 {
         let mut seen = 0u16;
@@ -231,7 +232,11 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
                 if seen & bit != 0 {
                     for c2 in 0..9 {
                         if grid[r][c2].value() == Some(val) {
-                            errors.push((r, c2));
+                            let idx = r * 9 + c2;
+                            if added & (1u128 << idx) == 0 {
+                                errors.push((r, c2));
+                                added |= 1u128 << idx;
+                            }
                         }
                     }
                 }
@@ -248,7 +253,11 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
                 if seen & bit != 0 {
                     for r2 in 0..9 {
                         if grid[r2][c].value() == Some(val) {
-                            errors.push((r2, c));
+                            let idx = r2 * 9 + c;
+                            if added & (1u128 << idx) == 0 {
+                                errors.push((r2, c));
+                                added |= 1u128 << idx;
+                            }
                         }
                     }
                 }
@@ -272,7 +281,11 @@ pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
                                     let r2 = box_r + dr2;
                                     let c2 = box_c + dc2;
                                     if grid[r2][c2].value() == Some(val) {
-                                        errors.push((r2, c2));
+                                        let idx = r2 * 9 + c2;
+                                        if added & (1u128 << idx) == 0 {
+                                            errors.push((r2, c2));
+                                            added |= 1u128 << idx;
+                                        }
                                     }
                                 }
                             }
