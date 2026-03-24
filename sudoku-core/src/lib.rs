@@ -20,8 +20,7 @@ pub fn clear_peers(pencil_marks: &mut [[Vec<u8>; 9]; 9], row: usize, col: usize,
     }
 }
 pub use checker::{
-    ConflictType, Conflicts, compute_conflicts, find_conflicts_at, find_errors, has_empty,
-    is_solved, possible_values,
+    ConflictType, Conflicts, compute_conflicts, find_errors, has_empty, is_solved, possible_values,
 };
 pub use difficulty::Difficulty;
 pub use generator::generate;

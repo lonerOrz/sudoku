@@ -5,6 +5,10 @@ resolver = "3"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
+authors = ["lonerOrz"]
+description = "A Sudoku game written in Rust for learning Rust"
+license = "BSD-3-Clause"
+repository = "https://github.com/lonerOrz/sudoku"
 
 [workspace.dependencies]
 sudoku-core = { path = "sudoku-core" }
