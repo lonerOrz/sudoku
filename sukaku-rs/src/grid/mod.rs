@@ -51,6 +51,12 @@ impl Grid {
         self.candidates[idx as usize]
     }
 
+    pub fn remove_candidate(&mut self, idx: u8, value: u8) {
+        if self.cells[idx as usize] == 0 {
+            self.candidates[idx as usize].remove(value);
+        }
+    }
+
     pub fn rebuild_candidates(&mut self) {
         for i in 0..81 {
             if self.cells[i] > 0 {

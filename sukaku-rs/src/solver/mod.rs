@@ -43,11 +43,23 @@ impl Solver {
         }
 
         rules::hidden_single(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::naked_pair(&self.grid, &mut acc);
         acc.first()
     }
 
     pub fn apply_hint(&mut self, hint: &Hint) {
-        self.grid.set(hint.cell.index, hint.value);
+        if hint.value > 0 {
+            self.grid.set(hint.cell.index, hint.value);
+        }
+
+        for &elim in &hint.eliminated_candidates {
+            self.grid.remove_candidate(hint.cell.index, elim);
+        }
+
         self.grid.rebuild_candidates();
         self.steps += 1;
     }
