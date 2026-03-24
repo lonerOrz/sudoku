@@ -48,6 +48,11 @@ impl Solver {
         }
 
         rules::naked_pair(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::hidden_pair(&self.grid, &mut acc);
         acc.first()
     }
 
@@ -56,8 +61,10 @@ impl Solver {
             self.grid.set(hint.cell.index, hint.value);
         }
 
-        for &elim in &hint.eliminated_candidates {
-            self.grid.remove_candidate(hint.cell.index, elim);
+        for &(cell, ref values) in &hint.eliminations {
+            for &v in values {
+                self.grid.remove_candidate(cell.index, v);
+            }
         }
 
         self.grid.rebuild_candidates();

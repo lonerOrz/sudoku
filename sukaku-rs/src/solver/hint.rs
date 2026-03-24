@@ -15,7 +15,7 @@ pub enum HintType {
 /// A hint represents a solving technique that can be applied to make progress.
 ///
 /// - For single-filling techniques (Naked Single, Hidden Single): `value` contains the digit to fill
-/// - For elimination techniques (Naked Pair, etc.): `eliminated_candidates` contains digits to remove
+/// - For elimination techniques (Naked Pair, Hidden Pair, etc.): `eliminations` contains (cell, candidates) pairs
 #[derive(Debug, Clone)]
 pub struct Hint {
     pub hint_type: HintType,
@@ -25,8 +25,8 @@ pub struct Hint {
     pub cell: Cell,
     /// The digit to fill in the cell (0 for elimination techniques)
     pub value: u8,
-    /// Candidates to eliminate from the cell
-    pub eliminated_candidates: Vec<u8>,
+    /// Eliminations: (cell, candidates to remove from that cell)
+    pub eliminations: Vec<(Cell, Vec<u8>)>,
 }
 
 impl Hint {
@@ -38,7 +38,7 @@ impl Hint {
             description: format!("Cell {:?} = {}", cell, value),
             cell,
             value,
-            eliminated_candidates: vec![],
+            eliminations: vec![],
         }
     }
 
@@ -50,7 +50,7 @@ impl Hint {
             description: format!("{} in row/col/box", value),
             cell,
             value,
-            eliminated_candidates: vec![],
+            eliminations: vec![],
         }
     }
 }
