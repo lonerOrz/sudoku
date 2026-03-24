@@ -1,0 +1,47 @@
+//! Hint types for solving techniques.
+//!
+//! Represents the output of rule-based solving - a technique with its difficulty.
+
+use crate::grid::Cell;
+
+#[derive(Debug, Clone)]
+pub enum HintType {
+    NakedSingle,
+    HiddenSingle,
+    NakedPair,
+    HiddenPair,
+}
+
+#[derive(Debug, Clone)]
+pub struct Hint {
+    pub hint_type: HintType,
+    pub difficulty: f64,
+    pub technique_name: String,
+    pub description: String,
+    pub cell: Cell,
+    pub value: u8,
+}
+
+impl Hint {
+    pub fn naked_single(cell: Cell, value: u8) -> Self {
+        Self {
+            hint_type: HintType::NakedSingle,
+            difficulty: 1.6,
+            technique_name: "Naked Single".to_string(),
+            description: format!("Cell {:?} = {}", cell, value),
+            cell,
+            value,
+        }
+    }
+
+    pub fn hidden_single(cell: Cell, value: u8, difficulty: f64) -> Self {
+        Self {
+            hint_type: HintType::HiddenSingle,
+            difficulty,
+            technique_name: "Hidden Single".to_string(),
+            description: format!("{} in row/col/box", value),
+            cell,
+            value,
+        }
+    }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "sukaku-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Sukaku difficulty rater and generator"
+license = "MIT"
+
+[dependencies]
+thiserror = "1.0"
+rand = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
