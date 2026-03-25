@@ -16,6 +16,11 @@ pub enum HintType {
     Swordfish,
     XYWing,
     XYZWing,
+    UniqueRectangleType1,
+    UniqueRectangleType2,
+    UniqueRectangleType3,
+    UniqueRectangleType4,
+    BUGPlusOne,
     LockedPointing,
     LockedClaiming,
 }

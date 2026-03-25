@@ -87,6 +87,31 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::unique_rectangle_type1(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::unique_rectangle_type2(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::unique_rectangle_type3(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::unique_rectangle_type4(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::bug_plus_one(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::locked_pointing(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);

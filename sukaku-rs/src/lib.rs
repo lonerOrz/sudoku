@@ -233,4 +233,40 @@ mod tests {
         let hint = solver.next_hint();
         assert!(hint.is_some(), "Should find a hint");
     }
+
+    #[test]
+    fn test_unique_rectangle_type1() {
+        let puzzle =
+            "000008960100700000067500300210007800004890003700004005021900004000000000000000026";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        let hint = solver.next_hint();
+        assert!(hint.is_some(), "Should find a hint");
+    }
+
+    #[test]
+    fn test_unique_rectangle_type2() {
+        let puzzle =
+            "060500201100000000023900006640000000000027090052000080000000060001005900500070100";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        let hint = solver.next_hint();
+        assert!(hint.is_some(), "Should find a hint");
+    }
+
+    #[test]
+    fn test_bug_plus_one() {
+        let puzzle =
+            "000000000000000107300600000900800000020000810060024000008007590007100320400596000";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        let hint = solver.next_hint();
+        assert!(hint.is_some(), "Should find a hint");
+    }
 }
