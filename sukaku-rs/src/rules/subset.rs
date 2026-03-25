@@ -291,3 +291,131 @@ pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+/// Find four digits that only appear in exactly four cells in a region, eliminating other candidates from those cells.
+pub fn hidden_quad(grid: &Grid, acc: &mut HintAccumulator) {
+    let regions: Vec<_> = ROWS
+        .iter()
+        .chain(COLS.iter())
+        .chain(BLOCKS.iter())
+        .collect();
+
+    for region in regions {
+        let empty_cells: Vec<u8> = region
+            .cells
+            .iter()
+            .filter(|&&idx| grid.get(idx) == 0)
+            .copied()
+            .collect();
+
+        if empty_cells.len() < 4 {
+            continue;
+        }
+
+        for val1 in 1..=9u8 {
+            for val2 in (val1 + 1)..=9 {
+                for val3 in (val2 + 1)..=9 {
+                    for val4 in (val3 + 1)..=9 {
+                        let cells_with_val1: Vec<u8> = empty_cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.candidates(cell).has(val1))
+                            .collect();
+                        let cells_with_val2: Vec<u8> = empty_cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.candidates(cell).has(val2))
+                            .collect();
+                        let cells_with_val3: Vec<u8> = empty_cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.candidates(cell).has(val3))
+                            .collect();
+                        let cells_with_val4: Vec<u8> = empty_cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.candidates(cell).has(val4))
+                            .collect();
+
+                        if cells_with_val1.len() != 4
+                            || cells_with_val2.len() != 4
+                            || cells_with_val3.len() != 4
+                            || cells_with_val4.len() != 4
+                        {
+                            continue;
+                        }
+
+                        let mut candidate_cells: Vec<u8> = cells_with_val1.clone();
+                        for &c in &cells_with_val2 {
+                            if !candidate_cells.contains(&c) {
+                                candidate_cells.push(c);
+                            }
+                        }
+                        for &c in &cells_with_val3 {
+                            if !candidate_cells.contains(&c) {
+                                candidate_cells.push(c);
+                            }
+                        }
+                        for &c in &cells_with_val4 {
+                            if !candidate_cells.contains(&c) {
+                                candidate_cells.push(c);
+                            }
+                        }
+
+                        if candidate_cells.len() != 4 {
+                            continue;
+                        }
+
+                        let cell1 = candidate_cells[0];
+                        let cell2 = candidate_cells[1];
+                        let cell3 = candidate_cells[2];
+                        let cell4 = candidate_cells[3];
+
+                        let cands1 = grid.candidates(cell1);
+                        let cands2 = grid.candidates(cell2);
+                        let cands3 = grid.candidates(cell3);
+                        let cands4 = grid.candidates(cell4);
+
+                        let union = cands1.union(cands2).union(cands3).union(cands4);
+                        if union.cardinality() != 4 {
+                            continue;
+                        }
+
+                        let mut eliminations = Vec::new();
+                        for (cell, cands) in [
+                            (cell1, cands1),
+                            (cell2, cands2),
+                            (cell3, cands3),
+                            (cell4, cands4),
+                        ] {
+                            let to_remove: Vec<u8> = cands
+                                .iter()
+                                .filter(|&v| v != val1 && v != val2 && v != val3 && v != val4)
+                                .collect();
+
+                            if !to_remove.is_empty() {
+                                eliminations.push((Cell::from(cell), to_remove));
+                            }
+                        }
+
+                        if !eliminations.is_empty() {
+                            let desc = format!(
+                                "Hidden Quad ({},{},{},{}) in {:?}",
+                                val1, val2, val3, val4, region.region_type
+                            );
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::HiddenQuad,
+                                difficulty: 5.4,
+                                technique_name: "Hidden Quad".to_string(),
+                                description: desc,
+                                cell: Cell::from(cell1),
+                                value: 0,
+                                eliminations,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

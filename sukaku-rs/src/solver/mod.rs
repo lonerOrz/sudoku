@@ -97,6 +97,11 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::hidden_quad(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::unique_rectangle_type1(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);

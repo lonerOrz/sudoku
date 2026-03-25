@@ -13,6 +13,7 @@ pub enum HintType {
     NakedTriple,
     HiddenTriple,
     NakedQuad,
+    HiddenQuad,
     XWing,
     Swordfish,
     Jellyfish,

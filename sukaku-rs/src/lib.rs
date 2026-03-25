@@ -245,6 +245,17 @@ mod tests {
     }
 
     #[test]
+    fn test_hidden_quad_detection() {
+        let puzzle =
+            "800570290390000000000200000001000508000496000000800000209000001008000070560000082";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        solver.next_hint();
+    }
+
+    #[test]
     fn test_xy_wing_detection() {
         let puzzle =
             "010000508000403000056700000000020080400000302200376001908000254000007000000000003";
