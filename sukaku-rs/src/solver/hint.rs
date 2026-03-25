@@ -19,6 +19,7 @@ pub enum HintType {
     Jellyfish,
     XYWing,
     XYZWing,
+    WXYZWing,
     UniqueRectangleType1,
     UniqueRectangleType2,
     UniqueRectangleType3,

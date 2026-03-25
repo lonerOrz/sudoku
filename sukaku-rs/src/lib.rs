@@ -268,6 +268,17 @@ mod tests {
     }
 
     #[test]
+    fn test_wxyz_wing_detection() {
+        let puzzle =
+            "010000508000403000056700000000020080400000302200376001908000254000007000000000003";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        solver.next_hint();
+    }
+
+    #[test]
     fn test_unique_rectangle_type1() {
         let puzzle =
             "000008960100700000067500300210007800004890003700004005021900004000000000000000026";

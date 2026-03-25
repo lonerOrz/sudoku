@@ -15,4 +15,4 @@ pub use unique::{
     bug_plus_one, unique_rectangle_type1, unique_rectangle_type2, unique_rectangle_type3,
     unique_rectangle_type4,
 };
-pub use wing::{xy_wing, xyz_wing};
+pub use wing::{wxyz_wing, xy_wing, xyz_wing};

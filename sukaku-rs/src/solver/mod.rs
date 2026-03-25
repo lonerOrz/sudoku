@@ -92,6 +92,11 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::wxyz_wing(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::naked_quad(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);
