@@ -333,4 +333,27 @@ mod tests {
         let hint = solver.next_hint();
         assert!(hint.is_some(), "Should find a hint");
     }
+
+    #[test]
+    fn test_unique_solution() {
+        let puzzle =
+            "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+        let count = solver.count_solutions();
+        assert_eq!(count, 1, "Should have exactly 1 solution, got {}", count);
+    }
+
+    #[test]
+    fn test_multiple_solutions() {
+        let puzzle =
+            "000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        assert!(
+            !solver.has_unique_solution(),
+            "Should have multiple solutions"
+        );
+    }
 }
