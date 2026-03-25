@@ -62,6 +62,11 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::swordfish(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::naked_triple(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);

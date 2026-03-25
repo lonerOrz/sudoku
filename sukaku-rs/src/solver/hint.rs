@@ -13,6 +13,7 @@ pub enum HintType {
     NakedTriple,
     HiddenTriple,
     XWing,
+    Swordfish,
     LockedPointing,
     LockedClaiming,
 }
