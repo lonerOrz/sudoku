@@ -1,6 +1,7 @@
 use crate::grid::{Cell, Grid, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
+/// Find X-Wing patterns: when a digit appears in exactly two rows/columns forming a rectangle.
 #[allow(clippy::needless_range_loop)]
 pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
     for row1_idx in 0..9 {

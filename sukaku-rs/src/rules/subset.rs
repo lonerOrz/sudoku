@@ -1,6 +1,7 @@
 use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
+/// Find three cells in a region with exactly three candidates total, eliminating those candidates from other cells.
 pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
     let regions: Vec<_> = ROWS
         .iter()
@@ -89,6 +90,7 @@ pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// Find three digits that only appear in exactly three cells in a region, eliminating other candidates from those cells.
 pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
     let regions: Vec<_> = ROWS
         .iter()

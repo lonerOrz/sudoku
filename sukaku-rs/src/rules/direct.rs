@@ -2,6 +2,7 @@ use crate::grid::RegionType;
 use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
+/// Find cells with only one candidate (obvious solutions).
 pub fn naked_single(grid: &Grid, acc: &mut HintAccumulator) {
     for i in 0..81 {
         if grid.get(i) == 0 {
@@ -15,6 +16,7 @@ pub fn naked_single(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// Find digits that can only go in one cell within a row, column, or block.
 pub fn hidden_single(grid: &Grid, acc: &mut HintAccumulator) {
     for &region in ROWS.iter().chain(COLS.iter()).chain(BLOCKS.iter()) {
         for value in 1..=9u8 {

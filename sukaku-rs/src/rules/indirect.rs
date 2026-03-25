@@ -83,6 +83,7 @@ pub fn hidden_pair(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// Find two cells in a region with the same two candidates, eliminating those candidates from other cells in the region.
 pub fn naked_pair(grid: &Grid, acc: &mut HintAccumulator) {
     let regions: Vec<_> = ROWS
         .iter()
