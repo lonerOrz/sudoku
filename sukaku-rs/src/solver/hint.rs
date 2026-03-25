@@ -10,6 +10,8 @@ pub enum HintType {
     HiddenSingle,
     NakedPair,
     HiddenPair,
+    LockedPointing,
+    LockedClaiming,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

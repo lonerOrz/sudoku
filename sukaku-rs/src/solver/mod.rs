@@ -53,6 +53,16 @@ impl Solver {
         }
 
         rules::hidden_pair(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::locked_pointing(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::locked_claiming(&self.grid, &mut acc);
         acc.first()
     }
 
