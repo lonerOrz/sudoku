@@ -7,12 +7,68 @@ use crate::grid::Grid;
 use crate::rating::Rater;
 use crate::solver::Solver;
 
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum Symmetry {
+    #[default]
+    None,
+    Rotational180,
+    Rotational90,
+    Horizontal,
+    Vertical,
+    DiagonalMain,
+    DiagonalAnti,
+    Full,
+}
+
+impl Symmetry {
+    /// Returns all symmetric positions for a given cell using the D4 symmetry group.
+    /// Handles deduplication automatically (center cell, corners, edges have fewer unique positions).
+    pub fn get_symmetric_positions(&self, pos: u8) -> Vec<u8> {
+        let row = pos / 9;
+        let col = pos % 9;
+
+        let mut positions: Vec<u8> = match self {
+            Symmetry::None => vec![pos],
+            Symmetry::Rotational180 => vec![pos, (8 - row) * 9 + (8 - col)],
+            Symmetry::Horizontal => vec![pos, row * 9 + (8 - col)],
+            Symmetry::Vertical => vec![pos, (8 - row) * 9 + col],
+            Symmetry::DiagonalMain => vec![pos, col * 9 + row],
+            Symmetry::DiagonalAnti => vec![pos, (8 - col) * 9 + (8 - row)],
+            // D4 group: 90° rotation gives 4 positions (when all different)
+            Symmetry::Rotational90 => vec![
+                pos,
+                col * 9 + (8 - row),       // 90°
+                (8 - row) * 9 + (8 - col), // 180°
+                (8 - col) * 9 + row,       // 270°
+            ],
+            // D4 group full: all 8 symmetries of a square
+            Symmetry::Full => vec![
+                pos,
+                (8 - row) * 9 + (8 - col), // 180°
+                row * 9 + (8 - col),       // horizontal
+                (8 - row) * 9 + col,       // vertical
+                col * 9 + row,             // main diagonal
+                (8 - col) * 9 + (8 - row), // anti-diagonal
+                (8 - col) * 9 + row,       // 270°
+                col * 9 + (8 - row),       // 90°
+            ],
+        };
+
+        // Deduplicate: center cell (40), corners, edges may collapse to fewer positions
+        positions.sort();
+        positions.dedup();
+
+        positions
+    }
+}
+
 pub struct Generator {
     #[allow(dead_code)]
     pub seed: Option<u64>,
     pub min_difficulty: f64,
     pub max_difficulty: f64,
     pub require_unique: bool,
+    pub symmetry: Symmetry,
 }
 
 impl Generator {
@@ -22,6 +78,7 @@ impl Generator {
             min_difficulty: 0.0,
             max_difficulty: 10.0,
             require_unique: true,
+            symmetry: Symmetry::None,
         }
     }
 
@@ -31,6 +88,7 @@ impl Generator {
             min_difficulty: 0.0,
             max_difficulty: 10.0,
             require_unique: true,
+            symmetry: Symmetry::None,
         }
     }
 
@@ -40,6 +98,17 @@ impl Generator {
             min_difficulty: min,
             max_difficulty: max,
             require_unique: true,
+            symmetry: Symmetry::None,
+        }
+    }
+
+    pub fn with_symmetry(symmetry: Symmetry) -> Self {
+        Self {
+            seed: None,
+            min_difficulty: 0.0,
+            max_difficulty: 10.0,
+            require_unique: true,
+            symmetry,
         }
     }
 
@@ -118,26 +187,42 @@ impl Generator {
         let mut removed = 0;
         let target_remove = rng.gen_range(40..=50);
 
+        let symmetry = self.symmetry;
+
         for &pos in &positions {
             if removed >= target_remove {
                 break;
             }
 
-            let backup = grid.get(pos);
-            if backup == 0 {
+            let symmetric_positions = symmetry.get_symmetric_positions(pos);
+            let mut all_empty = true;
+            let mut backups = Vec::new();
+
+            for &p in &symmetric_positions {
+                if grid.get(p) != 0 {
+                    all_empty = false;
+                    backups.push((p, grid.get(p)));
+                }
+            }
+
+            if all_empty || backups.is_empty() {
                 continue;
             }
 
-            grid.set(pos, 0);
+            for &(p, _) in &backups {
+                grid.set(p, 0);
+            }
             grid.rebuild_candidates();
 
             let mut solver = Solver::new(*grid);
             solver.rebuild_candidates();
 
             if solver.has_unique_solution() {
-                removed += 1;
+                removed += symmetric_positions.len();
             } else {
-                grid.set(pos, backup);
+                for &(p, v) in &backups {
+                    grid.set(p, v);
+                }
                 grid.rebuild_candidates();
             }
         }

@@ -34,14 +34,14 @@ pub mod rules;
 pub mod solver;
 
 pub use error::{Error, Result};
-pub use generator::Generator;
+pub use generator::{Generator, Symmetry};
 pub use grid::{Candidates, Cell, Grid, RegionType, BLOCKS, COLS, ROWS};
 pub use rating::{DifficultyRating, Rater};
 pub use solver::{Hint, HintType, Solver};
 
 #[cfg(test)]
 mod tests {
-    use crate::{Generator, Grid, Rater, Solver};
+    use crate::{Generator, Grid, Rater, Solver, Symmetry};
 
     #[test]
     fn test_parse_valid_puzzle() {
@@ -390,5 +390,25 @@ mod tests {
             result.is_ok() || result.is_err(),
             "Should either succeed or fail gracefully"
         );
+    }
+
+    #[test]
+    fn test_symmetry_enum() {
+        let sym = Symmetry::Rotational180;
+        assert_eq!(sym, Symmetry::Rotational180);
+    }
+
+    #[test]
+    fn test_symmetry_get_positions() {
+        let sym = Symmetry::Rotational180;
+        let positions = sym.get_symmetric_positions(0);
+        assert!(positions.contains(&0));
+        assert!(positions.contains(&80)); // 180 degree rotation
+    }
+
+    #[test]
+    fn test_generator_with_symmetry() {
+        let gen = Generator::with_symmetry(Symmetry::Rotational180);
+        assert_eq!(gen.symmetry, Symmetry::Rotational180);
     }
 }
