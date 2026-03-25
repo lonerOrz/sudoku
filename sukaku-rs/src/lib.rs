@@ -173,4 +173,16 @@ mod tests {
         let hint = solver.next_hint();
         assert!(hint.is_some(), "Should find a hint");
     }
+
+    #[test]
+    fn test_naked_triple_detection() {
+        let puzzle =
+            "000000000000003084001020000000507000004000100090000000500000073002010000000040009";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        let hint = solver.next_hint();
+        assert!(hint.is_some(), "Should find a hint");
+    }
 }
