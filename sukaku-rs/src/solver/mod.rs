@@ -77,6 +77,11 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::jellyfish(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::xy_wing(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);

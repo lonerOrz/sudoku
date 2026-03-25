@@ -234,6 +234,17 @@ mod tests {
     }
 
     #[test]
+    fn test_jellyfish_detection() {
+        let puzzle =
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        solver.next_hint();
+    }
+
+    #[test]
     fn test_xy_wing_detection() {
         let puzzle =
             "010000508000403000056700000000020080400000302200376001908000254000007000000000003";

@@ -15,6 +15,7 @@ pub enum HintType {
     NakedQuad,
     XWing,
     Swordfish,
+    Jellyfish,
     XYWing,
     XYZWing,
     UniqueRectangleType1,
