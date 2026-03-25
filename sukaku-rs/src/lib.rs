@@ -259,6 +259,26 @@ mod tests {
     }
 
     #[test]
+    fn test_unique_rectangle_type3() {
+        let puzzle =
+            "000503470500800000000090002850000600024607590006000037200060000000008005043902000";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+        solver.next_hint();
+    }
+
+    #[test]
+    fn test_unique_rectangle_type4() {
+        let puzzle =
+            "000206803002000050060700009003090005050000020100040900500008070030000400807009000";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+        solver.next_hint();
+    }
+
+    #[test]
     fn test_bug_plus_one() {
         let puzzle =
             "000000000000000107300600000900800000020000810060024000008007590007100320400596000";
