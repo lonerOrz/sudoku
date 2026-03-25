@@ -57,16 +57,6 @@ impl Solver {
             return Some(hint);
         }
 
-        rules::x_wing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::swordfish(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
         rules::naked_triple(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);
@@ -77,7 +67,22 @@ impl Solver {
             return Some(hint);
         }
 
+        rules::x_wing(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::swordfish(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
         rules::xy_wing(&self.grid, &mut acc);
+        if let Some(hint) = acc.first() {
+            return Some(hint);
+        }
+
+        rules::xyz_wing(&self.grid, &mut acc);
         if let Some(hint) = acc.first() {
             return Some(hint);
         }

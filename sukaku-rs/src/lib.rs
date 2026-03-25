@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn test_x_wing_detection() {
         let puzzle =
-            "000000000000003084001020000000507000004000100090000000500000073002010000000040009";
+            "900062700005003000000000006700030000000009000802045009003501028040000005010000000";
         let grid = Grid::parse(puzzle).unwrap();
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn test_swordfish_detection() {
         let puzzle =
-            "000000000000003084001020000000507000004000100090000000500000073002010000000040009";
+            "160540070008001030030800000700050069600902057000000000000030040000000016000164500";
         let grid = Grid::parse(puzzle).unwrap();
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
@@ -225,7 +225,7 @@ mod tests {
     #[test]
     fn test_xy_wing_detection() {
         let puzzle =
-            "000000000000003084001020000000507000004000100090000000500000073002010000000040009";
+            "010000508000403000056700000000020080400000302200376001908000254000007000000000003";
         let grid = Grid::parse(puzzle).unwrap();
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();

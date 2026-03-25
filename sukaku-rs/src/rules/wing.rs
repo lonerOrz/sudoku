@@ -296,8 +296,13 @@ pub fn xyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
 
                 if !eliminations.is_empty() {
                     let desc = format!(
-                        "XYZ-Wing pivot ({}) ({},{},{}) -> eliminate {}",
-                        pivot_idx, x, y, z, z
+                        "XYZ-Wing pivot ({},{}) {{{},{},{}}} -> eliminate {}",
+                        pivot_idx / 9 + 1,
+                        pivot_idx % 9 + 1,
+                        x,
+                        y,
+                        z,
+                        z
                     );
                     acc.add(Hint {
                         hint_type: crate::solver::HintType::XYZWing,
