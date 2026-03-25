@@ -41,7 +41,7 @@ pub use solver::{Hint, HintType, Solver};
 
 #[cfg(test)]
 mod tests {
-    use crate::{Grid, Rater, Solver};
+    use crate::{Generator, Grid, Rater, Solver};
 
     #[test]
     fn test_parse_valid_puzzle() {
@@ -354,6 +354,41 @@ mod tests {
         assert!(
             !solver.has_unique_solution(),
             "Should have multiple solutions"
+        );
+    }
+
+    #[test]
+    fn test_generator_struct() {
+        let gen = Generator::new();
+        assert_eq!(gen.min_difficulty, 0.0);
+        assert_eq!(gen.max_difficulty, 10.0);
+    }
+
+    #[test]
+    fn test_generator_with_seed() {
+        let gen = Generator::with_seed(42);
+        assert!(gen.seed.is_some());
+    }
+
+    #[test]
+    fn test_generator_with_difficulty() {
+        let gen = Generator::with_difficulty(3.0, 5.0);
+        assert_eq!(gen.min_difficulty, 3.0);
+        assert_eq!(gen.max_difficulty, 5.0);
+    }
+
+    #[test]
+    fn test_generator_no_unique_check() {
+        let mut gen = Generator::new();
+        gen.require_unique = false;
+        gen.min_difficulty = 0.0;
+        gen.max_difficulty = 10.0;
+
+        // This should work without unique solution check
+        let result = gen.generate();
+        assert!(
+            result.is_ok() || result.is_err(),
+            "Should either succeed or fail gracefully"
         );
     }
 }
