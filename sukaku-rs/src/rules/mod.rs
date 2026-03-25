@@ -10,7 +10,7 @@ pub use direct::{hidden_single, naked_single};
 pub use fish::{swordfish, x_wing};
 pub use indirect::{hidden_pair, naked_pair};
 pub use locked::{locked_claiming, locked_pointing};
-pub use subset::{hidden_triple, naked_triple};
+pub use subset::{hidden_triple, naked_quad, naked_triple};
 pub use unique::{
     bug_plus_one, unique_rectangle_type1, unique_rectangle_type2, unique_rectangle_type3,
     unique_rectangle_type4,

@@ -187,6 +187,17 @@ mod tests {
     }
 
     #[test]
+    fn test_naked_quad_detection() {
+        let puzzle =
+            "000000060000030047032500000600007005207010908081004000000002000000000001005870000";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        solver.next_hint();
+    }
+
+    #[test]
     fn test_hidden_triple_detection() {
         let puzzle =
             "000000000000003084001020000000507000004000100090000000500000073002010000000040009";

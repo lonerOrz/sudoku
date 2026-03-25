@@ -90,6 +90,100 @@ pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// Find four cells in a region with exactly four candidates total, eliminating those candidates from other cells.
+pub fn naked_quad(grid: &Grid, acc: &mut HintAccumulator) {
+    let regions: Vec<_> = ROWS
+        .iter()
+        .chain(COLS.iter())
+        .chain(BLOCKS.iter())
+        .collect();
+
+    for region in regions {
+        let empty_cells: Vec<u8> = region
+            .cells
+            .iter()
+            .filter(|&&idx| {
+                grid.get(idx) == 0
+                    && grid.candidates(idx).cardinality() >= 2
+                    && grid.candidates(idx).cardinality() <= 4
+            })
+            .copied()
+            .collect();
+
+        if empty_cells.len() < 4 {
+            continue;
+        }
+
+        for i in 0..empty_cells.len() {
+            for j in (i + 1)..empty_cells.len() {
+                for k in (j + 1)..empty_cells.len() {
+                    for l in (k + 1)..empty_cells.len() {
+                        let cell1 = empty_cells[i];
+                        let cell2 = empty_cells[j];
+                        let cell3 = empty_cells[k];
+                        let cell4 = empty_cells[l];
+
+                        let cands1 = grid.candidates(cell1);
+                        let cands2 = grid.candidates(cell2);
+                        let cands3 = grid.candidates(cell3);
+                        let cands4 = grid.candidates(cell4);
+
+                        let union = cands1.union(cands2).union(cands3).union(cands4);
+
+                        if union.cardinality() == 4 {
+                            let quad_values: Vec<u8> = union.iter().collect();
+
+                            let mut eliminations = Vec::new();
+                            for &cell in &region.cells {
+                                if cell == cell1 || cell == cell2 || cell == cell3 || cell == cell4
+                                {
+                                    continue;
+                                }
+                                if grid.get(cell) != 0 {
+                                    continue;
+                                }
+
+                                let cell_cands = grid.candidates(cell);
+                                let mut to_remove = Vec::new();
+                                for &v in &quad_values {
+                                    if cell_cands.has(v) {
+                                        to_remove.push(v);
+                                    }
+                                }
+
+                                if !to_remove.is_empty() {
+                                    eliminations.push((Cell::from(cell), to_remove));
+                                }
+                            }
+
+                            if !eliminations.is_empty() {
+                                let desc = format!(
+                                    "Naked Quad ({}) in {:?}",
+                                    quad_values
+                                        .iter()
+                                        .map(|v| v.to_string())
+                                        .collect::<Vec<_>>()
+                                        .join(","),
+                                    region.region_type
+                                );
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::NakedQuad,
+                                    difficulty: 5.0,
+                                    technique_name: "Naked Quad".to_string(),
+                                    description: desc,
+                                    cell: Cell::from(cell1),
+                                    value: 0,
+                                    eliminations,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Find three digits that only appear in exactly three cells in a region, eliminating other candidates from those cells.
 pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
     let regions: Vec<_> = ROWS
