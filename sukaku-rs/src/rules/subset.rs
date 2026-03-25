@@ -88,3 +88,78 @@ pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
+    let regions: Vec<_> = ROWS
+        .iter()
+        .chain(COLS.iter())
+        .chain(BLOCKS.iter())
+        .collect();
+
+    for region in regions {
+        let empty_cells: Vec<u8> = region
+            .cells
+            .iter()
+            .filter(|&&idx| grid.get(idx) == 0)
+            .copied()
+            .collect();
+
+        if empty_cells.len() < 3 {
+            continue;
+        }
+
+        for val1 in 1..=9u8 {
+            for val2 in (val1 + 1)..=9 {
+                for val3 in (val2 + 1)..=9 {
+                    let cells_with_triple: Vec<u8> = empty_cells
+                        .iter()
+                        .copied()
+                        .filter(|&cell| {
+                            let cands = grid.candidates(cell);
+                            cands.has(val1) || cands.has(val2) || cands.has(val3)
+                        })
+                        .collect();
+
+                    if cells_with_triple.len() == 3 {
+                        let cell1 = cells_with_triple[0];
+                        let cell2 = cells_with_triple[1];
+                        let cell3 = cells_with_triple[2];
+
+                        let cands1 = grid.candidates(cell1);
+                        let cands2 = grid.candidates(cell2);
+                        let cands3 = grid.candidates(cell3);
+
+                        let mut eliminations = Vec::new();
+
+                        for (cell, cands) in [(cell1, cands1), (cell2, cands2), (cell3, cands3)] {
+                            let to_remove: Vec<u8> = cands
+                                .iter()
+                                .filter(|&v| v != val1 && v != val2 && v != val3)
+                                .collect();
+
+                            if !to_remove.is_empty() {
+                                eliminations.push((Cell::from(cell), to_remove));
+                            }
+                        }
+
+                        if !eliminations.is_empty() {
+                            let desc = format!(
+                                "Hidden Triple ({},{},{}) in {:?}",
+                                val1, val2, val3, region.region_type
+                            );
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::HiddenTriple,
+                                difficulty: 4.0,
+                                technique_name: "Hidden Triple".to_string(),
+                                description: desc,
+                                cell: Cell::from(cell1),
+                                value: 0,
+                                eliminations,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
