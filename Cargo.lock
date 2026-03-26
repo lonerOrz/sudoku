@@ -854,6 +854,7 @@ dependencies = [
  "bitflags",
  "criterion",
  "rand",
+ "sukaku-rs",
 ]
 
 [[package]]
