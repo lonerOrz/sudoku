@@ -12,9 +12,11 @@
 |------|--------|
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
-| **Last Updated** | 2026-03-25 |
-| **Overall Progress** | 11/62 techniques (18%) |
-| **Puzzle Coverage** | ~80% (ER 1.0-4.0) |
+| **Last Updated** | 2026-03-26 |
+| **Overall Progress** | 19/62 techniques (31%) |
+| **Puzzle Coverage** | ~85% (ER 1.0-5.5) |
+| **Tests** | 35 passing |
+| **CLI** | generate, rate, direct input |
 
 ---
 
@@ -23,12 +25,12 @@
 | Phase | Focus | Techniques | Progress | Target |
 |-------|-------|------------|----------|--------|
 | **Phase 1** | Basic (SE 1.0-4.0) | 11 | ✅ 100% | Complete |
-| **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | 🔄 10% | 2026-Q2 |
+| **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | 🔄 73% | 2026-Q2 |
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | ⏳ 0% | 2026-Q3 |
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ⏳ 0% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ⏳ 8% | Optional |
-| **Phase 6** | CLI Enhancement | 20 | ⏳ 15% | 2026-Q3 |
-| **Phase 7** | Generator | 6 | ⏳ 17% | Optional |
+| **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
+| **Phase 7** | Generator | 6 | 🔄 67% | Optional |
 | **Phase 8** | Rating Enhancement | 4 | ⏳ 0% | Optional |
 
 **Total**: 62 solving techniques + 12 variants + 20 CLI features
@@ -61,21 +63,23 @@
 
 | # | Technique | Difficulty | Priority | Est. | File | Tests | SE Class |
 |---|-----------|------------|----------|------|------|-------|----------|
-| 2.1 | XY-Wing | 4.2 | P0 | 3h | `wing.rs` | [ ] | `XYWing(false)` |
-| 2.2 | XYZ-Wing | 4.4 | P0 | 3h | `wing.rs` | [ ] | `XYWing(true)` |
-| 2.3 | WXYZ-Wing | 5.5 | P1 | 4h | `wing.rs` | [ ] | `WXYZWing` |
-| 2.4 | Unique Rectangle Type 1 | 4.5 | P0 | 2h | `unique.rs` | [ ] | `UniqueLoops` |
-| 2.5 | Unique Rectangle Type 2 | 4.6 | P0 | 2h | `unique.rs` | [ ] | `UniqueLoops` |
-| 2.6 | Unique Rectangle Type 3 | 4.8 | P1 | 3h | `unique.rs` | [ ] | `UniqueLoops` |
-| 2.7 | Unique Rectangle Type 4 | 5.0 | P1 | 2h | `unique.rs` | [ ] | `UniqueLoops` |
+| 2.1 | XY-Wing | 4.2 | P0 | 3h | `wing.rs` | [x] | `XYWing(false)` |
+| 2.2 | XYZ-Wing | 4.4 | P0 | 3h | `wing.rs` | [x] | `XYWing(true)` |
+| 2.3 | WXYZ-Wing | 5.5 | P1 | 4h | `wing.rs` | [x] | `WXYZWing` |
+| 2.4 | Unique Rectangle Type 1 | 4.5 | P0 | 2h | `unique.rs` | [x] | `UniqueLoops` |
+| 2.5 | Unique Rectangle Type 2 | 4.6 | P0 | 2h | `unique.rs` | [x] | `UniqueLoops` |
+| 2.6 | Unique Rectangle Type 3 | 4.8 | P1 | 3h | `unique.rs` | [x] | `UniqueLoops` |
+| 2.7 | Unique Rectangle Type 4 | 5.0 | P1 | 2h | `unique.rs` | [x] | `UniqueLoops` |
 | 2.8 | BUG+1 | 5.6 | P1 | 3h | `unique.rs` | [ ] | `BivalueUniversalGrave` |
-| 2.9 | Naked Quad | 5.0 | P1 | 2h | `subset.rs` | [ ] | `NakedSet(4)` |
-| 2.10 | Hidden Quad | 5.4 | P1 | 2h | `subset.rs` | [ ] | `HiddenSet(4)` |
-| 2.11 | Jellyfish | 5.2 | P1 | 3h | `fish.rs` | [ ] | `Fisherman(4)` |
+| 2.9 | Naked Quad | 5.0 | P1 | 2h | `subset.rs` | [x] | `NakedSet(4)` |
+| 2.10 | Hidden Quad | 5.4 | P1 | 2h | `subset.rs` | [x] | `HiddenSet(4)` |
+| 2.11 | Jellyfish | 5.2 | P1 | 3h | `fish.rs` | [x] | `Fisherman(4)` |
 
-**New Files Required**:
-- `src/rules/wing.rs` - XY/XYZ/WXYZ-Wing implementations
-- `src/rules/unique.rs` - Unique Rectangle and BUG techniques
+**Status**: 8/11 techniques implemented ✅ | 1 remaining (BUG+1)
+
+**Files Created**:
+- ✅ `src/rules/wing.rs` - XY/XYZ/WXYZ-Wing implementations
+- ✅ `src/rules/unique.rs` - Unique Rectangle Type 1-4
 
 ---
 
@@ -199,49 +203,49 @@
 
 ### 6.1 Core CLI Options
 
-| # | Option | Format | Priority | Est. | File |
-|---|--------|--------|----------|------|------|
-| 6.1.1 | Input file | `--input=FILE` | P0 | 2h | `main.rs` |
-| 6.1.2 | Output file | `--output=FILE` | P0 | 2h | `main.rs` |
-| 6.1.3 | Format string | `--format=FORMAT` | P0 | 4h | `main.rs` |
-| 6.1.4 | Thread count | `--threads=N` | P1 | 3h | `main.rs` |
-| 6.1.5 | Start format | `--start=FORMAT` | P1 | 2h | `main.rs` |
-| 6.1.6 | Before format | `--before=FORMAT` | P1 | 2h | `main.rs` |
-| 6.1.7 | After format | `--after=FORMAT` | P1 | 2h | `main.rs` |
+| # | Option | Format | Priority | Est. | Status | File |
+|---|--------|--------|----------|------|--------|------|
+| 6.1.1 | Input file | `--input=FILE` | P0 | 2h | ✅ | `main.rs` |
+| 6.1.2 | Output file | `--output=FILE` | P0 | 2h | ✅ | `main.rs` |
+| 6.1.3 | Format string | `--format=FORMAT` | P0 | 4h | ✅ | `main.rs` |
+| 6.1.4 | Thread count | `--threads=N` | P1 | 3h | ⏳ | `main.rs` |
+| 6.1.5 | Start format | `--start=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
+| 6.1.6 | Before format | `--before=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
+| 6.1.7 | After format | `--after=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
 
 ### 6.2 Format Specifiers (20 total)
 
 | Spec | Description | Priority | Status |
 |------|-------------|----------|--------|
-| `%d` | Diamond rating (ED) | P0 | [ ] |
-| `%D` | Diamond technique name | P0 | [ ] |
-| `%e` | Elapsed time | P0 | [ ] |
-| `%g` | Input puzzle (81-char) | P0 | [ ] |
-| `%h` | Step description (HTML) | P1 | [ ] |
-| `%i` | Puzzle grid (81-digit) | P0 | [ ] |
-| `%l` | Newline | P0 | [ ] |
-| `%m` | Pencilmarks (729-char) | P1 | [ ] |
-| `%M` | Pencilmarks (multi-line) | P1 | [ ] |
-| `%n` | Puzzle ordinal | P0 | [ ] |
-| `%p` | Pearl rating (EP) | P0 | [ ] |
-| `%P` | Pearl technique name | P0 | [ ] |
-| `%r` | Puzzle rating (ER) | P0 | [ ] |
-| `%R` | Rating technique name | P0 | [ ] |
-| `%s` | Step description (short) | P1 | [ ] |
-| `%S` | Rating technique (short) | P1 | [ ] |
-| `%t` | Tab character | P0 | [ ] |
-| `%T` | Pearl technique (short) | P1 | [ ] |
-| `%U` | Diamond technique (short) | P1 | [ ] |
-| `%%` | Literal % | P0 | [ ] |
+| `%d` | Diamond rating (ED) | P0 | ✅ |
+| `%D` | Diamond technique name | P0 | ⏳ |
+| `%e` | Elapsed time | P0 | ⏳ |
+| `%g` | Input puzzle (81-char) | P0 | ✅ |
+| `%h` | Step description (HTML) | P1 | ⏳ |
+| `%i` | Puzzle grid (81-digit) | P0 | ⏳ |
+| `%l` | Newline | P0 | ⏳ |
+| `%m` | Pencilmarks (729-char) | P1 | ⏳ |
+| `%M` | Pencilmarks (multi-line) | P1 | ⏳ |
+| `%n` | Puzzle ordinal | P0 | ⏳ |
+| `%p` | Pearl rating (EP) | P0 | ✅ |
+| `%P` | Pearl technique name | P0 | ⏳ |
+| `%r` | Puzzle rating (ER) | P0 | ✅ |
+| `%R` | Rating technique name | P0 | ⏳ |
+| `%s` | Step description (short) | P1 | ⏳ |
+| `%S` | Rating technique (short) | P1 | ⏳ |
+| `%t` | Tab character | P0 | ⏳ |
+| `%T` | Pearl technique (short) | P1 | ⏳ |
+| `%U` | Diamond technique (short) | P1 | ⏳ |
+| `%%` | Literal % | P0 | ⏳ |
 
 ### 6.3 Rating Options
 
-| # | Option | Priority | Est. | Description |
-|---|--------|----------|------|-------------|
-| 6.3.1 | `--pearl` | P1 | 1h | Terminate if not pearl |
-| 6.3.2 | `--diamond` | P1 | 1h | Terminate if not diamond |
-| 6.3.3 | `--revisedRating=N` | P2 | 2h | Revised rating scheme |
-| 6.3.4 | `--batch=N` | P2 | 3h | Batch solving mode |
+| # | Option | Priority | Est. | Status | Description |
+|---|--------|----------|------|--------|-------------|
+| 6.3.1 | `--pearl` | P1 | 1h | ⏳ | Terminate if not pearl |
+| 6.3.2 | `--diamond` | P1 | 1h | ⏳ | Terminate if not diamond |
+| 6.3.3 | `--revisedRating=N` | P2 | 2h | ⏳ | Revised rating scheme |
+| 6.3.4 | `--batch=N` | P2 | 3h | ⏳ | Batch solving mode |
 
 ### 6.4 Variant CLI Options
 
@@ -281,32 +285,37 @@
 
 ## Phase 7: Generator Enhancement
 
-**Reference**: `Generator.java`, `Symmetry.java` | **Status**: Optional
+**Reference**: `Generator.java`, `Symmetry.java` | **Status**: In Progress
 
-| # | Feature | Priority | Est. | File | Description |
-|---|---------|----------|------|------|-------------|
-| 7.1 | Symmetry types enum | P2 | 3h | `generator/symmetry.rs` | 10+ symmetry types |
-| 7.2 | Difficulty range filter | P2 | 4h | `generator/mod.rs` | Min/max difficulty |
-| 7.3 | Technique exclusion | P3 | 4h | `generator/mod.rs` | Exclude techniques |
-| 7.4 | Technique inclusion | P3 | 4h | `generator/mod.rs` | Include techniques |
-| 7.5 | Unique solution verification | P1 | 6h | `generator/mod.rs` | Fast verification |
-| 7.6 | Multi-threaded generation | P3 | 8h | `generator/mod.rs` | Parallel generation |
+| # | Feature | Priority | Est. | Status | File | Description |
+|---|---------|----------|------|--------|------|-------------|
+| 7.1 | Symmetry types enum | P2 | 3h | ✅ | `generator.rs` | 8 symmetry types |
+| 7.2 | Difficulty range filter | P2 | 4h | ✅ | `generator.rs` | Min/max difficulty |
+| 7.3 | Technique exclusion | P3 | 4h | ⏳ | `generator/mod.rs` | Exclude techniques |
+| 7.4 | Technique inclusion | P3 | 4h | ⏳ | `generator/mod.rs` | Include techniques |
+| 7.5 | Unique solution verification | P1 | 6h | ✅ | `generator.rs` | Fast verification |
+| 7.6 | Multi-threaded generation | P3 | 8h | ⏳ | `generator/mod.rs` | Parallel generation |
 
-**Symmetry Types to Implement**:
+**Implemented Symmetry Types**:
 ```rust
 pub enum Symmetry {
     None,
-    Rotational90,
     Rotational180,
-    HorizontalMirror,
-    VerticalMirror,
+    Rotational90,
+    Horizontal,
+    Vertical,
     DiagonalMain,
     DiagonalAnti,
-    HorizontalVertical,
-    DiagonalBoth,
-    FullSymmetry,
+    Full,  // D4 group (all 8 symmetries)
 }
 ```
+
+**Generator Features**:
+- ✅ SukakuExplainer algorithm (6 rounds of removal)
+- ✅ Difficulty-to-clue mapping (ER 1-2→30-40, ER 2-3→25-30, ER 3-5→22-26, ER 5+→17-22)
+- ✅ Unique solution verification
+- ✅ Symmetric puzzle generation
+- ✅ CLI integration with `generate` subcommand
 
 ---
 
@@ -491,18 +500,28 @@ Difficulty Scale:
 ## Progress Tracking
 
 ### Completed
-- [x] Phase 1: Basic Techniques (9/9) ✅
+- [x] Phase 1: Basic Techniques (11/11) ✅
 - [x] Project infrastructure (Cargo, tests, CI)
+- [x] Phase 2: XY-Wing, XYZ-Wing, WXYZ-Wing
+- [x] Phase 2: Unique Rectangle Type 1-4
+- [x] Phase 2: Naked Quad, Hidden Quad
+- [x] Phase 2: Jellyfish
+- [x] Generator: Symmetry types (8 types)
+- [x] Generator: Difficulty-to-clue mapping
+- [x] Generator: Unique solution verification
+- [x] CLI: generate subcommand
+- [x] CLI: rate subcommand with format strings
+- [x] CLI: JSON output support
 
 ### In Progress
-- [ ] Phase 2: Intermediate Techniques (0/11)
+- [ ] Phase 2: BUG+1 (remaining)
+- [ ] Phase 6: Additional format specifiers
+- [ ] Phase 6: Thread count support
 
 ### Pending
 - [ ] Phase 3: Advanced Techniques (0/20)
 - [ ] Phase 4: Chaining System (0/10)
 - [ ] Phase 5: Variant Support (1/12)
-- [ ] Phase 6: CLI Enhancement (3/20)
-- [ ] Phase 7: Generator (1/6)
 - [ ] Phase 8: Rating Enhancement (0/4)
 
 ---
@@ -522,6 +541,6 @@ git log --oneline --grep="XY-Wing" sukaku-rs/
 
 ---
 
-**Last Updated**: 2026-03-25
-**Next Milestone**: Phase 2 Complete (Target: 2026-Q2)
+**Last Updated**: 2026-03-26
+**Next Milestone**: Phase 2 Complete (Target: 2026-Q2) - 8/11 done
 **Final Goal**: 100% SukakuExplainer feature parity
