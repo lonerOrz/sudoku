@@ -721,11 +721,11 @@ fn find_uvwxyz_wing_pattern(
 
         let vals: Vec<u8> = cands.iter().collect();
         let has_elim = vals.contains(&elim_digit);
-        let other = vals.iter().find(|&&v| v != elim_digit);
 
-        let other_val = other.unwrap();
-        if has_elim && wing_set.contains(other_val) {
-            wing_cells.push(i);
+        if let Some(other_val) = vals.iter().find(|&&v| v != elim_digit) {
+            if has_elim && wing_set.contains(other_val) {
+                wing_cells.push(i);
+            }
         }
 
         if wing_cells.len() >= 5 {
@@ -782,6 +782,174 @@ fn find_uvwxyz_wing_pattern(
             hint_type: crate::solver::HintType::UVWXYZWing,
             difficulty: 6.6,
             technique_name: "UVWXYZ-Wing".to_string(),
+            description: desc,
+            cell: Cell::from(pivot_idx),
+            value: 0,
+            eliminations,
+        });
+    }
+}
+pub fn tuvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
+    for pivot_idx in 0..81 {
+        if grid.get(pivot_idx) != 0 {
+            continue;
+        }
+
+        let pivot_cands = grid.candidates(pivot_idx);
+        if pivot_cands.cardinality() != 7 {
+            continue;
+        }
+
+        let pivot_values: Vec<u8> = pivot_cands.iter().collect();
+        let elim_digit = pivot_values[0];
+
+        let wing_configs = [
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[6],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[5],
+                pivot_values[6],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[4],
+                pivot_values[5],
+                pivot_values[6],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+                pivot_values[6],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+                pivot_values[6],
+            ),
+            (
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+                pivot_values[6],
+            ),
+        ];
+
+        for wing_vals in wing_configs.iter() {
+            find_tuvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, *wing_vals);
+        }
+    }
+}
+
+fn find_tuvwxyz_wing_pattern(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    pivot_idx: u8,
+    elim_digit: u8,
+    wing_vals: (u8, u8, u8, u8, u8, u8),
+) {
+    let (w1, w2, w3, w4, w5, w6) = wing_vals;
+    let wing_set = [w1, w2, w3, w4, w5, w6];
+
+    let mut wing_cells: Vec<u8> = Vec::new();
+
+    for i in 0..81 {
+        if i == pivot_idx || grid.get(i) != 0 {
+            continue;
+        }
+        if !is_visible(pivot_idx, i) {
+            continue;
+        }
+
+        let cands = grid.candidates(i);
+        if cands.cardinality() != 2 {
+            continue;
+        }
+
+        let vals: Vec<u8> = cands.iter().collect();
+        let has_elim = vals.contains(&elim_digit);
+
+        if let Some(other_val) = vals.iter().find(|&&v| v != elim_digit) {
+            if has_elim && wing_set.contains(other_val) {
+                wing_cells.push(i);
+            }
+        }
+
+        if wing_cells.len() >= 6 {
+            break;
+        }
+    }
+
+    if wing_cells.len() != 6 {
+        return;
+    }
+
+    let mut all_targets: Vec<Vec<u8>> = Vec::new();
+    for i in 0..6 {
+        for j in (i + 1)..6 {
+            all_targets.push(common_peers(wing_cells[i], wing_cells[j]));
+        }
+    }
+
+    let mut common: Vec<u8> = Vec::new();
+    for &t in &all_targets[0] {
+        let mut is_common = true;
+        for target_list in &all_targets {
+            if !target_list.contains(&t) {
+                is_common = false;
+                break;
+            }
+        }
+        if is_common {
+            common.push(t);
+        }
+    }
+
+    let mut eliminations = Vec::new();
+    for &target in &common {
+        if grid.get(target) == 0 && grid.candidates(target).has(elim_digit) {
+            eliminations.push((Cell::from(target), vec![elim_digit]));
+        }
+    }
+
+    if !eliminations.is_empty() {
+        let desc = format!(
+            "TUVWXYZ-Wing pivot ({},{}) -> eliminate {}",
+            pivot_idx / 9 + 1,
+            pivot_idx % 9 + 1,
+            elim_digit
+        );
+        acc.add(Hint {
+            hint_type: crate::solver::HintType::TUVWXYZWing,
+            difficulty: 7.0,
+            technique_name: "TUVWXYZ-Wing".to_string(),
             description: desc,
             cell: Cell::from(pivot_idx),
             value: 0,
