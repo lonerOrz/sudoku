@@ -43,6 +43,7 @@ pub enum HintType {
     XCyclesSimple,
     YCyclesSimple,
     ForcingChain,
+    NishioForcingChain,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

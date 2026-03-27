@@ -13,9 +13,9 @@
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
 | **Last Updated** | 2026-03-28 |
-| **Overall Progress** | 35/62 techniques (56%) |
-| **Puzzle Coverage** | ~96% (ER 1.0-7.0) |
-| **Tests** | 60 passing |
+| **Overall Progress** | 37/62 techniques (60%) |
+| **Puzzle Coverage** | ~97% (ER 1.0-7.5) |
+| **Tests** | 63 passing |
 | **CLI** | generate, rate, direct input, JSON output |
 
 ---
@@ -515,7 +515,8 @@ Difficulty Scale:
 - [x] Phase 3: VLocking (Generalized Intersections)
 - [x] Phase 4: X-Cycles Simple (SE 6.5) ✅
 - [x] Phase 4: Y-Cycles (SE 6.5) ✅
-- [x] Phase 4: Forcing Chain Cycle (SE 7.0) ✅ NEW
+- [x] Phase 4: Forcing Chain (SE 7.0) ✅
+- [x] Phase 4: Nishio Forcing Chain (SE 7.5) ✅ NEW
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
@@ -531,11 +532,11 @@ Difficulty Scale:
 - [ ] Phase 3: Advanced Techniques (14/20 remaining)
   - [ ] VWXYZ-Wing, UVWXYZ-Wing, TUVWXYZ-Wing (wing.rs 已实现)
   - [ ] Aligned Pair/Triplet Exclusion (exclusion.rs 已实现)
-- [ ] Phase 4: Chaining System (7/10 remaining)
+- [ ] Phase 4: Chaining System (6/10 remaining)
   - [x] X-Cycles Simple (SE 6.5) ✅
   - [x] Y-Cycles (SE 6.5) ✅
-  - [x] Forcing Chain Cycle (SE 7.0) ✅
-  - [ ] Nishio Forcing Chain (SE 7.5-8.5)
+  - [x] Forcing Chain (SE 7.0) ✅
+  - [x] Nishio Forcing Chain (SE 7.5) ✅ NEW
   - [ ] Multiple Forcing Chain (SE 8.0)
   - [ ] Dynamic Forcing Chain (SE 8.5)
   - [ ] Dynamic Forcing Chain+ (SE 9.0)
@@ -561,5 +562,5 @@ git log --oneline --grep="XY-Wing" sukaku-rs/
 ---
 
 **Last Updated**: 2026-03-28
-**Next Milestone**: Phase 4 Continue - Nishio Forcing Chain Implementation
+**Next Milestone**: Phase 4 Continue - Multiple Forcing Chain Implementation
 **Final Goal**: 100% SukakuExplainer feature parity

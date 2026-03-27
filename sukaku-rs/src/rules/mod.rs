@@ -70,6 +70,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("UVWXYZ-Wing", uvwxyz_wing, 6.6),
         Rule::new("TUVWXYZ-Wing", tuvwxyz_wing, 7.5),
         Rule::new("ALS-XZ", als_xz_rule, 7.0),
+        Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
         // Unique Rectangle (difficulty 5.0-5.3)
         Rule::new("Unique Rectangle Type 1", unique_rectangle_type1, 5.0),
         Rule::new("Unique Rectangle Type 2", unique_rectangle_type2, 5.1),
@@ -132,9 +133,9 @@ pub mod unique;
 pub mod vlocking;
 pub mod wing;
 
-pub use chaining::forcing_chain;
-pub use chaining::x_cycles_simple;
-pub use chaining::y_cycles_simple;
+pub use chaining::{
+    forcing_chain, nishio_forcing_chain, x_cycles_simple, y_cycles_simple,
+};
 pub use direct::{hidden_single, naked_single};
 pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
 pub use fish::{jellyfish, swordfish, x_wing};

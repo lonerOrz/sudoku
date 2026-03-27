@@ -584,3 +584,224 @@ fn report_forcing_chain(
         eliminations: vec![(Cell::from(start.cell), vec![start.value])],
     });
 }
+
+// ============================================================================
+// Nishio Forcing Chain (SE 7.5-8.5)
+// ============================================================================
+
+/// Nishio Forcing Chain: Verify both "cell=value" and "cell!=value" lead to same conclusion.
+///
+/// Algorithm:
+/// 1. Pick a starting cell and candidate
+/// 2. Assume the candidate is ON (true) and trace implications
+/// 3. Assume the candidate is OFF (false) and trace implications
+/// 4. If both paths lead to the same conclusion (same cell=value or cell!=value)
+///    then that conclusion must be true regardless of the initial assumption
+///
+/// This is also known as "Digit Forcing Chain" or "Double Implication Chain".
+///
+/// Difficulty: SE 7.5 (base), can go up to 8.5 for complex chains
+pub fn nishio_forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
+    for start_cell in 0..81u8 {
+        if grid.get(start_cell) != 0 {
+            continue;
+        }
+
+        let candidates: Vec<u8> = grid.candidates(start_cell).iter().collect();
+        if candidates.is_empty() {
+            continue;
+        }
+
+        for &value in &candidates {
+            // Try Nishio on this cell-value pair
+            nishio_on_cell_value(grid, acc, start_cell, value);
+        }
+    }
+}
+
+/// Perform Nishio analysis on a specific cell-value pair
+fn nishio_on_cell_value(grid: &Grid, acc: &mut HintAccumulator, start_cell: u8, value: u8) {
+    // Path 1: Assume cell = value (ON)
+    let on_result = trace_nishio_path(grid, start_cell, value, true);
+    
+    // Path 2: Assume cell != value (OFF)
+    let off_result = trace_nishio_path(grid, start_cell, value, false);
+
+    // Check if both paths lead to the same conclusion
+    if let (Some(on_conclusion), Some(off_conclusion)) = (&on_result, &off_result) {
+        // Both paths reached the same conclusion
+        if on_conclusion.cell == off_conclusion.cell && on_conclusion.value == off_conclusion.value {
+            // Verify the conclusions have the same state (both ON or both OFF)
+            if on_conclusion.is_on == off_conclusion.is_on {
+                report_nishio_chain(grid, acc, start_cell, value, on_conclusion, true);
+                return;
+            }
+        }
+
+        // Check for contradiction: one path says X=ON, other says X=OFF
+        if on_conclusion.cell == off_conclusion.cell 
+            && on_conclusion.value == off_conclusion.value 
+            && on_conclusion.is_on != off_conclusion.is_on 
+        {
+            // This means the assumption leads to a contradiction
+            // The original assumption must be wrong
+            report_nishio_contradiction(acc, start_cell, value, on_conclusion, off_conclusion);
+        }
+    }
+}
+
+/// Trace a Nishio path from an assumption
+/// Returns the final conclusion if found
+fn trace_nishio_path(
+    grid: &Grid,
+    start_cell: u8,
+    start_value: u8,
+    start_state: bool,
+) -> Option<ChainPotential> {
+    let mut pending_on: Vec<ChainPotential> = Vec::new();
+    let mut pending_off: Vec<ChainPotential> = Vec::new();
+    let mut visited: [[bool; 10]; 81] = [[false; 10]; 81];
+    
+    let start = ChainPotential {
+        cell: start_cell,
+        value: start_value,
+        is_on: start_state,
+    };
+
+    if start_state {
+        pending_on.push(start);
+    } else {
+        pending_off.push(start);
+    }
+    visited[start_cell as usize][start_value as usize] = true;
+
+    let max_iterations = 30;
+    let mut iterations = 0;
+
+    while !(pending_on.is_empty() && pending_off.is_empty()) && iterations < max_iterations {
+        iterations += 1;
+
+        while let Some(p) = pending_on.pop() {
+            let implications = get_implications(grid, p);
+            for imp in implications {
+                // Check if we've reached a significant conclusion
+                // (e.g., a cell must be a certain value, or cannot be a certain value)
+                if is_significant_conclusion(grid, &imp) {
+                    return Some(imp);
+                }
+                
+                if !visited[imp.cell as usize][imp.value as usize] {
+                    visited[imp.cell as usize][imp.value as usize] = true;
+                    if imp.is_on {
+                        pending_on.push(imp);
+                    } else {
+                        pending_off.push(imp);
+                    }
+                }
+            }
+        }
+
+        while let Some(p) = pending_off.pop() {
+            let implications = get_implications(grid, p);
+            for imp in implications {
+                if is_significant_conclusion(grid, &imp) {
+                    return Some(imp);
+                }
+                
+                if !visited[imp.cell as usize][imp.value as usize] {
+                    visited[imp.cell as usize][imp.value as usize] = true;
+                    if imp.is_on {
+                        pending_on.push(imp);
+                    } else {
+                        pending_off.push(imp);
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+/// Check if a potential is a "significant conclusion" for Nishio
+fn is_significant_conclusion(grid: &Grid, p: &ChainPotential) -> bool {
+    // A conclusion is significant if:
+    // 1. It forces a cell to have a specific value (naked single)
+    // 2. It eliminates all but one candidate from a cell
+    // 3. It creates a contradiction in a unit
+    
+    if p.is_on {
+        // Cell must be this value - significant!
+        true
+    } else {
+        // Cell cannot be this value
+        // Check if this leaves only one candidate
+        let remaining = grid.candidates(p.cell).cardinality() - 1;
+        remaining == 1
+    }
+}
+
+/// Report a Nishio chain where both paths lead to the same conclusion
+fn report_nishio_chain(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    start_cell: u8,
+    start_value: u8,
+    conclusion: &ChainPotential,
+    _verified: bool,
+) {
+    let desc = format!(
+        "Nishio Forcing Chain: R{}C{}={} leads to R{}C{}={} regardless of initial assumption",
+        (start_cell / 9) + 1, (start_cell % 9) + 1, start_value,
+        (conclusion.cell / 9) + 1, (conclusion.cell % 9) + 1, conclusion.value
+    );
+
+    let eliminations = if conclusion.is_on {
+        // Conclusion: cell must be value
+        // Eliminate other candidates from that cell
+        let other_cands: Vec<u8> = grid.candidates(conclusion.cell)
+            .iter()
+            .filter(|&v| v != conclusion.value)
+            .collect();
+        vec![(Cell::from(conclusion.cell), other_cands)]
+    } else {
+        // Conclusion: cell cannot be value
+        vec![(Cell::from(conclusion.cell), vec![conclusion.value])]
+    };
+
+    acc.add(Hint {
+        hint_type: crate::solver::HintType::NishioForcingChain,
+        difficulty: 7.5,
+        technique_name: "Nishio Forcing Chain".to_string(),
+        description: desc,
+        cell: Cell::from(start_cell),
+        value: 0,
+        eliminations,
+    });
+}
+
+/// Report a Nishio contradiction (assumption leads to logical impossibility)
+fn report_nishio_contradiction(
+    acc: &mut HintAccumulator,
+    start_cell: u8,
+    start_value: u8,
+    on_result: &ChainPotential,
+    off_result: &ChainPotential,
+) {
+    let desc = format!(
+        "Nishio Forcing Chain: R{}C{}={} creates contradiction (R{}C{}={} vs R{}C{}={})",
+        (start_cell / 9) + 1, (start_cell % 9) + 1, start_value,
+        (on_result.cell / 9) + 1, (on_result.cell % 9) + 1, on_result.value,
+        (off_result.cell / 9) + 1, (off_result.cell % 9) + 1, off_result.value
+    );
+
+    acc.add(Hint {
+        hint_type: crate::solver::HintType::NishioForcingChain,
+        difficulty: 8.0,
+        technique_name: "Nishio Forcing Chain".to_string(),
+        description: desc,
+        cell: Cell::from(start_cell),
+        value: 0,
+        eliminations: vec![(Cell::from(start_cell), vec![start_value])],
+    });
+}
