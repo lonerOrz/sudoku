@@ -381,6 +381,210 @@ pub fn strong_links_fish_3(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// Find 4-Strong-Links Fish pattern: 4 rows or columns with strong links
+/// that share exactly 4 common columns or rows.
+///
+/// This is also known as Jellyfish with strong links.
+/// Difficulty: SE 5.8
+pub fn strong_links_fish_4(grid: &Grid, acc: &mut HintAccumulator) {
+    for digit in 1..=9u8 {
+        find_strong_links_fish_4_rows(grid, acc, digit);
+        find_strong_links_fish_4_cols(grid, acc, digit);
+    }
+}
+
+/// Find 4-Strong-Links Fish pattern in rows.
+///
+/// Similar to Jellyfish but focuses on strong link patterns.
+/// Unlike standard Jellyfish, we don't restrict candidate count per row.
+fn find_strong_links_fish_4_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
+    // Iterate on all combinations of 4 rows
+    for (r1_idx, r1) in ROWS.iter().enumerate() {
+        for (r2_idx, r2) in ROWS.iter().enumerate().skip(r1_idx + 1) {
+            for (r3_idx, r3) in ROWS.iter().enumerate().skip(r2_idx + 1) {
+                for (r4_idx, r4) in ROWS.iter().enumerate().skip(r3_idx + 1) {
+                    let rows = [r1_idx, r2_idx, r3_idx, r4_idx];
+                    let rows_data = [r1, r2, r3, r4];
+
+                    // Find columns where each row has the digit
+                    let mut row_cols: [Vec<u8>; 4] =
+                        [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
+
+                    let mut valid = true;
+                    for (i, row) in rows_data.iter().enumerate() {
+                        row_cols[i] = row
+                            .cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
+                            .map(|cell| cell % 9)
+                            .collect();
+
+                        // Each row must have at least 1 candidate
+                        if row_cols[i].is_empty() {
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if !valid {
+                        continue;
+                    }
+
+                    // Find union of all columns
+                    let mut all_cols: Vec<u8> = Vec::new();
+                    for cols in &row_cols {
+                        for &c in cols {
+                            if !all_cols.contains(&c) {
+                                all_cols.push(c);
+                            }
+                        }
+                    }
+
+                    // Must have exactly 4 common columns
+                    if all_cols.len() != 4 {
+                        continue;
+                    }
+
+                    // Find eliminations in other rows
+                    let mut eliminations = Vec::new();
+                    for (r, row) in ROWS.iter().enumerate() {
+                        if rows.contains(&r) {
+                            continue;
+                        }
+                        for &c in &all_cols {
+                            let cell_idx = row.cells[c as usize];
+                            if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                            }
+                        }
+                    }
+
+                    if !eliminations.is_empty() {
+                        let desc = format!(
+                            "4-Strong-Links Fish: digit {} in rows {},{},{},{} and columns {},{},{},{}",
+                            digit,
+                            r1_idx + 1,
+                            r2_idx + 1,
+                            r3_idx + 1,
+                            r4_idx + 1,
+                            all_cols[0] + 1,
+                            all_cols[1] + 1,
+                            all_cols[2] + 1,
+                            all_cols[3] + 1
+                        );
+                        acc.add(Hint {
+                            hint_type: crate::solver::HintType::StrongLinksFish,
+                            difficulty: 5.8,
+                            technique_name: "4-Strong-Links Fish".to_string(),
+                            description: desc,
+                            cell: Cell::from(r1.cells[all_cols[0] as usize]),
+                            value: 0,
+                            eliminations,
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Find 4-Strong-Links Fish pattern in columns.
+///
+/// Similar to Jellyfish but focuses on strong link patterns.
+/// Unlike standard Jellyfish, we don't restrict candidate count per column.
+fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
+    // Iterate on all combinations of 4 columns
+    for (c1_idx, c1) in COLS.iter().enumerate() {
+        for (c2_idx, c2) in COLS.iter().enumerate().skip(c1_idx + 1) {
+            for (c3_idx, c3) in COLS.iter().enumerate().skip(c2_idx + 1) {
+                for (c4_idx, c4) in COLS.iter().enumerate().skip(c3_idx + 1) {
+                    let cols = [c1_idx, c2_idx, c3_idx, c4_idx];
+                    let cols_data = [c1, c2, c3, c4];
+
+                    // Find rows where each column has the digit
+                    let mut col_rows: [Vec<u8>; 4] =
+                        [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
+
+                    let mut valid = true;
+                    for (i, col) in cols_data.iter().enumerate() {
+                        col_rows[i] = col
+                            .cells
+                            .iter()
+                            .copied()
+                            .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
+                            .map(|cell| cell / 9)
+                            .collect();
+
+                        // Each column must have at least 1 candidate
+                        if col_rows[i].is_empty() {
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if !valid {
+                        continue;
+                    }
+
+                    // Find union of all rows
+                    let mut all_rows: Vec<u8> = Vec::new();
+                    for rows in &col_rows {
+                        for &r in rows {
+                            if !all_rows.contains(&r) {
+                                all_rows.push(r);
+                            }
+                        }
+                    }
+
+                    // Must have exactly 4 common rows
+                    if all_rows.len() != 4 {
+                        continue;
+                    }
+
+                    // Find eliminations in other columns
+                    let mut eliminations = Vec::new();
+                    for (c, col) in COLS.iter().enumerate() {
+                        if cols.contains(&c) {
+                            continue;
+                        }
+                        for &r in &all_rows {
+                            let cell_idx = col.cells[r as usize];
+                            if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                            }
+                        }
+                    }
+
+                    if !eliminations.is_empty() {
+                        let desc = format!(
+                            "4-Strong-Links Fish: digit {} in columns {},{},{},{} and rows {},{},{},{}",
+                            digit,
+                            c1_idx + 1,
+                            c2_idx + 1,
+                            c3_idx + 1,
+                            c4_idx + 1,
+                            all_rows[0] + 1,
+                            all_rows[1] + 1,
+                            all_rows[2] + 1,
+                            all_rows[3] + 1
+                        );
+                        acc.add(Hint {
+                            hint_type: crate::solver::HintType::StrongLinksFish,
+                            difficulty: 5.8,
+                            technique_name: "4-Strong-Links Fish".to_string(),
+                            description: desc,
+                            cell: Cell::from(c1.cells[all_rows[0] as usize]),
+                            value: 0,
+                            eliminations,
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Find 3-Strong-Links Fish pattern in rows.
 fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8, _degree: usize) {
     // Iterate on all combinations of 3 rows

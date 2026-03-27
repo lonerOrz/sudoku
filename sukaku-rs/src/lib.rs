@@ -322,6 +322,16 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_strong_links_fish_4() {
+        // 4-Strong-Links Fish: Also known as Jellyfish with strong links
+        // Using Jellyfish test puzzle
+        assert_technique_detectable(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "4-Strong-Links Fish",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.
