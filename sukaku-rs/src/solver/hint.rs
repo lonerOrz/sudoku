@@ -40,6 +40,7 @@ pub enum HintType {
     AlignedTripletExclusion,
     GeneralizedNakedSet,
     VLocking,
+    XCyclesSimple,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

@@ -460,6 +460,14 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_x_cycles() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "X-Cycles",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.

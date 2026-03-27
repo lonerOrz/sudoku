@@ -93,6 +93,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Generalized Naked Quint", generalized_naked_quint, 5.4),
         Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
         Rule::new("VLocking", vlocking, 4.5),
+        Rule::new("X-Cycles", x_cycles_simple, 6.5),
     ]
 }
 
@@ -115,6 +116,7 @@ pub fn find_rule(name: &str) -> Option<Rule> {
     all_rules().into_iter().find(|r| r.name == name)
 }
 
+pub mod chaining;
 pub mod direct;
 pub mod exclusion;
 pub mod fish;
@@ -127,6 +129,7 @@ pub mod unique;
 pub mod vlocking;
 pub mod wing;
 
+pub use chaining::x_cycles_simple;
 pub use direct::{hidden_single, naked_single};
 pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
 pub use fish::{jellyfish, swordfish, x_wing};
