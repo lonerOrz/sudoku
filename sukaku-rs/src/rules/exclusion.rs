@@ -31,8 +31,7 @@ pub fn aligned_pair_exclusion(grid: &Grid, acc: &mut HintAccumulator) {
 }
 
 fn find_ape_in_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
-    for row_idx in 0..9 {
-        let row = &ROWS[row_idx];
+    for (row_idx, row) in ROWS.iter().enumerate() {
         let cells_with_digit: Vec<u8> = row
             .cells
             .iter()
@@ -95,8 +94,7 @@ fn find_ape_in_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
 }
 
 fn find_ape_in_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
-    for col_idx in 0..9 {
-        let col = &COLS[col_idx];
+    for (col_idx, col) in COLS.iter().enumerate() {
         let cells_with_digit: Vec<u8> = col
             .cells
             .iter()
@@ -157,8 +155,7 @@ fn find_ape_in_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
 }
 
 fn find_ape_in_blocks(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
-    for block_idx in 0..9 {
-        let block = &BLOCKS[block_idx];
+    for (block_idx, block) in BLOCKS.iter().enumerate() {
         let cells_with_digit: Vec<u8> = block
             .cells
             .iter()
@@ -228,8 +225,7 @@ pub fn aligned_triplet_exclusion(grid: &Grid, acc: &mut HintAccumulator) {
 }
 
 fn find_ate_in_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
-    for row_idx in 0..9 {
-        let row = &ROWS[row_idx];
+    for (row_idx, row) in ROWS.iter().enumerate() {
         let cells_with_digit: Vec<u8> = row
             .cells
             .iter()
@@ -288,8 +284,7 @@ fn find_ate_in_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
 }
 
 fn find_ate_in_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8) {
-    for col_idx in 0..9 {
-        let col = &COLS[col_idx];
+    for (col_idx, col) in COLS.iter().enumerate() {
         let cells_with_digit: Vec<u8> = col
             .cells
             .iter()
