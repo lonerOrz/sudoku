@@ -452,3 +452,178 @@ pub fn wxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+/// Find VWXYZ-Wing patterns: five cells forming a wing structure with a five-candidate pivot.
+pub fn vwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
+    for pivot_idx in 0..81 {
+        if grid.get(pivot_idx) != 0 {
+            continue;
+        }
+
+        let pivot_cands = grid.candidates(pivot_idx);
+        if pivot_cands.cardinality() != 5 {
+            continue;
+        }
+
+        let pivot_values: Vec<u8> = pivot_cands.iter().collect();
+        let v = pivot_values[0];
+        let w = pivot_values[1];
+        let x = pivot_values[2];
+        let y = pivot_values[3];
+        let z = pivot_values[4];
+
+        for cell1 in 0..81 {
+            if cell1 == pivot_idx || grid.get(cell1) != 0 {
+                continue;
+            }
+
+            let cands1 = grid.candidates(cell1);
+            if cands1.cardinality() != 2 {
+                continue;
+            }
+
+            let values1: Vec<u8> = cands1.iter().collect();
+            let has_v = values1.contains(&v);
+            let has_w = values1.contains(&w);
+            if !has_v || !has_w {
+                continue;
+            }
+
+            let visible_to_pivot1 = is_visible(pivot_idx, cell1);
+            if !visible_to_pivot1 {
+                continue;
+            }
+
+            for cell2 in 0..81 {
+                if cell2 == pivot_idx || cell2 == cell1 || grid.get(cell2) != 0 {
+                    continue;
+                }
+
+                let cands2 = grid.candidates(cell2);
+                if cands2.cardinality() != 2 {
+                    continue;
+                }
+
+                let values2: Vec<u8> = cands2.iter().collect();
+                let has_v2 = values2.contains(&v);
+                let has_x = values2.contains(&x);
+                if !has_v2 || !has_x {
+                    continue;
+                }
+
+                let visible_to_pivot2 = is_visible(pivot_idx, cell2);
+                if !visible_to_pivot2 {
+                    continue;
+                }
+
+                for cell3 in 0..81 {
+                    if cell3 == pivot_idx
+                        || cell3 == cell1
+                        || cell3 == cell2
+                        || grid.get(cell3) != 0
+                    {
+                        continue;
+                    }
+
+                    let cands3 = grid.candidates(cell3);
+                    if cands3.cardinality() != 2 {
+                        continue;
+                    }
+
+                    let values3: Vec<u8> = cands3.iter().collect();
+                    let has_v3 = values3.contains(&v);
+                    let has_y = values3.contains(&y);
+                    if !has_v3 || !has_y {
+                        continue;
+                    }
+
+                    let visible_to_pivot3 = is_visible(pivot_idx, cell3);
+                    if !visible_to_pivot3 {
+                        continue;
+                    }
+
+                    for cell4 in 0..81 {
+                        if cell4 == pivot_idx
+                            || cell4 == cell1
+                            || cell4 == cell2
+                            || cell4 == cell3
+                            || grid.get(cell4) != 0
+                        {
+                            continue;
+                        }
+
+                        let cands4 = grid.candidates(cell4);
+                        if cands4.cardinality() != 2 {
+                            continue;
+                        }
+
+                        let values4: Vec<u8> = cands4.iter().collect();
+                        let has_v4 = values4.contains(&v);
+                        let has_z = values4.contains(&z);
+                        if !has_v4 || !has_z {
+                            continue;
+                        }
+
+                        let visible_to_pivot4 = is_visible(pivot_idx, cell4);
+                        if !visible_to_pivot4 {
+                            continue;
+                        }
+
+                        let targets1 = common_peers(cell1, cell2);
+                        let targets2 = common_peers(cell1, cell3);
+                        let targets3 = common_peers(cell1, cell4);
+                        let targets4 = common_peers(cell2, cell3);
+                        let targets5 = common_peers(cell2, cell4);
+                        let targets6 = common_peers(cell3, cell4);
+
+                        let mut common_targets: Vec<u8> = Vec::new();
+                        for &t in &targets1 {
+                            if targets2.contains(&t)
+                                && targets3.contains(&t)
+                                && targets4.contains(&t)
+                                && targets5.contains(&t)
+                                && targets6.contains(&t)
+                            {
+                                common_targets.push(t);
+                            }
+                        }
+
+                        let mut eliminations = Vec::new();
+                        for &target in &common_targets {
+                            if grid.get(target) != 0 {
+                                continue;
+                            }
+                            if grid.candidates(target).has(v) {
+                                eliminations.push((Cell::from(target), vec![v]));
+                            }
+                        }
+
+                        if !eliminations.is_empty() {
+                            let desc = format!(
+                                "VWXYZ-Wing pivot ({},{}) {{{},{},{},{},{}}} -> eliminate {}",
+                                pivot_idx / 9 + 1,
+                                pivot_idx % 9 + 1,
+                                v,
+                                w,
+                                x,
+                                y,
+                                z,
+                                v
+                            );
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::VWXYZWing,
+                                difficulty: 6.2,
+                                technique_name: "VWXYZ-Wing".to_string(),
+                                description: desc,
+                                cell: Cell::from(pivot_idx),
+                                value: 0,
+                                eliminations,
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
