@@ -94,6 +94,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
         Rule::new("VLocking", vlocking, 4.5),
         Rule::new("X-Cycles", x_cycles_simple, 6.5),
+        Rule::new("Y-Cycles", y_cycles_simple, 6.5),
     ]
 }
 
@@ -130,6 +131,7 @@ pub mod vlocking;
 pub mod wing;
 
 pub use chaining::x_cycles_simple;
+pub use chaining::y_cycles_simple;
 pub use direct::{hidden_single, naked_single};
 pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
 pub use fish::{jellyfish, swordfish, x_wing};

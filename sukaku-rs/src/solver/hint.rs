@@ -41,6 +41,7 @@ pub enum HintType {
     GeneralizedNakedSet,
     VLocking,
     XCyclesSimple,
+    YCyclesSimple,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
