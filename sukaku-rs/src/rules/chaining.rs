@@ -623,14 +623,15 @@ pub fn nishio_forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
 fn nishio_on_cell_value(grid: &Grid, acc: &mut HintAccumulator, start_cell: u8, value: u8) {
     // Path 1: Assume cell = value (ON)
     let on_result = trace_nishio_path(grid, start_cell, value, true);
-    
+
     // Path 2: Assume cell != value (OFF)
     let off_result = trace_nishio_path(grid, start_cell, value, false);
 
     // Check if both paths lead to the same conclusion
     if let (Some(on_conclusion), Some(off_conclusion)) = (&on_result, &off_result) {
         // Both paths reached the same conclusion
-        if on_conclusion.cell == off_conclusion.cell && on_conclusion.value == off_conclusion.value {
+        if on_conclusion.cell == off_conclusion.cell && on_conclusion.value == off_conclusion.value
+        {
             // Verify the conclusions have the same state (both ON or both OFF)
             if on_conclusion.is_on == off_conclusion.is_on {
                 report_nishio_chain(grid, acc, start_cell, value, on_conclusion, true);
@@ -639,9 +640,9 @@ fn nishio_on_cell_value(grid: &Grid, acc: &mut HintAccumulator, start_cell: u8, 
         }
 
         // Check for contradiction: one path says X=ON, other says X=OFF
-        if on_conclusion.cell == off_conclusion.cell 
-            && on_conclusion.value == off_conclusion.value 
-            && on_conclusion.is_on != off_conclusion.is_on 
+        if on_conclusion.cell == off_conclusion.cell
+            && on_conclusion.value == off_conclusion.value
+            && on_conclusion.is_on != off_conclusion.is_on
         {
             // This means the assumption leads to a contradiction
             // The original assumption must be wrong
@@ -661,7 +662,7 @@ fn trace_nishio_path(
     let mut pending_on: Vec<ChainPotential> = Vec::new();
     let mut pending_off: Vec<ChainPotential> = Vec::new();
     let mut visited: [[bool; 10]; 81] = [[false; 10]; 81];
-    
+
     let start = ChainPotential {
         cell: start_cell,
         value: start_value,
@@ -689,7 +690,7 @@ fn trace_nishio_path(
                 if is_significant_conclusion(grid, &imp) {
                     return Some(imp);
                 }
-                
+
                 if !visited[imp.cell as usize][imp.value as usize] {
                     visited[imp.cell as usize][imp.value as usize] = true;
                     if imp.is_on {
@@ -707,7 +708,7 @@ fn trace_nishio_path(
                 if is_significant_conclusion(grid, &imp) {
                     return Some(imp);
                 }
-                
+
                 if !visited[imp.cell as usize][imp.value as usize] {
                     visited[imp.cell as usize][imp.value as usize] = true;
                     if imp.is_on {
@@ -729,7 +730,7 @@ fn is_significant_conclusion(grid: &Grid, p: &ChainPotential) -> bool {
     // 1. It forces a cell to have a specific value (naked single)
     // 2. It eliminates all but one candidate from a cell
     // 3. It creates a contradiction in a unit
-    
+
     if p.is_on {
         // Cell must be this value - significant!
         true
@@ -752,14 +753,19 @@ fn report_nishio_chain(
 ) {
     let desc = format!(
         "Nishio Forcing Chain: R{}C{}={} leads to R{}C{}={} regardless of initial assumption",
-        (start_cell / 9) + 1, (start_cell % 9) + 1, start_value,
-        (conclusion.cell / 9) + 1, (conclusion.cell % 9) + 1, conclusion.value
+        (start_cell / 9) + 1,
+        (start_cell % 9) + 1,
+        start_value,
+        (conclusion.cell / 9) + 1,
+        (conclusion.cell % 9) + 1,
+        conclusion.value
     );
 
     let eliminations = if conclusion.is_on {
         // Conclusion: cell must be value
         // Eliminate other candidates from that cell
-        let other_cands: Vec<u8> = grid.candidates(conclusion.cell)
+        let other_cands: Vec<u8> = grid
+            .candidates(conclusion.cell)
             .iter()
             .filter(|&v| v != conclusion.value)
             .collect();
@@ -790,9 +796,15 @@ fn report_nishio_contradiction(
 ) {
     let desc = format!(
         "Nishio Forcing Chain: R{}C{}={} creates contradiction (R{}C{}={} vs R{}C{}={})",
-        (start_cell / 9) + 1, (start_cell % 9) + 1, start_value,
-        (on_result.cell / 9) + 1, (on_result.cell % 9) + 1, on_result.value,
-        (off_result.cell / 9) + 1, (off_result.cell % 9) + 1, off_result.value
+        (start_cell / 9) + 1,
+        (start_cell % 9) + 1,
+        start_value,
+        (on_result.cell / 9) + 1,
+        (on_result.cell % 9) + 1,
+        on_result.value,
+        (off_result.cell / 9) + 1,
+        (off_result.cell % 9) + 1,
+        off_result.value
     );
 
     acc.add(Hint {
@@ -803,5 +815,167 @@ fn report_nishio_contradiction(
         cell: Cell::from(start_cell),
         value: 0,
         eliminations: vec![(Cell::from(start_cell), vec![start_value])],
+    });
+}
+
+// ============================================================================
+// Multiple Forcing Chain (SE 8.0)
+// ============================================================================
+
+/// Multiple Forcing Chain: Multiple starting points all lead to the same conclusion.
+///
+/// Algorithm:
+/// 1. Find multiple potential starting cells (usually same digit in a unit)
+/// 2. For each starting point, trace the implication chain
+/// 3. If ALL paths lead to the same conclusion → that conclusion must be true
+///
+/// This is more powerful than single Nishio because it considers multiple scenarios.
+///
+/// Difficulty: SE 8.0
+pub fn multiple_forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
+    // Look for units (rows, cols, boxes) where a digit has limited positions
+    for digit in 1..=9u8 {
+        // Check rows
+        for row in &ROWS {
+            find_multiple_chains_for_digit_in_unit(grid, acc, digit, &row.cells);
+        }
+        // Check columns
+        for col in &COLS {
+            find_multiple_chains_for_digit_in_unit(grid, acc, digit, &col.cells);
+        }
+        // Check blocks
+        for block in &BLOCKS {
+            find_multiple_chains_for_digit_in_unit(grid, acc, digit, &block.cells);
+        }
+    }
+}
+
+/// Find multiple forcing chains for a digit in a unit
+fn find_multiple_chains_for_digit_in_unit(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    digit: u8,
+    unit_cells: &[u8; 9],
+) {
+    // Find positions where this digit can go
+    let positions: Vec<u8> = unit_cells
+        .iter()
+        .copied()
+        .filter(|&c| grid.get(c) == 0 && grid.candidates(c).has(digit))
+        .collect();
+
+    // Need at least 2 positions for multiple chains
+    if positions.len() < 2 || positions.len() > 4 {
+        return;
+    }
+
+    // For each position, assume digit is there and trace implications
+    let mut conclusions: Vec<Option<ChainPotential>> = Vec::new();
+
+    for &pos in &positions {
+        let conclusion = trace_multiple_chain(grid, pos, digit);
+        conclusions.push(conclusion);
+    }
+
+    // Check if all paths lead to the same conclusion
+    let first_conclusion = match conclusions.iter().find_map(|c| *c) {
+        Some(c) => c,
+        None => return, // No chains found
+    };
+
+    let all_same = conclusions.iter().all(|c| {
+        if let Some(conc) = c {
+            conc.cell == first_conclusion.cell
+                && conc.value == first_conclusion.value
+                && conc.is_on == first_conclusion.is_on
+        } else {
+            false
+        }
+    });
+
+    if all_same && conclusions.iter().all(|c| c.is_some()) {
+        // All chains lead to the same conclusion!
+        report_multiple_chain(grid, acc, &positions, digit, first_conclusion);
+    }
+}
+
+/// Trace a single chain for Multiple Forcing Chain
+fn trace_multiple_chain(grid: &Grid, start_cell: u8, start_value: u8) -> Option<ChainPotential> {
+    // Similar to Nishio but simpler - just trace one path
+    let mut pending_on: Vec<ChainPotential> = vec![ChainPotential {
+        cell: start_cell,
+        value: start_value,
+        is_on: true,
+    }];
+    let mut visited: [[bool; 10]; 81] = [[false; 10]; 81];
+    visited[start_cell as usize][start_value as usize] = true;
+
+    let max_iterations = 20;
+    let mut iterations = 0;
+
+    while !pending_on.is_empty() && iterations < max_iterations {
+        iterations += 1;
+        let p = pending_on.pop().unwrap();
+
+        let implications = get_implications(grid, p);
+        for imp in implications {
+            // Check for significant conclusion
+            if imp.is_on && grid.candidates(imp.cell).cardinality() == 1 {
+                return Some(imp);
+            }
+
+            if !visited[imp.cell as usize][imp.value as usize] {
+                visited[imp.cell as usize][imp.value as usize] = true;
+                if imp.is_on {
+                    pending_on.push(imp);
+                }
+            }
+        }
+    }
+
+    None
+}
+
+/// Report Multiple Forcing Chain
+fn report_multiple_chain(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    positions: &[u8],
+    digit: u8,
+    conclusion: ChainPotential,
+) {
+    let pos_desc: Vec<String> = positions
+        .iter()
+        .map(|&c| format!("R{}C{}", (c / 9) + 1, (c % 9) + 1))
+        .collect();
+
+    let desc = format!(
+        "Multiple Forcing Chain: If {} in any of [{}] → R{}C{}={}",
+        digit,
+        pos_desc.join(", "),
+        (conclusion.cell / 9) + 1,
+        (conclusion.cell % 9) + 1,
+        conclusion.value
+    );
+
+    let eliminations = if conclusion.is_on {
+        let other_cands: Vec<u8> = grid
+            .candidates(conclusion.cell)
+            .iter()
+            .filter(|&v| v != conclusion.value)
+            .collect();
+        vec![(Cell::from(conclusion.cell), other_cands)]
+    } else {
+        vec![(Cell::from(conclusion.cell), vec![conclusion.value])]
+    };
+
+    acc.add(Hint {
+        hint_type: crate::solver::HintType::MultipleForcingChain,
+        difficulty: 8.0,
+        technique_name: "Multiple Forcing Chain".to_string(),
+        description: desc,
+        cell: Cell::from(positions[0]),
+        value: 0,
+        eliminations,
     });
 }

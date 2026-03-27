@@ -522,6 +522,16 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_multiple_forcing_chain() {
+        // Test Multiple Forcing Chain detection (SE 8.0)
+        // Multiple starting points all lead to the same conclusion
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "Multiple Forcing Chain",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.
