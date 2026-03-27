@@ -38,6 +38,7 @@ pub enum HintType {
     StrongLinksFish,
     AlignedPairExclusion,
     AlignedTripletExclusion,
+    GeneralizedNakedSet,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

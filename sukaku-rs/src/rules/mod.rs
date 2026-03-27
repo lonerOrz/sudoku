@@ -87,6 +87,11 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("6-Strong-Links Fish", strong_links_fish_6, 6.2),
         Rule::new("Aligned Pair Exclusion", aligned_pair_exclusion, 6.2),
         Rule::new("Aligned Triplet Exclusion", aligned_triplet_exclusion, 7.5),
+        Rule::new("Generalized Naked Pair", generalized_naked_pair, 3.0),
+        Rule::new("Generalized Naked Triplet", generalized_naked_triple, 3.6),
+        Rule::new("Generalized Naked Quad", generalized_naked_quad, 5.0),
+        Rule::new("Generalized Naked Quint", generalized_naked_quint, 5.4),
+        Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
     ]
 }
 
@@ -116,6 +121,7 @@ pub mod indirect;
 pub mod locked;
 pub mod strong_link;
 pub mod subset;
+pub mod subset_gen;
 pub mod unique;
 pub mod wing;
 
@@ -129,6 +135,10 @@ pub use strong_link::{
     two_string_kite,
 };
 pub use subset::{hidden_quad, hidden_triple, naked_quad, naked_triple};
+pub use subset_gen::{
+    generalized_naked_pair, generalized_naked_quad, generalized_naked_quint,
+    generalized_naked_sext, generalized_naked_triple,
+};
 pub use unique::{
     bug_plus_four, bug_plus_one, bug_plus_three, bug_plus_two, unique_rectangle_type1,
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,

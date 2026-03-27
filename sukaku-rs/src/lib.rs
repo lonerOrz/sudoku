@@ -412,6 +412,46 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_generalized_naked_pair() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Generalized Naked Pair",
+        );
+    }
+
+    #[test]
+    fn test_generalized_naked_triple() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Generalized Naked Triple",
+        );
+    }
+
+    #[test]
+    fn test_generalized_naked_quad() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Generalized Naked Quad",
+        );
+    }
+
+    #[test]
+    fn test_generalized_naked_quint() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Generalized Naked Quint",
+        );
+    }
+
+    #[test]
+    fn test_generalized_naked_sext() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Generalized Naked Sext",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.
