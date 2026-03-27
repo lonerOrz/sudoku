@@ -21,6 +21,7 @@ pub enum HintType {
     XYZWing,
     WXYZWing,
     VWXYZWing,
+    UVWXYZWing,
     UniqueRectangleType1,
     UniqueRectangleType2,
     UniqueRectangleType3,

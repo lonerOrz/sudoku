@@ -627,3 +627,165 @@ pub fn vwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+/// Find UVWXYZ-Wing patterns: six cells forming a wing structure with a six-candidate pivot.
+pub fn uvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
+    for pivot_idx in 0..81 {
+        if grid.get(pivot_idx) != 0 {
+            continue;
+        }
+
+        let pivot_cands = grid.candidates(pivot_idx);
+        if pivot_cands.cardinality() != 6 {
+            continue;
+        }
+
+        let pivot_values: Vec<u8> = pivot_cands.iter().collect();
+        let u = pivot_values[0];
+
+        let wing_configs = [
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[5],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[4],
+                pivot_values[5],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[1],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+            ),
+            (
+                pivot_values[0],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+            ),
+            (
+                pivot_values[1],
+                pivot_values[2],
+                pivot_values[3],
+                pivot_values[4],
+                pivot_values[5],
+            ),
+        ];
+
+        for wing_vals in wing_configs.iter() {
+            find_uvwxyz_wing_pattern(grid, acc, pivot_idx, u, *wing_vals);
+        }
+    }
+}
+
+fn find_uvwxyz_wing_pattern(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    pivot_idx: u8,
+    elim_digit: u8,
+    wing_vals: (u8, u8, u8, u8, u8),
+) {
+    let (w1, w2, w3, w4, w5) = wing_vals;
+    let wing_set = [w1, w2, w3, w4, w5];
+
+    let mut wing_cells: Vec<u8> = Vec::new();
+
+    for i in 0..81 {
+        if i == pivot_idx || grid.get(i) != 0 {
+            continue;
+        }
+        if !is_visible(pivot_idx, i) {
+            continue;
+        }
+
+        let cands = grid.candidates(i);
+        if cands.cardinality() != 2 {
+            continue;
+        }
+
+        let vals: Vec<u8> = cands.iter().collect();
+        let has_elim = vals.contains(&elim_digit);
+        let other = vals.iter().find(|&&v| v != elim_digit);
+
+        let other_val = other.unwrap();
+        if has_elim && wing_set.contains(other_val) {
+            wing_cells.push(i);
+        }
+
+        if wing_cells.len() >= 5 {
+            break;
+        }
+    }
+
+    if wing_cells.len() != 5 {
+        return;
+    }
+
+    let targets1 = common_peers(wing_cells[0], wing_cells[1]);
+    let targets2 = common_peers(wing_cells[0], wing_cells[2]);
+    let targets3 = common_peers(wing_cells[0], wing_cells[3]);
+    let targets4 = common_peers(wing_cells[0], wing_cells[4]);
+    let targets5 = common_peers(wing_cells[1], wing_cells[2]);
+    let targets6 = common_peers(wing_cells[1], wing_cells[3]);
+    let targets7 = common_peers(wing_cells[1], wing_cells[4]);
+    let targets8 = common_peers(wing_cells[2], wing_cells[3]);
+    let targets9 = common_peers(wing_cells[2], wing_cells[4]);
+    let targets10 = common_peers(wing_cells[3], wing_cells[4]);
+
+    let mut common: Vec<u8> = Vec::new();
+    for &t in &targets1 {
+        if targets2.contains(&t)
+            && targets3.contains(&t)
+            && targets4.contains(&t)
+            && targets5.contains(&t)
+            && targets6.contains(&t)
+            && targets7.contains(&t)
+            && targets8.contains(&t)
+            && targets9.contains(&t)
+            && targets10.contains(&t)
+        {
+            common.push(t);
+        }
+    }
+
+    let mut eliminations = Vec::new();
+    for &target in &common {
+        if grid.get(target) == 0 && grid.candidates(target).has(elim_digit) {
+            eliminations.push((Cell::from(target), vec![elim_digit]));
+        }
+    }
+
+    if !eliminations.is_empty() {
+        let desc = format!(
+            "UVWXYZ-Wing pivot ({},{}) -> eliminate {}",
+            pivot_idx / 9 + 1,
+            pivot_idx % 9 + 1,
+            elim_digit
+        );
+        acc.add(Hint {
+            hint_type: crate::solver::HintType::UVWXYZWing,
+            difficulty: 6.6,
+            technique_name: "UVWXYZ-Wing".to_string(),
+            description: desc,
+            cell: Cell::from(pivot_idx),
+            value: 0,
+            eliminations,
+        });
+    }
+}

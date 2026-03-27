@@ -311,6 +311,14 @@ mod tests {
     }
 
     #[test]
+    fn test_uvwxyz_wing_detection() {
+        assert_technique_no_crash(
+            "010000508000403000056700000000020080400000302200376001908000254000007000000000003",
+            "UVWXYZ-Wing",
+        );
+    }
+
+    #[test]
     fn test_bug_plus_one() {
         // BUG+1: Bivalue Universal Grave Type 1
         // Note: This puzzle may not have BUG+1 at initial state
