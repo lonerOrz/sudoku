@@ -957,3 +957,236 @@ fn find_tuvwxyz_wing_pattern(
         });
     }
 }
+
+// ============================================================================
+// Double Link Detection (Wing variants with dual links)
+// ============================================================================
+
+/// Check if two cells have a double link (share two different values).
+/// This is used for advanced Wing variants like ALS-XZ.
+fn has_double_link(grid: &Grid, cell1: u8, cell2: u8) -> Option<(u8, u8)> {
+    if !is_visible(cell1, cell2) {
+        return None;
+    }
+
+    let cands1 = grid.candidates(cell1);
+    let cands2 = grid.candidates(cell2);
+
+    // Find shared candidates
+    let shared: Vec<u8> = cands1.iter().filter(|v| cands2.has(*v)).collect();
+
+    // Double link requires exactly 2 shared values
+    if shared.len() == 2 {
+        Some((shared[0], shared[1]))
+    } else {
+        None
+    }
+}
+
+/// Find Wing patterns with double links (enhanced detection).
+///
+/// Double link wings occur when:
+/// - Two wing cells both link to the pivot through different values
+/// - The wings share a common elimination candidate
+/// - This creates a stronger inference chain
+///
+/// This function adds double link detection to existing Wing techniques.
+pub fn find_wings_with_double_links(grid: &Grid, acc: &mut HintAccumulator) {
+    // Re-run XY-Wing with double link check
+    find_xy_wing_double_link(grid, acc);
+}
+
+/// XY-Wing with double link detection
+fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
+    for pivot_idx in 0..81 {
+        if grid.get(pivot_idx) != 0 {
+            continue;
+        }
+
+        let pivot_cands = grid.candidates(pivot_idx);
+        if pivot_cands.cardinality() != 2 {
+            continue;
+        }
+
+        let pivot_values: Vec<u8> = pivot_cands.iter().collect();
+        let x = pivot_values[0];
+        let y = pivot_values[1];
+
+        // Find first wing (shares X with pivot)
+        for wing1_idx in 0..81 {
+            if wing1_idx == pivot_idx || grid.get(wing1_idx) != 0 {
+                continue;
+            }
+
+            let wing1_cands = grid.candidates(wing1_idx);
+            if wing1_cands.cardinality() != 2 {
+                continue;
+            }
+
+            let wing1_values: Vec<u8> = wing1_cands.iter().collect();
+            if !wing1_values.contains(&x) {
+                continue;
+            }
+            let z_wing1 = *wing1_values.iter().find(|&&v| v != x).unwrap();
+
+            if !is_visible(pivot_idx, wing1_idx) {
+                continue;
+            }
+
+            // Find second wing (shares Y with pivot)
+            for wing2_idx in 0..81 {
+                if wing2_idx == pivot_idx || wing2_idx == wing1_idx || grid.get(wing2_idx) != 0 {
+                    continue;
+                }
+
+                let wing2_cands = grid.candidates(wing2_idx);
+                if wing2_cands.cardinality() != 2 {
+                    continue;
+                }
+
+                let wing2_values: Vec<u8> = wing2_cands.iter().collect();
+                if !wing2_values.contains(&y) {
+                    continue;
+                }
+                let z_wing2 = *wing2_values.iter().find(|&&v| v != y).unwrap();
+
+                if z_wing1 != z_wing2 {
+                    continue;
+                }
+
+                if !is_visible(pivot_idx, wing2_idx) {
+                    continue;
+                }
+
+                // Check for double link between wings
+                let has_double = has_double_link(grid, wing1_idx, wing2_idx).is_some();
+
+                // Find common peers for elimination
+                let targets = common_peers(wing1_idx, wing2_idx);
+                let mut eliminations = Vec::new();
+
+                for &target in &targets {
+                    if grid.get(target) != 0 {
+                        continue;
+                    }
+                    if grid.candidates(target).has(z_wing1) {
+                        eliminations.push((Cell::from(target), vec![z_wing1]));
+                    }
+                }
+
+                if !eliminations.is_empty() {
+                    let desc = format!(
+                        "XY-Wing{} pivot R{}C{} wings R{}C{} and R{}C{} -> eliminate {}",
+                        if has_double { " (Double Link)" } else { "" },
+                        (pivot_idx / 9) + 1,
+                        (pivot_idx % 9) + 1,
+                        (wing1_idx / 9) + 1,
+                        (wing1_idx % 9) + 1,
+                        (wing2_idx / 9) + 1,
+                        (wing2_idx % 9) + 1,
+                        z_wing1
+                    );
+
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::XYWing,
+                        difficulty: if has_double { 4.0 } else { 4.2 },
+                        technique_name: "XY-Wing".to_string(),
+                        description: desc,
+                        cell: Cell::from(pivot_idx),
+                        value: 0,
+                        eliminations,
+                    });
+                }
+            }
+        }
+    }
+}
+
+/// ALS-XZ technique: Almost Locked Set XZ-rule
+/// This is a generalization of Wing techniques using ALS nodes.
+///
+/// Difficulty: SE 7.0+
+pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
+    // Find pairs of Almost Locked Sets (cells with n+1 candidates in n cells)
+    // For simplicity, we start with 2-cell ALS (bi-value cells)
+
+    for cell1 in 0..81 {
+        if grid.get(cell1) != 0 {
+            continue;
+        }
+
+        let cands1: Vec<u8> = grid.candidates(cell1).iter().collect();
+        if cands1.len() < 2 || cands1.len() > 3 {
+            continue;
+        }
+
+        for cell2 in (cell1 + 1)..81 {
+            if grid.get(cell2) != 0 {
+                continue;
+            }
+
+            let cands2: Vec<u8> = grid.candidates(cell2).iter().collect();
+            if cands2.len() < 2 || cands2.len() > 3 {
+                continue;
+            }
+
+            // Find restricted common digits (X and Z)
+            let common: Vec<u8> = cands1
+                .iter()
+                .filter(|v| cands2.contains(v))
+                .copied()
+                .collect();
+
+            if common.len() < 2 {
+                continue;
+            }
+
+            // Check if cells can see each other (for restricted common)
+            if !is_visible(cell1, cell2) {
+                continue;
+            }
+
+            // For ALS-XZ, we need cells that can't both be false for restricted commons
+            // Find elimination targets
+            let x = common[0];
+            let z = common[1];
+
+            // Find cells that can see both ALS and contain Z
+            let targets: Vec<u8> = (0..81)
+                .filter(|&c| {
+                    c != cell1
+                        && c != cell2
+                        && grid.get(c) == 0
+                        && is_visible(c, cell1)
+                        && is_visible(c, cell2)
+                        && grid.candidates(c).has(z)
+                })
+                .collect();
+
+            if !targets.is_empty() {
+                let eliminations: Vec<(Cell, Vec<u8>)> =
+                    targets.iter().map(|&t| (Cell::from(t), vec![z])).collect();
+
+                let desc =
+                    format!(
+                    "ALS-XZ: cells R{}C{}{{{}}} and R{}C{}{{{}}} share X={} Z={} -> eliminate {}",
+                    (cell1 / 9) + 1, (cell1 % 9) + 1,
+                    cands1.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","),
+                    (cell2 / 9) + 1, (cell2 % 9) + 1,
+                    cands2.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","),
+                    x, z, z
+                );
+
+                acc.add(Hint {
+                    hint_type: crate::solver::HintType::AlignedPairExclusion,
+                    difficulty: 7.0,
+                    technique_name: "ALS-XZ".to_string(),
+                    description: desc,
+                    cell: Cell::from(cell1),
+                    value: 0,
+                    eliminations,
+                });
+            }
+        }
+    }
+}

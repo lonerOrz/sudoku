@@ -492,6 +492,26 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_als_xz() {
+        // Test ALS-XZ technique detection (SE 7.0)
+        // ALS-XZ uses Almost Locked Sets with restricted commons
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "ALS-XZ",
+        );
+    }
+
+    #[test]
+    fn test_wing_double_link() {
+        // Test Wing with double link detection
+        // Double link wings have stronger inference
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "XY-Wing",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.

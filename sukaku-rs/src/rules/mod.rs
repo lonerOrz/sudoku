@@ -69,6 +69,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("VWXYZ-Wing", vwxyz_wing, 6.2),
         Rule::new("UVWXYZ-Wing", uvwxyz_wing, 6.6),
         Rule::new("TUVWXYZ-Wing", tuvwxyz_wing, 7.5),
+        Rule::new("ALS-XZ", als_xz_rule, 7.0),
         // Unique Rectangle (difficulty 5.0-5.3)
         Rule::new("Unique Rectangle Type 1", unique_rectangle_type1, 5.0),
         Rule::new("Unique Rectangle Type 2", unique_rectangle_type2, 5.1),
@@ -153,4 +154,4 @@ pub use unique::{
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
 pub use vlocking::vlocking;
-pub use wing::{tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};
+pub use wing::{als_xz_rule, tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};
