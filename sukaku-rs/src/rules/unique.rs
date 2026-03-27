@@ -546,8 +546,16 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
+/// BUG+1: Bivalue Universal Grave Type 1
+///
+/// A BUG pattern exists when:
+/// - All unsolved cells have exactly 2 candidates, except one cell with 3 candidates
+/// - Removing the "BUG-breaking" candidate from the triple-cell would create a deadly pattern
+/// - In a deadly pattern, each digit appears exactly 0 or 2 times in each region
+///
+/// The triple-cell must contain the candidate that breaks the BUG pattern.
 pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
-    let mut bivalue_cells = 0;
+    // Step 1: Find the triple-cell (only cell with 3 candidates)
     let mut triple_cell: Option<(u8, crate::grid::Candidates)> = None;
 
     for i in 0..81 {
@@ -555,65 +563,159 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
             let cands = grid.candidates(i);
             let count = cands.cardinality();
 
-            if count == 2 {
-                bivalue_cells += 1;
-            } else if count == 3 {
+            if count == 3 {
                 if triple_cell.is_none() {
                     triple_cell = Some((i, cands));
                 } else {
-                    return;
+                    return; // More than one triple-cell, not BUG+1
                 }
+            } else if count != 2 {
+                return; // Cell with != 2 or 3 candidates, not BUG+1
+            }
+        }
+    }
+
+    let (pivot_idx, pivot_cands) = match triple_cell {
+        Some(cell) => cell,
+        None => return, // No triple-cell found
+    };
+
+    // Step 2: Try each candidate in the triple-cell as the BUG-breaking value
+    for d in pivot_cands.iter() {
+        // Step 3: Check if removing d creates a BUG pattern
+        if is_bug_pattern_without(grid, pivot_idx, d) {
+            // Step 4: Verify this is a real BUG pattern (not a false positive)
+            // The excluded digit must appear exactly 3 times in some region(s)
+            // when counting the pivot's full candidates (before exclusion)
+            if !is_real_bug_trigger(grid, pivot_idx, d) {
+                continue;
+            }
+
+            // Found BUG+1: d must be the solution
+            let desc =
+                format!(
+                "BUG+1: Cell ({},{}) with extra candidate {} breaks deadly pattern -> must be {}",
+                pivot_idx / 9 + 1, pivot_idx % 9 + 1, d, d
+            );
+
+            acc.add(Hint {
+                hint_type: crate::solver::HintType::BUGPlusOne,
+                difficulty: 5.6,
+                technique_name: "BUG+1".to_string(),
+                description: desc,
+                cell: crate::grid::Cell::from(pivot_idx),
+                value: d,
+                eliminations: vec![],
+            });
+            return;
+        }
+    }
+}
+
+/// Verify that excluding this digit creates a real BUG pattern.
+///
+/// A real BUG pattern requires that the excluded digit appears an odd number
+/// of times (typically 3) in at least one region when counting all candidates.
+/// This prevents false positives where the pattern happens to satisfy the
+/// 0-or-2 rule but isn't actually a deadly pattern.
+fn is_real_bug_trigger(grid: &Grid, _pivot_idx: u8, exclude_value: u8) -> bool {
+    use crate::grid::{BLOCKS, COLS, ROWS};
+
+    // Count occurrences of exclude_value in each region type
+    // In a true BUG+1, the exclude_value should appear 3 times in some regions
+    // (2 from the BUG pattern + 1 from the pivot's extra candidate)
+
+    let regions: Vec<&[u8]> = ROWS
+        .iter()
+        .map(|r| r.cells.as_slice())
+        .chain(COLS.iter().map(|c| c.cells.as_slice()))
+        .chain(BLOCKS.iter().map(|b| b.cells.as_slice()))
+        .collect();
+
+    let mut found_anomaly = false;
+
+    for &region in &regions {
+        let mut count = 0;
+        for &cell_idx in region {
+            if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(exclude_value) {
+                count += 1;
+            }
+        }
+
+        // In BUG+1, the exclude_value typically appears 3 times in regions
+        // containing the pivot (2 from BUG + 1 extra = 3, which is odd)
+        if count == 3 {
+            found_anomaly = true;
+        } else if count != 2 && count != 0 {
+            // Other counts are also anomalies (1, 4, 5, etc.)
+            if count == 1 || count > 3 {
+                found_anomaly = true;
+            }
+        }
+    }
+
+    found_anomaly
+}
+
+/// Check if removing a candidate from the pivot cell creates a BUG pattern.
+///
+/// A BUG pattern requires:
+/// 1. All unsolved cells have exactly 2 candidates
+/// 2. Each digit appears exactly 0 or 2 times in every region (row, column, block)
+fn is_bug_pattern_without(grid: &Grid, pivot_idx: u8, exclude_value: u8) -> bool {
+    use crate::grid::{BLOCKS, COLS, ROWS};
+
+    // Step 1: Verify all cells have exactly 2 candidates (excluding the pivot value)
+    for i in 0..81 {
+        if grid.get(i) == 0 {
+            let cands = grid.candidates(i);
+            let count = if i == pivot_idx {
+                // For pivot, exclude the BUG-breaking value
+                cands.iter().filter(|&v| v != exclude_value).count()
             } else {
-                return;
+                cands.cardinality() as usize
+            };
+
+            if count != 2 {
+                return false;
             }
         }
     }
 
-    let empty_count = (0..81).filter(|&i| grid.get(i) == 0).count();
-    if empty_count > 1 && bivalue_cells == empty_count - 1 {
-        if let Some((pivot_idx, pivot_cands)) = triple_cell {
-            for &d in &[1, 2, 3] {
-                if !pivot_cands.has(d) {
-                    continue;
+    // Step 2: Verify each digit appears 0 or 2 times in all regions
+    let regions: Vec<&[u8]> = ROWS
+        .iter()
+        .map(|r| r.cells.as_slice())
+        .chain(COLS.iter().map(|c| c.cells.as_slice()))
+        .chain(BLOCKS.iter().map(|b| b.cells.as_slice()))
+        .collect();
+
+    for digit in 1..=9u8 {
+        for &region in &regions {
+            let mut count = 0;
+
+            for &cell_idx in region {
+                if grid.get(cell_idx) == 0 {
+                    let cands = grid.candidates(cell_idx);
+                    let has_digit = if cell_idx == pivot_idx {
+                        // For pivot, check if digit is present (excluding the BUG-breaking value)
+                        cands.has(digit) && digit != exclude_value
+                    } else {
+                        cands.has(digit)
+                    };
+
+                    if has_digit {
+                        count += 1;
+                    }
                 }
+            }
 
-                let in_bivalue: usize = (1..=9)
-                    .filter(|&x| {
-                        if x == d {
-                            return false;
-                        }
-                        let mut count = 0;
-                        for i in 0..81 {
-                            if grid.get(i) == 0
-                                && grid.candidates(i).has(x)
-                                && grid.candidates(i).cardinality() == 2
-                            {
-                                count += 1;
-                            }
-                        }
-                        count >= 2
-                    })
-                    .count();
-
-                if in_bivalue == 1 {
-                    let desc = format!(
-                        "BUG+1: Only cell ({},{}) has 3 candidates, digit {} breaks BUG pattern -> must be {}",
-                        pivot_idx / 9 + 1, pivot_idx % 9 + 1, d, d
-                    );
-
-                    acc.add(Hint {
-                        hint_type: crate::solver::HintType::BUGPlusOne,
-                        difficulty: 5.6,
-                        technique_name: "BUG+1".to_string(),
-                        description: desc,
-                        cell: crate::grid::Cell::from(pivot_idx),
-                        value: d,
-                        eliminations: vec![],
-                    });
-
-                    return;
-                }
+            // Each digit must appear 0 or 2 times in each region
+            if count != 0 && count != 2 {
+                return false;
             }
         }
     }
+
+    true
 }
