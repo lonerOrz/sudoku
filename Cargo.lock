@@ -873,6 +873,7 @@ dependencies = [
  "clap",
  "criterion",
  "rand",
+ "rayon",
  "serde",
  "serde_json",
  "thiserror",

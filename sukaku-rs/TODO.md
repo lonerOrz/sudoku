@@ -16,7 +16,7 @@
 | **Overall Progress** | 38/62 techniques (61%) |
 | **Puzzle Coverage** | ~97% (ER 1.0-8.0) |
 | **Tests** | 64 passing |
-| **CLI** | generate, rate, direct input, JSON output |
+| **CLI** | generate, rate, direct input, JSON output, --version, --pearl, --diamond, --total-time, 完整格式符 |
 
 ---
 
@@ -526,8 +526,12 @@ Difficulty Scale:
 - [x] CLI: JSON output support
 
 ### In Progress
-- [ ] Phase 6: Additional format specifiers
-- [ ] Phase 6: Thread count support
+- [x] Phase 6: Additional format specifiers (%D, %P, %R, %i, %l, %%, %t, %T) ✅
+- [x] Phase 6: --version 支持 ✅
+- [x] Phase 6: --pearl/--diamond 提前终止 ✅
+- [x] Phase 6: --total-time 耗时统计 ✅
+- [x] Phase 6: --threads 多线程支持 ✅
+- [ ] Phase 6: --batch=N 批量模式
 
 ### Pending
 - [x] Phase 3: Advanced Techniques (20/20 COMPLETE) ✅

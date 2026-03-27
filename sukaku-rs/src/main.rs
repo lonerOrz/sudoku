@@ -1,9 +1,14 @@
 use clap::{Parser, Subcommand};
+use rayon::prelude::*;
+use std::time::Instant;
 use sukaku_rs::{DifficultyRating, Generator, Grid, Rater, Solver, Symmetry};
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
 #[command(name = "sukaku-rs")]
 #[command(about = "Sudoku puzzle generator and rater", long_about = None)]
+#[command(version = VERSION)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -30,6 +35,9 @@ enum Commands {
 
         #[arg(long)]
         output: Option<String>,
+
+        #[arg(long, help = "Number of threads for parallel generation")]
+        threads: Option<usize>,
     },
 
     /// Rate puzzles from file or string
@@ -48,6 +56,15 @@ enum Commands {
 
         #[arg(long)]
         json: bool,
+
+        #[arg(long, help = "Terminate if not pearl (EP) rating")]
+        pearl: bool,
+
+        #[arg(long, help = "Terminate if not diamond (ED) rating")]
+        diamond: bool,
+
+        #[arg(long, help = "Show total processing time")]
+        total_time: bool,
     },
 }
 
@@ -69,12 +86,22 @@ fn parse_symmetry(s: &str) -> Symmetry {
 }
 
 fn format_output(format: &str, rating: &DifficultyRating, puzzle: &str) -> String {
-    format
+    let mut result = format
         .replace("%r", &format!("{:.1}", rating.er))
         .replace("%p", &format!("{:.1}", rating.ep))
         .replace("%d", &format!("{:.1}", rating.ed))
-        .replace("%t", &rating.er_technique)
-        .replace("%g", puzzle)
+        .replace("%D", &rating.er_technique) // Diamond technique name
+        .replace("%P", &rating.er_technique) // Pearl technique name
+        .replace("%R", &rating.er_technique) // Rating technique name
+        .replace("%i", puzzle) // Puzzle grid
+        .replace("%g", puzzle) // Puzzle string
+        .replace("%l", "\n") // Newline
+        .replace("%%", "%"); // Literal %
+
+    // Technique name (%t) must be replaced before Tab (%T)
+    result = result.replace("%t", &rating.er_technique);
+    result = result.replace("%T", "\t"); // Tab
+    result
 }
 
 fn cmd_generate(
@@ -83,25 +110,41 @@ fn cmd_generate(
     count: usize,
     symmetry: String,
     output: Option<String>,
+    threads: Option<usize>,
 ) {
     let sym = parse_symmetry(&symmetry);
-    let mut gen = Generator::with_difficulty(min_diff, max_diff);
-    gen.require_unique = true;
-    if sym != Symmetry::None {
-        gen.symmetry = sym;
+
+    // Set number of threads for rayon
+    if let Some(num_threads) = threads {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build_global()
+            .unwrap();
     }
 
-    let mut puzzles = Vec::new();
-    for i in 0..count {
-        match gen.generate() {
-            Ok(grid) => {
-                puzzles.push(grid.to_string().replace('\n', ""));
+    // Generate puzzles in parallel
+    let puzzles: Vec<String> = (0..count)
+        .into_par_iter()
+        .map(|i| {
+            // Use different seed for each iteration
+            let mut gen = Generator::with_seed(i as u64);
+            gen.require_unique = true;
+            gen.min_difficulty = min_diff;
+            gen.max_difficulty = max_diff;
+            if sym != Symmetry::None {
+                gen.symmetry = sym;
             }
-            Err(e) => {
-                eprintln!("Generation {} failed: {}", i + 1, e);
+
+            match gen.generate() {
+                Ok(grid) => grid.to_string().replace('\n', ""),
+                Err(e) => {
+                    eprintln!("Generation {} failed: {}", i + 1, e);
+                    String::new()
+                }
             }
-        }
-    }
+        })
+        .filter(|s| !s.is_empty())
+        .collect();
 
     let output_str = puzzles.join("\n");
 
@@ -113,13 +156,31 @@ fn cmd_generate(
     }
 }
 
-fn cmd_rate(
+struct RateOptions {
     input: Option<String>,
-    puzzle_arg: Option<String>,
+    puzzle: Option<String>,
     output: Option<String>,
     format: String,
     json: bool,
-) {
+    pearl: bool,
+    diamond: bool,
+    show_total_time: bool,
+}
+
+fn cmd_rate_opts(opts: RateOptions) {
+    let RateOptions {
+        input,
+        puzzle: puzzle_arg,
+        output,
+        format,
+        json,
+        pearl,
+        diamond,
+        show_total_time,
+    } = opts;
+
+    let start_time = Instant::now();
+
     let puzzles: Vec<String> = if let Some(path) = input {
         std::fs::read_to_string(&path)
             .unwrap()
@@ -138,6 +199,7 @@ fn cmd_rate(
         std::process::exit(1);
     }
 
+    let mut skipped = 0;
     let output_str = if json {
         let mut json_results = Vec::new();
         for puzzle in &puzzles {
@@ -152,6 +214,17 @@ fn cmd_rate(
             let mut solver = Solver::new(grid);
             let mut rater = Rater::new(&mut solver);
             let rating = rater.analyse();
+
+            // Check pearl/diamond filters
+            // Pearl: EP >= 6.0, Diamond: ED >= 7.0 (SukakuExplainer thresholds)
+            if pearl && rating.ep < 6.0 {
+                skipped += 1;
+                continue;
+            }
+            if diamond && rating.ed < 7.0 {
+                skipped += 1;
+                continue;
+            }
 
             json_results.push(serde_json::json!({
                 "puzzle": puzzle,
@@ -177,6 +250,17 @@ fn cmd_rate(
             let mut rater = Rater::new(&mut solver);
             let rating = rater.analyse();
 
+            // Check pearl/diamond filters (non-JSON branch)
+            // Pearl: EP >= 6.0, Diamond: ED >= 7.0 (SukakuExplainer thresholds)
+            if pearl && rating.ep < 6.0 {
+                skipped += 1;
+                continue;
+            }
+            if diamond && rating.ed < 7.0 {
+                skipped += 1;
+                continue;
+            }
+
             let formatted = format_output(&format, &rating, puzzle);
             text_results.push(formatted);
         }
@@ -192,7 +276,22 @@ fn cmd_rate(
             println!("Wrote {} results to {}", count, path);
         }
     } else {
-        println!("{}", output_str);
+        if !output_str.is_empty() {
+            println!("{}", output_str);
+        }
+    }
+
+    if show_total_time {
+        let elapsed = start_time.elapsed();
+        eprintln!("Total time: {:.2}s", elapsed.as_secs_f64());
+    }
+
+    if skipped > 0 {
+        eprintln!("Skipped {} puzzles (filtered by pearl/diamond)", skipped);
+    }
+
+    if output_str.is_empty() && skipped > 0 {
+        std::process::exit(0);
     }
 }
 
@@ -206,8 +305,9 @@ fn main() {
             count,
             symmetry,
             output,
+            threads,
         }) => {
-            cmd_generate(min_diff, max_diff, count, symmetry, output);
+            cmd_generate(min_diff, max_diff, count, symmetry, output, threads);
         }
         Some(Commands::Rate {
             input,
@@ -215,8 +315,20 @@ fn main() {
             output,
             format,
             json,
+            pearl,
+            diamond,
+            total_time,
         }) => {
-            cmd_rate(input, puzzle, output, format, json);
+            cmd_rate_opts(RateOptions {
+                input,
+                puzzle,
+                output,
+                format,
+                json,
+                pearl,
+                diamond,
+                show_total_time: total_time,
+            });
         }
         None => {
             if let Some(puzzle_str) = cli.puzzle {
@@ -239,6 +351,7 @@ fn main() {
                 eprintln!("Usage: sukaku-rs <puzzle>");
                 eprintln!("       sukaku-rs generate [OPTIONS]");
                 eprintln!("       sukaku-rs rate --input <file> [OPTIONS]");
+                eprintln!("       sukaku-rs --version");
                 std::process::exit(1);
             }
         }
