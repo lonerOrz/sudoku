@@ -570,7 +570,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
     }
 
     let empty_count = (0..81).filter(|&i| grid.get(i) == 0).count();
-    if bivalue_cells == empty_count - 1 {
+    if empty_count > 1 && bivalue_cells == empty_count - 1 {
         if let Some((pivot_idx, pivot_cands)) = triple_cell {
             for &d in &[1, 2, 3] {
                 if !pivot_cands.has(d) {

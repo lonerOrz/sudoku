@@ -32,6 +32,11 @@ impl HintAccumulator {
     pub fn take_all(&mut self) -> Vec<Hint> {
         std::mem::take(&mut self.hints)
     }
+
+    /// Returns a reference to the hints for deduplication checks.
+    pub fn hints(&self) -> &[Hint] {
+        &self.hints
+    }
 }
 
 impl Default for HintAccumulator {

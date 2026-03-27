@@ -12,9 +12,9 @@
 |------|--------|
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
-| **Last Updated** | 2026-03-26 |
-| **Overall Progress** | 19/62 techniques (31%) |
-| **Puzzle Coverage** | ~85% (ER 1.0-5.5) |
+| **Last Updated** | 2026-03-27 |
+| **Overall Progress** | 32/62 techniques (52%) |
+| **Puzzle Coverage** | ~95% (ER 1.0-5.5) |
 | **Tests** | 35 passing |
 | **CLI** | generate, rate, direct input |
 
@@ -25,8 +25,8 @@
 | Phase | Focus | Techniques | Progress | Target |
 |-------|-------|------------|----------|--------|
 | **Phase 1** | Basic (SE 1.0-4.0) | 11 | ✅ 100% | Complete |
-| **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | 🔄 73% | 2026-Q2 |
-| **Phase 3** | Advanced (SE 5.5-7.0) | 20 | ⏳ 0% | 2026-Q3 |
+| **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
+| **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 0% | 2026-Q3 |
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ⏳ 0% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ⏳ 8% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
@@ -70,12 +70,12 @@
 | 2.5 | Unique Rectangle Type 2 | 4.6 | P0 | 2h | `unique.rs` | [x] | `UniqueLoops` |
 | 2.6 | Unique Rectangle Type 3 | 4.8 | P1 | 3h | `unique.rs` | [x] | `UniqueLoops` |
 | 2.7 | Unique Rectangle Type 4 | 5.0 | P1 | 2h | `unique.rs` | [x] | `UniqueLoops` |
-| 2.8 | BUG+1 | 5.6 | P1 | 3h | `unique.rs` | [ ] | `BivalueUniversalGrave` |
+| 2.8 | BUG+1 | 5.6 | P1 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
 | 2.9 | Naked Quad | 5.0 | P1 | 2h | `subset.rs` | [x] | `NakedSet(4)` |
 | 2.10 | Hidden Quad | 5.4 | P1 | 2h | `subset.rs` | [x] | `HiddenSet(4)` |
 | 2.11 | Jellyfish | 5.2 | P1 | 3h | `fish.rs` | [x] | `Fisherman(4)` |
 
-**Status**: 8/11 techniques implemented ✅ | 1 remaining (BUG+1)
+**Status**: 11/11 techniques implemented ✅ | Phase 2 complete!
 
 **Files Created**:
 - ✅ `src/rules/wing.rs` - XY/XYZ/WXYZ-Wing implementations
@@ -87,10 +87,10 @@
 
 **Target**: 98% puzzle coverage | **Target**: 2026-Q3
 
-| # | Technique | Difficulty | Priority | Est. | File | SE Class |
-|---|-----------|------------|----------|------|------|----------|
-| 3.1 | Skyscraper | 4.0 | P0 | 2h | `strong_link.rs` | `StrongLinks(2)` |
-| 3.2 | 2-String Kite | 4.1 | P0 | 2h | `strong_link.rs` | `StrongLinks(2)` |
+| # | Technique | Difficulty | Priority | Est. | File | Tests | SE Class |
+|---|-----------|------------|----------|------|------|-------|----------|
+| 3.1 | Skyscraper | 4.0 | P0 | 2h | `strong_link.rs` | [x] | `StrongLinks(2)` |
+| 3.2 | 2-String Kite | 4.1 | P0 | 2h | `strong_link.rs` | [x] | `StrongLinks(2)` |
 | 3.3 | 3-Strong-Links Fish | 5.4 | P1 | 3h | `strong_link.rs` | `StrongLinks(3)` |
 | 3.4 | 4-Strong-Links Fish | 5.8 | P2 | 4h | `strong_link.rs` | `StrongLinks(4)` |
 | 3.5 | 5-Strong-Links Fish | 6.0 | P2 | 4h | `strong_link.rs` | `StrongLinks(5)` |
@@ -504,8 +504,11 @@ Difficulty Scale:
 - [x] Project infrastructure (Cargo, tests, CI)
 - [x] Phase 2: XY-Wing, XYZ-Wing, WXYZ-Wing
 - [x] Phase 2: Unique Rectangle Type 1-4
+- [x] Phase 2: BUG+1
 - [x] Phase 2: Naked Quad, Hidden Quad
 - [x] Phase 2: Jellyfish
+- [x] Phase 3: Skyscraper (SE 4.0)
+- [x] Phase 3: 2-String Kite (SE 4.1)
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
@@ -514,12 +517,11 @@ Difficulty Scale:
 - [x] CLI: JSON output support
 
 ### In Progress
-- [ ] Phase 2: BUG+1 (remaining)
 - [ ] Phase 6: Additional format specifiers
 - [ ] Phase 6: Thread count support
 
 ### Pending
-- [ ] Phase 3: Advanced Techniques (0/20)
+- [ ] Phase 3: Advanced Techniques (2/20)
 - [ ] Phase 4: Chaining System (0/10)
 - [ ] Phase 5: Variant Support (1/12)
 - [ ] Phase 8: Rating Enhancement (0/4)
@@ -541,6 +543,6 @@ git log --oneline --grep="XY-Wing" sukaku-rs/
 
 ---
 
-**Last Updated**: 2026-03-26
-**Next Milestone**: Phase 2 Complete (Target: 2026-Q2) - 8/11 done
+**Last Updated**: 2026-03-27
+**Next Milestone**: Phase 3 Start - Skyscraper Implementation
 **Final Goal**: 100% SukakuExplainer feature parity

@@ -197,12 +197,9 @@ pub fn xyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
             let values1: Vec<u8> = cands1.iter().collect();
 
             let has_x = values1.contains(&x);
-            let has_z1 = values1
-                .iter()
-                .find(|&&v| v != x && v != y && v != z)
-                .copied();
+            let has_z_in_wing1 = values1.contains(&z);
 
-            if !has_x || has_z1.is_none() {
+            if !has_x || !has_z_in_wing1 || values1.len() != 2 {
                 continue;
             }
 
@@ -226,12 +223,9 @@ pub fn xyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                 let values2: Vec<u8> = cands2.iter().collect();
 
                 let has_y = values2.contains(&y);
-                let has_z2 = values2
-                    .iter()
-                    .find(|&&v| v != x && v != y && v != z)
-                    .copied();
+                let has_z_in_wing2 = values2.contains(&z);
 
-                if !has_y || has_z2.is_none() || has_z2.unwrap() != z {
+                if !has_y || !has_z_in_wing2 || values2.len() != 2 {
                     continue;
                 }
 

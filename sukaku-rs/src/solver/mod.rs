@@ -10,7 +10,7 @@ pub use accumulator::HintAccumulator;
 pub use hint::{Hint, HintType};
 
 use crate::grid::Grid;
-use crate::rules;
+use crate::rules::{self, Strategy};
 
 pub struct Solver {
     grid: Grid,
@@ -35,110 +35,68 @@ impl Solver {
     }
 
     pub fn next_hint(&mut self) -> Option<Hint> {
-        let mut acc = HintAccumulator::new();
+        self.next_hint_with_strategy(Strategy::Solve, &[])
+    }
 
-        rules::naked_single(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
+    pub fn next_hint_with_filter(&mut self, disabled: &[&str]) -> Option<Hint> {
+        self.next_hint_with_strategy(Strategy::Solve, disabled)
+    }
+
+    pub fn next_hint_with_strategy(
+        &mut self,
+        strategy: Strategy,
+        disabled: &[&str],
+    ) -> Option<Hint> {
+        let rules = match strategy {
+            Strategy::Solve => rules::rules_for_solve(),
+            Strategy::Detect => rules::rules_for_detect(),
+        };
+
+        for rule in rules {
+            if disabled.contains(&rule.name) {
+                continue;
+            }
+
+            let mut acc = HintAccumulator::new();
+            (rule.func)(&self.grid, &mut acc);
+
+            if let Some(hint) = acc.first() {
+                return Some(hint);
+            }
         }
 
-        rules::hidden_single(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
+        None
+    }
+
+    /// Detect a specific technique without modifying the grid.
+    ///
+    /// Uses detect strategy (high difficulty first) to find the technique.
+    ///
+    /// # Returns
+    /// - `Some(Hint)` if the technique is found (first match)
+    /// - `None` if the technique is not available
+    ///
+    /// # Notes
+    /// - This is a read-only operation (uses `&self`)
+    /// - Does not apply the hint or modify candidates
+    /// - Uses high-difficulty-first ordering to find rare techniques
+    pub fn detect_technique(&self, technique: &str) -> Option<Hint> {
+        let rules = rules::rules_for_detect();
+
+        for rule in rules {
+            if rule.name != technique {
+                continue;
+            }
+
+            let mut acc = HintAccumulator::new();
+            (rule.func)(&self.grid, &mut acc);
+
+            if let Some(hint) = acc.first() {
+                return Some(hint);
+            }
         }
 
-        rules::naked_pair(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::hidden_pair(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::naked_triple(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::hidden_triple(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::x_wing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::swordfish(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::jellyfish(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::xy_wing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::xyz_wing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::wxyz_wing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::naked_quad(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::hidden_quad(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::unique_rectangle_type1(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::unique_rectangle_type2(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::unique_rectangle_type3(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::unique_rectangle_type4(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::bug_plus_one(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::locked_pointing(&self.grid, &mut acc);
-        if let Some(hint) = acc.first() {
-            return Some(hint);
-        }
-
-        rules::locked_claiming(&self.grid, &mut acc);
-        acc.first()
+        None
     }
 
     pub fn apply_hint(&mut self, hint: &Hint) {

@@ -27,6 +27,8 @@ pub enum HintType {
     BUGPlusOne,
     LockedPointing,
     LockedClaiming,
+    Skyscraper,
+    TwoStringKite,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
