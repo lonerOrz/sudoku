@@ -334,6 +334,17 @@ mod tests {
     }
 
     #[test]
+    fn test_bug_plus_three() {
+        // BUG+3: Three triple-cells sharing the same extra candidate
+        // Note: BUG+3 typically appears in late-game positions
+        // This test verifies the function works without crashing
+        assert_technique_no_crash(
+            "000000000000000051200600000040008000003000061007002400000803590003100260400059700",
+            "BUG+3",
+        );
+    }
+
+    #[test]
     fn test_strong_links_fish_4() {
         // 4-Strong-Links Fish: Also known as Jellyfish with strong links
         // Using Jellyfish test puzzle

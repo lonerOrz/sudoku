@@ -101,7 +101,7 @@
 | 3.10 | Aligned Pair Exclusion | 6.2 | P2 | 4h | `exclusion.rs` | `AlignedPairExclusion` |
 | 3.11 | Aligned Triplet Exclusion | 7.5 | P3 | 6h | `exclusion.rs` | `AlignedExclusion(3)` |
 | 3.12 | BUG+2 | 5.8 | P2 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
-| 3.13 | BUG+3 | 6.0 | P2 | 3h | `unique.rs` | `BivalueUniversalGrave` |
+| 3.13 | BUG+3 | 6.0 | P2 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
 | 3.14 | BUG+4 | 6.2 | P2 | 3h | `unique.rs` | `BivalueUniversalGrave` |
 | 3.15 | Generalized Naked Pair | 3.0 | P3 | 2h | `subset_gen.rs` | `NakedSetGen(2)` |
 | 3.16 | Generalized Naked Triplet | 3.6 | P3 | 3h | `subset_gen.rs` | `NakedSetGen(3)` |

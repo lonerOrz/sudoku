@@ -74,6 +74,7 @@ pub fn all_rules() -> Vec<Rule> {
         // Advanced (difficulty 6.0-6.5)
         Rule::new("BUG+1", bug_plus_one, 6.0),
         Rule::new("BUG+2", bug_plus_two, 5.8),
+        Rule::new("BUG+3", bug_plus_three, 6.0),
         Rule::new("Skyscraper", skyscraper, 4.2),
         Rule::new("2-String Kite", two_string_kite, 4.3),
         Rule::new("3-Strong-Links Fish", strong_links_fish_3, 5.4),
@@ -116,7 +117,7 @@ pub use locked::{locked_claiming, locked_pointing};
 pub use strong_link::{skyscraper, strong_links_fish_3, strong_links_fish_4, two_string_kite};
 pub use subset::{hidden_quad, hidden_triple, naked_quad, naked_triple};
 pub use unique::{
-    bug_plus_one, bug_plus_two, unique_rectangle_type1, unique_rectangle_type2,
+    bug_plus_one, bug_plus_three, bug_plus_two, unique_rectangle_type1, unique_rectangle_type2,
     unique_rectangle_type3, unique_rectangle_type4,
 };
 pub use wing::{wxyz_wing, xy_wing, xyz_wing};
