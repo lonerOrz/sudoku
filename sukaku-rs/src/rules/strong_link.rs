@@ -502,7 +502,6 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                     let cols = [c1_idx, c2_idx, c3_idx, c4_idx];
                     let cols_data = [c1, c2, c3, c4];
 
-                    // Find rows where each column has the digit
                     let mut col_rows: [Vec<u8>; 4] =
                         [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
 
@@ -516,7 +515,6 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                             .map(|cell| cell / 9)
                             .collect();
 
-                        // Each column must have at least 1 candidate
                         if col_rows[i].is_empty() {
                             valid = false;
                             break;
@@ -527,7 +525,6 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                         continue;
                     }
 
-                    // Find union of all rows
                     let mut all_rows: Vec<u8> = Vec::new();
                     for rows in &col_rows {
                         for &r in rows {
@@ -537,12 +534,10 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                         }
                     }
 
-                    // Must have exactly 4 common rows
                     if all_rows.len() != 4 {
                         continue;
                     }
 
-                    // Find eliminations in other columns
                     let mut eliminations = Vec::new();
                     for (c, col) in COLS.iter().enumerate() {
                         if cols.contains(&c) {
@@ -583,6 +578,241 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
             }
         }
     }
+}
+
+/// Find 5-Strong-Links Fish pattern.
+/// Difficulty: SE 6.0
+pub fn strong_links_fish_5(grid: &Grid, acc: &mut HintAccumulator) {
+    for digit in 1..=9u8 {
+        find_strong_links_fish_n_rows(grid, acc, digit, 5, 6.0, "5-Strong-Links Fish");
+        find_strong_links_fish_n_cols(grid, acc, digit, 5, 6.0, "5-Strong-Links Fish");
+    }
+}
+
+/// Find 6-Strong-Links Fish pattern.
+/// Difficulty: SE 6.2
+pub fn strong_links_fish_6(grid: &Grid, acc: &mut HintAccumulator) {
+    for digit in 1..=9u8 {
+        find_strong_links_fish_n_rows(grid, acc, digit, 6, 6.2, "6-Strong-Links Fish");
+        find_strong_links_fish_n_cols(grid, acc, digit, 6, 6.2, "6-Strong-Links Fish");
+    }
+}
+
+/// Generic N-Strong-Links Fish pattern for rows.
+fn find_strong_links_fish_n_rows(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    digit: u8,
+    n: usize,
+    difficulty: f64,
+    technique_name: &str,
+) {
+    if !(3..=6).contains(&n) {
+        return;
+    }
+
+    let combinations = generate_combinations(9, n);
+    for rows_idx in combinations {
+        let rows_data: Vec<_> = rows_idx.iter().map(|&i| &ROWS[i]).collect();
+
+        let mut row_cols: Vec<Vec<u8>> = Vec::new();
+        for row in &rows_data {
+            let cols: Vec<u8> = row
+                .cells
+                .iter()
+                .copied()
+                .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
+                .map(|cell| cell % 9)
+                .collect();
+            if cols.is_empty() {
+                row_cols = Vec::new();
+                break;
+            }
+            row_cols.push(cols);
+        }
+
+        if row_cols.len() != n {
+            continue;
+        }
+
+        let mut all_cols: Vec<u8> = Vec::new();
+        for cols in &row_cols {
+            for &c in cols {
+                if !all_cols.contains(&c) {
+                    all_cols.push(c);
+                }
+            }
+        }
+
+        if all_cols.len() != n {
+            continue;
+        }
+
+        let mut eliminations = Vec::new();
+        for (r, row) in ROWS.iter().enumerate() {
+            if rows_idx.contains(&r) {
+                continue;
+            }
+            for &c in &all_cols {
+                let cell_idx = row.cells[c as usize];
+                if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                }
+            }
+        }
+
+        if !eliminations.is_empty() {
+            let rows_str = rows_idx
+                .iter()
+                .map(|r| (r + 1).to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            let cols_str = all_cols
+                .iter()
+                .map(|c| (c + 1).to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+
+            let desc = format!(
+                "{}: digit {} in rows {} and columns {}",
+                technique_name, digit, rows_str, cols_str
+            );
+            acc.add(Hint {
+                hint_type: crate::solver::HintType::StrongLinksFish,
+                difficulty,
+                technique_name: technique_name.to_string(),
+                description: desc,
+                cell: Cell::from(rows_data[0].cells[all_cols[0] as usize]),
+                value: 0,
+                eliminations,
+            });
+        }
+    }
+}
+
+/// Generic N-Strong-Links Fish pattern for columns.
+fn find_strong_links_fish_n_cols(
+    grid: &Grid,
+    acc: &mut HintAccumulator,
+    digit: u8,
+    n: usize,
+    difficulty: f64,
+    technique_name: &str,
+) {
+    if !(3..=6).contains(&n) {
+        return;
+    }
+
+    let combinations = generate_combinations(9, n);
+    for cols_idx in combinations {
+        let cols_data: Vec<_> = cols_idx.iter().map(|&i| &COLS[i]).collect();
+
+        let mut col_rows: Vec<Vec<u8>> = Vec::new();
+        for col in &cols_data {
+            let rows: Vec<u8> = col
+                .cells
+                .iter()
+                .copied()
+                .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
+                .map(|cell| cell / 9)
+                .collect();
+            if rows.is_empty() {
+                col_rows = Vec::new();
+                break;
+            }
+            col_rows.push(rows);
+        }
+
+        if col_rows.len() != n {
+            continue;
+        }
+
+        let mut all_rows: Vec<u8> = Vec::new();
+        for rows in &col_rows {
+            for &r in rows {
+                if !all_rows.contains(&r) {
+                    all_rows.push(r);
+                }
+            }
+        }
+
+        if all_rows.len() != n {
+            continue;
+        }
+
+        let mut eliminations = Vec::new();
+        for (c, col) in COLS.iter().enumerate() {
+            if cols_idx.contains(&c) {
+                continue;
+            }
+            for &r in &all_rows {
+                let cell_idx = col.cells[r as usize];
+                if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                }
+            }
+        }
+
+        if !eliminations.is_empty() {
+            let cols_str = cols_idx
+                .iter()
+                .map(|c| (c + 1).to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            let rows_str = all_rows
+                .iter()
+                .map(|r| (r + 1).to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+
+            let desc = format!(
+                "{}: digit {} in columns {} and rows {}",
+                technique_name, digit, cols_str, rows_str
+            );
+            acc.add(Hint {
+                hint_type: crate::solver::HintType::StrongLinksFish,
+                difficulty,
+                technique_name: technique_name.to_string(),
+                description: desc,
+                cell: Cell::from(cols_data[0].cells[all_rows[0] as usize]),
+                value: 0,
+                eliminations,
+            });
+        }
+    }
+}
+
+/// Generate combinations of n elements from 0..m.
+fn generate_combinations(m: usize, n: usize) -> Vec<Vec<usize>> {
+    let mut result = Vec::new();
+
+    fn gen(
+        m: usize,
+        n: usize,
+        start: usize,
+        depth: usize,
+        current: &mut Vec<usize>,
+        result: &mut Vec<Vec<usize>>,
+    ) {
+        if depth == n {
+            result.push(current.clone());
+            return;
+        }
+        for i in start..m {
+            if depth >= current.len() {
+                current.push(i);
+            } else {
+                current[depth] = i;
+            }
+            gen(m, n, i + 1, depth + 1, current, result);
+            if depth + 1 < current.len() && current[depth + 1] == 0 && depth < n - 1 {
+                current.pop();
+            }
+        }
+    }
+
+    gen(m, n, 0, 0, &mut Vec::with_capacity(n), &mut result);
+    result
 }
 
 /// Find 3-Strong-Links Fish pattern in rows.
