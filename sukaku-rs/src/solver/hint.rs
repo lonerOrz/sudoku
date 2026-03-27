@@ -39,6 +39,7 @@ pub enum HintType {
     AlignedPairExclusion,
     AlignedTripletExclusion,
     GeneralizedNakedSet,
+    VLocking,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

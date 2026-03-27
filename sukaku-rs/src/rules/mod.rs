@@ -92,6 +92,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Generalized Naked Quad", generalized_naked_quad, 5.0),
         Rule::new("Generalized Naked Quint", generalized_naked_quint, 5.4),
         Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
+        Rule::new("VLocking", vlocking, 4.5),
     ]
 }
 
@@ -123,6 +124,7 @@ pub mod strong_link;
 pub mod subset;
 pub mod subset_gen;
 pub mod unique;
+pub mod vlocking;
 pub mod wing;
 
 pub use direct::{hidden_single, naked_single};
@@ -143,4 +145,5 @@ pub use unique::{
     bug_plus_four, bug_plus_one, bug_plus_three, bug_plus_two, unique_rectangle_type1,
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
+pub use vlocking::vlocking;
 pub use wing::{tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};
