@@ -85,6 +85,8 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("4-Strong-Links Fish", strong_links_fish_4, 5.8),
         Rule::new("5-Strong-Links Fish", strong_links_fish_5, 6.0),
         Rule::new("6-Strong-Links Fish", strong_links_fish_6, 6.2),
+        Rule::new("Aligned Pair Exclusion", aligned_pair_exclusion, 6.2),
+        Rule::new("Aligned Triplet Exclusion", aligned_triplet_exclusion, 7.5),
     ]
 }
 
@@ -108,6 +110,7 @@ pub fn find_rule(name: &str) -> Option<Rule> {
 }
 
 pub mod direct;
+pub mod exclusion;
 pub mod fish;
 pub mod indirect;
 pub mod locked;
@@ -117,6 +120,7 @@ pub mod unique;
 pub mod wing;
 
 pub use direct::{hidden_single, naked_single};
+pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
 pub use fish::{jellyfish, swordfish, x_wing};
 pub use indirect::{hidden_pair, naked_pair};
 pub use locked::{locked_claiming, locked_pointing};

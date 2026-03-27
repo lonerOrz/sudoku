@@ -396,6 +396,22 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_aligned_pair_exclusion() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Aligned Pair Exclusion",
+        );
+    }
+
+    #[test]
+    fn test_aligned_triplet_exclusion() {
+        assert_technique_no_crash(
+            "200000003080030050003402100001205400000090000009308600002506900090020070400000001",
+            "Aligned Triplet Exclusion",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.

@@ -36,6 +36,8 @@ pub enum HintType {
     Skyscraper,
     TwoStringKite,
     StrongLinksFish,
+    AlignedPairExclusion,
+    AlignedTripletExclusion,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
