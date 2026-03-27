@@ -719,3 +719,195 @@ fn is_bug_pattern_without(grid: &Grid, pivot_idx: u8, exclude_value: u8) -> bool
 
     true
 }
+
+/// BUG+2: Bivalue Universal Grave Type 2
+///
+/// A BUG+2 pattern exists when:
+/// - All unsolved cells have exactly 2 candidates, except TWO cells with 3 candidates
+/// - Both triple-cells share the SAME extra candidate (not in the BUG pattern)
+/// - The extra candidate can be eliminated from cells visible to BOTH triple-cells
+///
+/// Difficulty: SE 5.8
+pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
+    // Step 1: Find all triple-cells (cells with 3 candidates)
+    let mut triple_cells: Vec<(u8, crate::grid::Candidates)> = Vec::new();
+
+    for i in 0..81 {
+        if grid.get(i) == 0 {
+            let cands = grid.candidates(i);
+            let count = cands.cardinality();
+
+            if count == 3 {
+                triple_cells.push((i, cands));
+            } else if count != 2 {
+                return; // Cell with != 2 or 3 candidates, not BUG+2
+            }
+        }
+    }
+
+    // Must have exactly 2 triple-cells
+    if triple_cells.len() != 2 {
+        return;
+    }
+
+    let (cell1_idx, cell1_cands) = triple_cells[0];
+    let (cell2_idx, cell2_cands) = triple_cells[1];
+
+    // Step 2: Find the extra values in each triple-cell
+    // The BUG values are the intersection of both cells' candidates
+    let bug_values: Vec<u8> = cell1_cands.iter().filter(|&v| cell2_cands.has(v)).collect();
+
+    // Must have exactly 2 BUG values
+    if bug_values.len() != 2 {
+        return;
+    }
+
+    // Step 3: Find the extra value (the one not in BUG pattern)
+    // Both cells should share the same extra value
+    let extra1: Vec<u8> = cell1_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+    let extra2: Vec<u8> = cell2_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+
+    // Both must have exactly 1 extra value, and it must be the same
+    if extra1.len() != 1 || extra2.len() != 1 || extra1[0] != extra2[0] {
+        return;
+    }
+
+    let extra_value = extra1[0];
+
+    // Step 4: Verify this is a real BUG pattern
+    // Check that removing extra_value from both cells creates a BUG pattern
+    if !is_bug_pattern_without_two_cells(grid, cell1_idx, cell2_idx, extra_value) {
+        return;
+    }
+
+    // Step 5: Find common visible cells for elimination
+    let cell1 = crate::grid::Cell::from(cell1_idx);
+
+    let mut eliminations = Vec::new();
+
+    // Find cells visible to both triple-cells
+    for i in 0..81 {
+        if grid.get(i) == 0 && i != cell1_idx && i != cell2_idx {
+            let cands = grid.candidates(i);
+            if cands.has(extra_value) {
+                // Check if this cell is visible to both triple-cells
+                if is_visible_cell(cell1_idx, i) && is_visible_cell(cell2_idx, i) {
+                    eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                }
+            }
+        }
+    }
+
+    if !eliminations.is_empty() {
+        let desc = format!(
+            "BUG+2: Two cells ({},{}) and ({},{}) with extra candidate {} -> eliminate {} from common peers",
+            cell1_idx / 9 + 1,
+            cell1_idx % 9 + 1,
+            cell2_idx / 9 + 1,
+            cell2_idx % 9 + 1,
+            extra_value,
+            extra_value
+        );
+
+        acc.add(Hint {
+            hint_type: crate::solver::HintType::BUGPlusTwo,
+            difficulty: 5.8,
+            technique_name: "BUG+2".to_string(),
+            description: desc,
+            cell: cell1,
+            value: 0,
+            eliminations,
+        });
+    }
+}
+
+/// Check if two cells are visible to each other.
+fn is_visible_cell(cell1: u8, cell2: u8) -> bool {
+    if cell1 == cell2 {
+        return false;
+    }
+
+    let row1 = cell1 / 9;
+    let row2 = cell2 / 9;
+    if row1 == row2 {
+        return true;
+    }
+
+    let col1 = cell1 % 9;
+    let col2 = cell2 % 9;
+    if col1 == col2 {
+        return true;
+    }
+
+    let block1 = (cell1 / 27) * 3 + (cell1 % 9) / 3;
+    let block2 = (cell2 / 27) * 3 + (cell2 % 9) / 3;
+    block1 == block2
+}
+
+/// Check if removing a candidate from two cells creates a BUG pattern.
+fn is_bug_pattern_without_two_cells(
+    grid: &Grid,
+    cell1_idx: u8,
+    cell2_idx: u8,
+    exclude_value: u8,
+) -> bool {
+    use crate::grid::{BLOCKS, COLS, ROWS};
+
+    // Step 1: Verify all cells have exactly 2 candidates (excluding the extra value)
+    for i in 0..81 {
+        if grid.get(i) == 0 {
+            let cands = grid.candidates(i);
+            let count = if i == cell1_idx || i == cell2_idx {
+                // For triple-cells, exclude the extra value
+                cands.iter().filter(|&v| v != exclude_value).count()
+            } else {
+                cands.cardinality() as usize
+            };
+
+            if count != 2 {
+                return false;
+            }
+        }
+    }
+
+    // Step 2: Verify each digit appears 0 or 2 times in all regions
+    let regions: Vec<&[u8]> = ROWS
+        .iter()
+        .map(|r| r.cells.as_slice())
+        .chain(COLS.iter().map(|c| c.cells.as_slice()))
+        .chain(BLOCKS.iter().map(|b| b.cells.as_slice()))
+        .collect();
+
+    for digit in 1..=9u8 {
+        for &region in &regions {
+            let mut count = 0;
+
+            for &cell_idx in region {
+                if grid.get(cell_idx) == 0 {
+                    let cands = grid.candidates(cell_idx);
+                    let has_digit = if cell_idx == cell1_idx || cell_idx == cell2_idx {
+                        cands.has(digit) && digit != exclude_value
+                    } else {
+                        cands.has(digit)
+                    };
+
+                    if has_digit {
+                        count += 1;
+                    }
+                }
+            }
+
+            if count != 0 && count != 2 {
+                return false;
+            }
+        }
+    }
+
+    true
+}
