@@ -207,6 +207,7 @@ pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
         for val1 in 1..=9u8 {
             for val2 in (val1 + 1)..=9 {
                 for val3 in (val2 + 1)..=9 {
+                    // Find cells that contain each value
                     let cells_with_val1: Vec<u8> = empty_cells
                         .iter()
                         .copied()
@@ -223,13 +224,18 @@ pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
                         .filter(|&cell| grid.candidates(cell).has(val3))
                         .collect();
 
-                    if cells_with_val1.len() != 3
-                        || cells_with_val2.len() != 3
-                        || cells_with_val3.len() != 3
+                    // Each value must appear in at least 1 and at most 3 cells
+                    if cells_with_val1.is_empty()
+                        || cells_with_val1.len() > 3
+                        || cells_with_val2.is_empty()
+                        || cells_with_val2.len() > 3
+                        || cells_with_val3.is_empty()
+                        || cells_with_val3.len() > 3
                     {
                         continue;
                     }
 
+                    // The union of cells must be exactly 3 cells
                     let mut candidate_cells: Vec<u8> = cells_with_val1.clone();
                     for &c in &cells_with_val2 {
                         if !candidate_cells.contains(&c) {
@@ -337,14 +343,20 @@ pub fn hidden_quad(grid: &Grid, acc: &mut HintAccumulator) {
                             .filter(|&cell| grid.candidates(cell).has(val4))
                             .collect();
 
-                        if cells_with_val1.len() != 4
-                            || cells_with_val2.len() != 4
-                            || cells_with_val3.len() != 4
-                            || cells_with_val4.len() != 4
+                        // Each value must appear in at least 1 and at most 4 cells
+                        if cells_with_val1.is_empty()
+                            || cells_with_val1.len() > 4
+                            || cells_with_val2.is_empty()
+                            || cells_with_val2.len() > 4
+                            || cells_with_val3.is_empty()
+                            || cells_with_val3.len() > 4
+                            || cells_with_val4.is_empty()
+                            || cells_with_val4.len() > 4
                         {
                             continue;
                         }
 
+                        // The union of cells must be exactly 4 cells
                         let mut candidate_cells: Vec<u8> = cells_with_val1.clone();
                         for &c in &cells_with_val2 {
                             if !candidate_cells.contains(&c) {
