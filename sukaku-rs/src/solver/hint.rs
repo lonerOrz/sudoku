@@ -27,6 +27,7 @@ pub enum HintType {
     BUGPlusOne,
     BUGPlusTwo,
     BUGPlusThree,
+    BUGPlusFour,
     LockedPointing,
     LockedClaiming,
     Skyscraper,

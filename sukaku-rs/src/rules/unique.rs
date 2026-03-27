@@ -1099,3 +1099,195 @@ fn is_bug_pattern_without_three_cells(
 
     true
 }
+
+/// BUG+4: Bivalue Universal Grave Type 4
+///
+/// A BUG+4 pattern exists when:
+/// - All unsolved cells have exactly 2 candidates, except FOUR cells with 3 candidates
+/// - All four triple-cells share the SAME extra candidate (not in the BUG pattern)
+/// - The extra candidate can be eliminated from cells visible to ALL four triple-cells
+///
+/// Difficulty: SE 6.2
+pub fn bug_plus_four(grid: &Grid, acc: &mut HintAccumulator) {
+    // Step 1: Find all triple-cells (cells with 3 candidates)
+    let mut triple_cells: Vec<(u8, crate::grid::Candidates)> = Vec::new();
+
+    for i in 0..81 {
+        if grid.get(i) == 0 {
+            let cands = grid.candidates(i);
+            let count = cands.cardinality();
+
+            if count == 3 {
+                triple_cells.push((i, cands));
+            } else if count != 2 {
+                return;
+            }
+        }
+    }
+
+    if triple_cells.len() != 4 {
+        return;
+    }
+
+    let cells: Vec<_> = triple_cells
+        .iter()
+        .map(|(idx, cands)| (*idx, *cands))
+        .collect();
+    let (cell1_idx, cell1_cands) = cells[0];
+    let (cell2_idx, cell2_cands) = cells[1];
+    let (cell3_idx, cell3_cands) = cells[2];
+    let (cell4_idx, cell4_cands) = cells[3];
+
+    let bug_values: Vec<u8> = cell1_cands
+        .iter()
+        .filter(|&v| cell2_cands.has(v) && cell3_cands.has(v) && cell4_cands.has(v))
+        .collect();
+
+    if bug_values.len() != 2 {
+        return;
+    }
+
+    let extra1: Vec<u8> = cell1_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+    let extra2: Vec<u8> = cell2_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+    let extra3: Vec<u8> = cell3_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+    let extra4: Vec<u8> = cell4_cands
+        .iter()
+        .filter(|&v| !bug_values.contains(&v))
+        .collect();
+
+    if extra1.len() != 1 || extra2.len() != 1 || extra3.len() != 1 || extra4.len() != 1 {
+        return;
+    }
+    if extra1[0] != extra2[0] || extra2[0] != extra3[0] || extra3[0] != extra4[0] {
+        return;
+    }
+
+    let extra_value = extra1[0];
+
+    if !is_bug_pattern_without_four_cells(
+        grid,
+        cell1_idx,
+        cell2_idx,
+        cell3_idx,
+        cell4_idx,
+        extra_value,
+    ) {
+        return;
+    }
+
+    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let mut eliminations = Vec::new();
+
+    for i in 0..81 {
+        if grid.get(i) == 0 && i != cell1_idx && i != cell2_idx && i != cell3_idx && i != cell4_idx
+        {
+            let cands = grid.candidates(i);
+            if cands.has(extra_value)
+                && is_visible_cell(cell1_idx, i)
+                && is_visible_cell(cell2_idx, i)
+                && is_visible_cell(cell3_idx, i)
+                && is_visible_cell(cell4_idx, i)
+            {
+                eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+            }
+        }
+    }
+
+    if !eliminations.is_empty() {
+        let desc = format!(
+            "BUG+4: Four cells ({},{}), ({},{}), ({},{}), ({},{}) with extra candidate {}",
+            cell1_idx / 9 + 1,
+            cell1_idx % 9 + 1,
+            cell2_idx / 9 + 1,
+            cell2_idx % 9 + 1,
+            cell3_idx / 9 + 1,
+            cell3_idx % 9 + 1,
+            cell4_idx / 9 + 1,
+            cell4_idx % 9 + 1,
+            extra_value
+        );
+
+        acc.add(Hint {
+            hint_type: crate::solver::HintType::BUGPlusFour,
+            difficulty: 6.2,
+            technique_name: "BUG+4".to_string(),
+            description: desc,
+            cell: cell1,
+            value: 0,
+            eliminations,
+        });
+    }
+}
+
+fn is_bug_pattern_without_four_cells(
+    grid: &Grid,
+    cell1_idx: u8,
+    cell2_idx: u8,
+    cell3_idx: u8,
+    cell4_idx: u8,
+    exclude_value: u8,
+) -> bool {
+    use crate::grid::{BLOCKS, COLS, ROWS};
+
+    for i in 0..81 {
+        if grid.get(i) == 0 {
+            let cands = grid.candidates(i);
+            let count = if i == cell1_idx || i == cell2_idx || i == cell3_idx || i == cell4_idx {
+                cands.iter().filter(|&v| v != exclude_value).count()
+            } else {
+                cands.cardinality() as usize
+            };
+
+            if count != 2 {
+                return false;
+            }
+        }
+    }
+
+    let regions: Vec<&[u8]> = ROWS
+        .iter()
+        .map(|r| r.cells.as_slice())
+        .chain(COLS.iter().map(|c| c.cells.as_slice()))
+        .chain(BLOCKS.iter().map(|b| b.cells.as_slice()))
+        .collect();
+
+    for digit in 1..=9u8 {
+        for &region in &regions {
+            let mut count = 0;
+
+            for &cell_idx in region {
+                if grid.get(cell_idx) == 0 {
+                    let cands = grid.candidates(cell_idx);
+                    let has_digit = if cell_idx == cell1_idx
+                        || cell_idx == cell2_idx
+                        || cell_idx == cell3_idx
+                        || cell_idx == cell4_idx
+                    {
+                        cands.has(digit) && digit != exclude_value
+                    } else {
+                        cands.has(digit)
+                    };
+
+                    if has_digit {
+                        count += 1;
+                    }
+                }
+            }
+
+            if count != 0 && count != 2 {
+                return false;
+            }
+        }
+    }
+
+    true
+}
