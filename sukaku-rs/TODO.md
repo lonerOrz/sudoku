@@ -12,11 +12,11 @@
 |------|--------|
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
-| **Last Updated** | 2026-03-27 |
-| **Overall Progress** | 32/62 techniques (52%) |
-| **Puzzle Coverage** | ~95% (ER 1.0-5.5) |
-| **Tests** | 35 passing |
-| **CLI** | generate, rate, direct input |
+| **Last Updated** | 2026-03-28 |
+| **Overall Progress** | 33/62 techniques (53%) |
+| **Puzzle Coverage** | ~95% (ER 1.0-6.5) |
+| **Tests** | 58 passing |
+| **CLI** | generate, rate, direct input, JSON output |
 
 ---
 
@@ -509,6 +509,11 @@ Difficulty Scale:
 - [x] Phase 2: Jellyfish
 - [x] Phase 3: Skyscraper (SE 4.0)
 - [x] Phase 3: 2-String Kite (SE 4.1)
+- [x] Phase 3: 3/4/5/6-Strong-Links Fish
+- [x] Phase 3: BUG+2, BUG+3, BUG+4
+- [x] Phase 3: Generalized Naked Pair/Quad/Quint/Sext
+- [x] Phase 3: VLocking (Generalized Intersections)
+- [x] Phase 4: X-Cycles Simple (SE 6.5) ✅ NEW
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
@@ -521,9 +526,19 @@ Difficulty Scale:
 - [ ] Phase 6: Thread count support
 
 ### Pending
-- [ ] Phase 3: Advanced Techniques (2/20)
-- [ ] Phase 4: Chaining System (0/10)
-- [ ] Phase 5: Variant Support (1/12)
+- [ ] Phase 3: Advanced Techniques (14/20 remaining)
+  - [ ] VWXYZ-Wing, UVWXYZ-Wing, TUVWXYZ-Wing (wing.rs 已实现)
+  - [ ] Aligned Pair/Triplet Exclusion (exclusion.rs 已实现)
+- [ ] Phase 4: Chaining System (9/10 remaining)
+  - [x] X-Cycles Simple (SE 6.5) ✅
+  - [ ] Y-Cycles (SE 6.5)
+  - [ ] Forcing Chain Cycle (SE 7.0)
+  - [ ] Nishio Forcing Chain (SE 7.5-8.5)
+  - [ ] Multiple Forcing Chain (SE 8.0)
+  - [ ] Dynamic Forcing Chain (SE 8.5)
+  - [ ] Dynamic Forcing Chain+ (SE 9.0)
+  - [ ] Nested Forcing Chain 2-4 level (SE 9.5-10.5+)
+- [ ] Phase 5: Variant Support (0/12)
 - [ ] Phase 8: Rating Enhancement (0/4)
 
 ---
@@ -543,6 +558,6 @@ git log --oneline --grep="XY-Wing" sukaku-rs/
 
 ---
 
-**Last Updated**: 2026-03-27
-**Next Milestone**: Phase 3 Start - Skyscraper Implementation
+**Last Updated**: 2026-03-28
+**Next Milestone**: Phase 4 Continue - Y-Cycles Implementation
 **Final Goal**: 100% SukakuExplainer feature parity

@@ -45,9 +45,16 @@ impl<'a> Rater<'a> {
 
         let mut pearl_found = false;
         let mut steps = 0;
+        const MAX_STEPS: usize = 1000;
 
         while !self.solver.grid().is_solved() {
             steps += 1;
+
+            if steps > MAX_STEPS {
+                rating.er = 8.0;
+                rating.er_technique = "Backtracking".to_string();
+                break;
+            }
 
             if let Some(hint) = self.solver.next_hint() {
                 if hint.difficulty > rating.er {

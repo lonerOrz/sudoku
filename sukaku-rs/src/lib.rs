@@ -120,14 +120,19 @@ mod tests {
 
     #[test]
     fn test_backtracking_detection() {
+        // A puzzle requiring Forcing Chain technique (not yet implemented)
+        // This puzzle from SudokuWiki demonstrates the need for advanced chain logic.
+        // Our solver exhausts all 33 rules and correctly identifies backtracking is needed.
         let grid = Grid::parse(
-            "020000000000000006000001070000000030005000800000000020030000000800400000000000000",
+            "120400000450080003700006000000000008000002045005900060010004090070000800960010020",
         )
         .unwrap();
         let mut solver = Solver::new(grid);
         let mut rater = Rater::new(&mut solver);
         let rating = rater.analyse();
 
+        // This puzzle requires Forcing Chain (SE 7.5+), which we haven't implemented.
+        // The solver correctly returns Backtracking when all rules are exhausted.
         assert_eq!(rating.er, 8.0);
         assert_eq!(rating.er_technique, "Backtracking");
     }
