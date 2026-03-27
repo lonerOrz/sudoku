@@ -367,6 +367,206 @@ fn is_visible(cell1: u8, cell2: u8) -> bool {
     block1 == block2
 }
 
+/// Find 3-Strong-Links Fish pattern: 3 rows or columns with strong links
+/// that share exactly 3 common columns or rows.
+///
+/// This is a generalization of X-Wing (2-2) and Swordfish (3-3) using strong links.
+/// Difficulty: SE 5.4
+pub fn strong_links_fish_3(grid: &Grid, acc: &mut HintAccumulator) {
+    for digit in 1..=9u8 {
+        // Row-based: 3 rows with strong links sharing 3 columns
+        find_strong_links_fish_rows(grid, acc, digit, 3);
+        // Column-based: 3 columns with strong links sharing 3 rows
+        find_strong_links_fish_cols(grid, acc, digit, 3);
+    }
+}
+
+/// Find 3-Strong-Links Fish pattern in rows.
+fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8, _degree: usize) {
+    // Iterate on all combinations of 3 rows
+    for (r1_idx, r1) in ROWS.iter().enumerate() {
+        for (r2_idx, r2) in ROWS.iter().enumerate().skip(r1_idx + 1) {
+            for (r3_idx, r3) in ROWS.iter().enumerate().skip(r2_idx + 1) {
+                let rows = [r1_idx, r2_idx, r3_idx];
+                let rows_data = [r1, r2, r3];
+
+                // Find columns where each row has the digit (with cardinality 2-3 for strong link)
+                let mut row_cols: [Vec<u8>; 3] = [Vec::new(), Vec::new(), Vec::new()];
+
+                for (i, &_row_idx) in rows.iter().enumerate() {
+                    let row = rows_data[i];
+                    row_cols[i] = row
+                        .cells
+                        .iter()
+                        .copied()
+                        .filter(|&cell| {
+                            grid.get(cell) == 0
+                                && grid.candidates(cell).has(digit)
+                                && grid.candidates(cell).cardinality() >= 2
+                                && grid.candidates(cell).cardinality() <= 3
+                        })
+                        .map(|cell| cell % 9)
+                        .collect();
+
+                    // Each row must have 2-3 candidates for strong link
+                    if row_cols[i].len() < 2 || row_cols[i].len() > 3 {
+                        continue;
+                    }
+                }
+
+                // Check if all 3 rows have valid candidates
+                if row_cols.iter().any(|c| c.is_empty()) {
+                    continue;
+                }
+
+                // Find union of all columns
+                let mut all_cols: Vec<u8> = Vec::new();
+                for cols in &row_cols {
+                    for &c in cols {
+                        if !all_cols.contains(&c) {
+                            all_cols.push(c);
+                        }
+                    }
+                }
+
+                // Must have exactly 3 common columns
+                if all_cols.len() != 3 {
+                    continue;
+                }
+
+                // Find eliminations in other rows
+                let mut eliminations = Vec::new();
+                for (r, row) in ROWS.iter().enumerate() {
+                    if rows.contains(&r) {
+                        continue;
+                    }
+                    for &c in &all_cols {
+                        let cell_idx = row.cells[c as usize];
+                        if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                            eliminations.push((Cell::from(cell_idx), vec![digit]));
+                        }
+                    }
+                }
+
+                if !eliminations.is_empty() {
+                    let desc = format!(
+                        "3-Strong-Links Fish: digit {} in rows {},{},{} and columns {},{},{}",
+                        digit,
+                        r1_idx + 1,
+                        r2_idx + 1,
+                        r3_idx + 1,
+                        all_cols[0] + 1,
+                        all_cols[1] + 1,
+                        all_cols[2] + 1
+                    );
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::StrongLinksFish,
+                        difficulty: 5.4,
+                        technique_name: "3-Strong-Links Fish".to_string(),
+                        description: desc,
+                        cell: Cell::from(r1.cells[all_cols[0] as usize]),
+                        value: 0,
+                        eliminations,
+                    });
+                }
+            }
+        }
+    }
+}
+
+/// Find 3-Strong-Links Fish pattern in columns.
+fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8, _degree: usize) {
+    // Iterate on all combinations of 3 columns
+    for (c1_idx, c1) in COLS.iter().enumerate() {
+        for (c2_idx, c2) in COLS.iter().enumerate().skip(c1_idx + 1) {
+            for (c3_idx, c3) in COLS.iter().enumerate().skip(c2_idx + 1) {
+                let cols = [c1_idx, c2_idx, c3_idx];
+                let cols_data = [c1, c2, c3];
+
+                // Find rows where each column has the digit (with cardinality 2-3 for strong link)
+                let mut col_rows: [Vec<u8>; 3] = [Vec::new(), Vec::new(), Vec::new()];
+
+                for (i, &_col_idx) in cols.iter().enumerate() {
+                    let col = cols_data[i];
+                    col_rows[i] = col
+                        .cells
+                        .iter()
+                        .copied()
+                        .filter(|&cell| {
+                            grid.get(cell) == 0
+                                && grid.candidates(cell).has(digit)
+                                && grid.candidates(cell).cardinality() >= 2
+                                && grid.candidates(cell).cardinality() <= 3
+                        })
+                        .map(|cell| cell / 9)
+                        .collect();
+
+                    // Each column must have 2-3 candidates for strong link
+                    if col_rows[i].len() < 2 || col_rows[i].len() > 3 {
+                        continue;
+                    }
+                }
+
+                // Check if all 3 columns have valid candidates
+                if col_rows.iter().any(|c| c.is_empty()) {
+                    continue;
+                }
+
+                // Find union of all rows
+                let mut all_rows: Vec<u8> = Vec::new();
+                for rows in &col_rows {
+                    for &r in rows {
+                        if !all_rows.contains(&r) {
+                            all_rows.push(r);
+                        }
+                    }
+                }
+
+                // Must have exactly 3 common rows
+                if all_rows.len() != 3 {
+                    continue;
+                }
+
+                // Find eliminations in other columns
+                let mut eliminations = Vec::new();
+                for (c, col) in COLS.iter().enumerate() {
+                    if cols.contains(&c) {
+                        continue;
+                    }
+                    for &r in &all_rows {
+                        let cell_idx = col.cells[r as usize];
+                        if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
+                            eliminations.push((Cell::from(cell_idx), vec![digit]));
+                        }
+                    }
+                }
+
+                if !eliminations.is_empty() {
+                    let desc = format!(
+                        "3-Strong-Links Fish: digit {} in columns {},{},{} and rows {},{},{}",
+                        digit,
+                        c1_idx + 1,
+                        c2_idx + 1,
+                        c3_idx + 1,
+                        all_rows[0] + 1,
+                        all_rows[1] + 1,
+                        all_rows[2] + 1
+                    );
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::StrongLinksFish,
+                        difficulty: 5.4,
+                        technique_name: "3-Strong-Links Fish".to_string(),
+                        description: desc,
+                        cell: Cell::from(c1.cells[all_rows[0] as usize]),
+                        value: 0,
+                        eliminations,
+                    });
+                }
+            }
+        }
+    }
+}
+
 /// Add hint only if no equivalent hint already exists.
 fn add_hint_unique(
     acc: &mut HintAccumulator,

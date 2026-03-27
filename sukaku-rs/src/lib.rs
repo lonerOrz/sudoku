@@ -365,6 +365,22 @@ mod tests {
     }
 
     #[test]
+    fn test_strong_links_fish_3() {
+        // 3-Strong-Links Fish: Generalization of X-Wing/Swordfish with strong links
+        // This test verifies the function can be called without crashing.
+        let puzzle =
+            "000000000000000051200600000040008000003000061007002400000803590003100260400059700";
+        let grid = Grid::parse(puzzle).unwrap();
+        let mut solver = Solver::new(grid);
+        solver.rebuild_candidates();
+
+        // The detect_technique function should not crash
+        let _hint = solver.detect_technique("3-Strong-Links Fish");
+
+        // Note: This puzzle may not have 3-Strong-Links Fish at initial state
+    }
+
+    #[test]
     fn test_unique_solution() {
         let puzzle =
             "530070000600195000098000060800060003400803001700020006060000280000419005000080079";

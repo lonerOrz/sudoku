@@ -29,6 +29,7 @@ pub enum HintType {
     LockedClaiming,
     Skyscraper,
     TwoStringKite,
+    StrongLinksFish,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

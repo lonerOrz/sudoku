@@ -91,7 +91,7 @@
 |---|-----------|------------|----------|------|------|-------|----------|
 | 3.1 | Skyscraper | 4.0 | P0 | 2h | `strong_link.rs` | [x] | `StrongLinks(2)` |
 | 3.2 | 2-String Kite | 4.1 | P0 | 2h | `strong_link.rs` | [x] | `StrongLinks(2)` |
-| 3.3 | 3-Strong-Links Fish | 5.4 | P1 | 3h | `strong_link.rs` | `StrongLinks(3)` |
+| 3.3 | 3-Strong-Links Fish | 5.4 | P1 | 3h | `strong_link.rs` | [x] | `StrongLinks(3)` |
 | 3.4 | 4-Strong-Links Fish | 5.8 | P2 | 4h | `strong_link.rs` | `StrongLinks(4)` |
 | 3.5 | 5-Strong-Links Fish | 6.0 | P2 | 4h | `strong_link.rs` | `StrongLinks(5)` |
 | 3.6 | 6-Strong-Links Fish | 6.2 | P2 | 4h | `strong_link.rs` | `StrongLinks(6)` |

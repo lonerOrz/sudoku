@@ -75,6 +75,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("BUG+1", bug_plus_one, 6.0),
         Rule::new("Skyscraper", skyscraper, 4.2),
         Rule::new("2-String Kite", two_string_kite, 4.3),
+        Rule::new("3-Strong-Links Fish", strong_links_fish_3, 5.4),
     ]
 }
 
@@ -110,7 +111,7 @@ pub use direct::{hidden_single, naked_single};
 pub use fish::{jellyfish, swordfish, x_wing};
 pub use indirect::{hidden_pair, naked_pair};
 pub use locked::{locked_claiming, locked_pointing};
-pub use strong_link::{skyscraper, two_string_kite};
+pub use strong_link::{skyscraper, strong_links_fish_3, two_string_kite};
 pub use subset::{hidden_quad, hidden_triple, naked_quad, naked_triple};
 pub use unique::{
     bug_plus_one, unique_rectangle_type1, unique_rectangle_type2, unique_rectangle_type3,
