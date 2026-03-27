@@ -95,6 +95,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("VLocking", vlocking, 4.5),
         Rule::new("X-Cycles", x_cycles_simple, 6.5),
         Rule::new("Y-Cycles", y_cycles_simple, 6.5),
+        Rule::new("Forcing Chain", forcing_chain, 7.0),
     ]
 }
 
@@ -130,6 +131,7 @@ pub mod unique;
 pub mod vlocking;
 pub mod wing;
 
+pub use chaining::forcing_chain;
 pub use chaining::x_cycles_simple;
 pub use chaining::y_cycles_simple;
 pub use direct::{hidden_single, naked_single};

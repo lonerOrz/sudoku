@@ -13,9 +13,9 @@
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
 | **Last Updated** | 2026-03-28 |
-| **Overall Progress** | 34/62 techniques (55%) |
-| **Puzzle Coverage** | ~95% (ER 1.0-6.5) |
-| **Tests** | 59 passing |
+| **Overall Progress** | 35/62 techniques (56%) |
+| **Puzzle Coverage** | ~96% (ER 1.0-7.0) |
+| **Tests** | 60 passing |
 | **CLI** | generate, rate, direct input, JSON output |
 
 ---
@@ -27,7 +27,7 @@
 | **Phase 1** | Basic (SE 1.0-4.0) | 11 | ✅ 100% | Complete |
 | **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 0% | 2026-Q3 |
-| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ⏳ 0% | 2026-Q4 |
+| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | 🔄 30% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ⏳ 8% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
 | **Phase 7** | Generator | 6 | 🔄 67% | Optional |
@@ -514,7 +514,8 @@ Difficulty Scale:
 - [x] Phase 3: Generalized Naked Pair/Quad/Quint/Sext
 - [x] Phase 3: VLocking (Generalized Intersections)
 - [x] Phase 4: X-Cycles Simple (SE 6.5) ✅
-- [x] Phase 4: Y-Cycles (SE 6.5) ✅ NEW
+- [x] Phase 4: Y-Cycles (SE 6.5) ✅
+- [x] Phase 4: Forcing Chain Cycle (SE 7.0) ✅ NEW
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
@@ -530,10 +531,10 @@ Difficulty Scale:
 - [ ] Phase 3: Advanced Techniques (14/20 remaining)
   - [ ] VWXYZ-Wing, UVWXYZ-Wing, TUVWXYZ-Wing (wing.rs 已实现)
   - [ ] Aligned Pair/Triplet Exclusion (exclusion.rs 已实现)
-- [ ] Phase 4: Chaining System (8/10 remaining)
+- [ ] Phase 4: Chaining System (7/10 remaining)
   - [x] X-Cycles Simple (SE 6.5) ✅
-  - [x] Y-Cycles (SE 6.5) ✅ NEW
-  - [ ] Forcing Chain Cycle (SE 7.0)
+  - [x] Y-Cycles (SE 6.5) ✅
+  - [x] Forcing Chain Cycle (SE 7.0) ✅
   - [ ] Nishio Forcing Chain (SE 7.5-8.5)
   - [ ] Multiple Forcing Chain (SE 8.0)
   - [ ] Dynamic Forcing Chain (SE 8.5)
@@ -560,5 +561,5 @@ git log --oneline --grep="XY-Wing" sukaku-rs/
 ---
 
 **Last Updated**: 2026-03-28
-**Next Milestone**: Phase 4 Continue - Forcing Chain Cycle Implementation
+**Next Milestone**: Phase 4 Continue - Nishio Forcing Chain Implementation
 **Final Goal**: 100% SukakuExplainer feature parity

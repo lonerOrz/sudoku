@@ -42,6 +42,7 @@ pub enum HintType {
     VLocking,
     XCyclesSimple,
     YCyclesSimple,
+    ForcingChain,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

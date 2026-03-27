@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, COLS, ROWS};
+use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 const GRID_SIZE: u8 = 9;
@@ -374,4 +374,213 @@ fn is_valid_xy_chain(grid: &Grid, chain: &[u8], end_value: u8) -> bool {
     let end_cands: Vec<u8> = grid.candidates(chain[chain.len() - 1]).iter().collect();
 
     start_cands.contains(&end_value) && end_cands.contains(&end_value)
+}
+
+// ============================================================================
+// Forcing Chain (SE 7.0)
+// ============================================================================
+
+/// A potential in the chain: a cell-value pair with state (on/off)
+#[derive(Clone, Copy, Debug)]
+struct ChainPotential {
+    cell: u8,
+    value: u8,
+    is_on: bool,
+}
+
+/// Find Forcing Chain patterns using double-queue BFS.
+pub fn forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
+    for start_cell in 0..81u8 {
+        if grid.get(start_cell) != 0 {
+            continue;
+        }
+
+        let candidates: Vec<u8> = grid.candidates(start_cell).iter().collect();
+        if candidates.is_empty() {
+            continue;
+        }
+
+        for &value in &candidates {
+            let start = ChainPotential {
+                cell: start_cell,
+                value,
+                is_on: true,
+            };
+            search_forcing_chain(grid, acc, start);
+        }
+    }
+}
+
+fn search_forcing_chain(grid: &Grid, acc: &mut HintAccumulator, start: ChainPotential) {
+    let mut pending_on: Vec<ChainPotential> = Vec::new();
+    let mut pending_off: Vec<ChainPotential> = Vec::new();
+    let mut visited: [[bool; 10]; 81] = [[false; 10]; 81];
+    let mut chain: Vec<ChainPotential> = Vec::new();
+
+    if start.is_on {
+        pending_on.push(start);
+    } else {
+        pending_off.push(start);
+    }
+    visited[start.cell as usize][start.value as usize] = true;
+    chain.push(start);
+
+    let max_iterations = 50;
+    let mut iterations = 0;
+
+    while !(pending_on.is_empty() && pending_off.is_empty()) && iterations < max_iterations {
+        iterations += 1;
+
+        while let Some(p) = pending_on.pop() {
+            let implications = get_implications(grid, p);
+            for imp in implications {
+                if imp.cell == start.cell && imp.value == start.value && !imp.is_on {
+                    report_forcing_chain(acc, start, &chain, &imp);
+                    return;
+                }
+                if !visited[imp.cell as usize][imp.value as usize] {
+                    visited[imp.cell as usize][imp.value as usize] = true;
+                    chain.push(imp);
+                    if imp.is_on {
+                        pending_on.push(imp);
+                    } else {
+                        pending_off.push(imp);
+                    }
+                }
+            }
+        }
+
+        while let Some(p) = pending_off.pop() {
+            let implications = get_implications(grid, p);
+            for imp in implications {
+                if imp.cell == start.cell && imp.value == start.value && imp.is_on {
+                    report_forcing_chain(acc, start, &chain, &imp);
+                    return;
+                }
+                if !visited[imp.cell as usize][imp.value as usize] {
+                    visited[imp.cell as usize][imp.value as usize] = true;
+                    chain.push(imp);
+                    if imp.is_on {
+                        pending_on.push(imp);
+                    } else {
+                        pending_off.push(imp);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn get_implications(grid: &Grid, p: ChainPotential) -> Vec<ChainPotential> {
+    let mut impls = Vec::new();
+
+    if p.is_on {
+        // Y-Link: other values in same cell must be false
+        let cell_cands: Vec<u8> = grid.candidates(p.cell).iter().collect();
+        for &v in &cell_cands {
+            if v != p.value {
+                impls.push(ChainPotential {
+                    cell: p.cell,
+                    value: v,
+                    is_on: false,
+                });
+            }
+        }
+        // X-Link: same value in unit must be false
+        let row = p.cell / 9;
+        let col = p.cell % 9;
+        let box_idx = (row / 3) * 3 + col / 3;
+        for &c in &ROWS[row as usize].cells {
+            if c != p.cell && grid.candidates(c).has(p.value) {
+                impls.push(ChainPotential {
+                    cell: c,
+                    value: p.value,
+                    is_on: false,
+                });
+            }
+        }
+        for &c in &COLS[col as usize].cells {
+            if c != p.cell && grid.candidates(c).has(p.value) {
+                impls.push(ChainPotential {
+                    cell: c,
+                    value: p.value,
+                    is_on: false,
+                });
+            }
+        }
+        for &c in &BLOCKS[box_idx as usize].cells {
+            if c != p.cell && grid.candidates(c).has(p.value) {
+                impls.push(ChainPotential {
+                    cell: c,
+                    value: p.value,
+                    is_on: false,
+                });
+            }
+        }
+    } else {
+        // Y-Link: if bi-value, other value must be true
+        let cell_cands: Vec<u8> = grid.candidates(p.cell).iter().collect();
+        if cell_cands.len() == 2 && cell_cands.contains(&p.value) {
+            let other = *cell_cands.iter().find(|&&v| v != p.value).unwrap();
+            impls.push(ChainPotential {
+                cell: p.cell,
+                value: other,
+                is_on: true,
+            });
+        }
+        // X-Link: if conjugate pair, other position must be true
+        let row = p.cell / 9;
+        let col = p.cell % 9;
+        let box_idx = (row / 3) * 3 + col / 3;
+        for region in [
+            &ROWS[row as usize],
+            &COLS[col as usize],
+            &BLOCKS[box_idx as usize],
+        ] {
+            let positions: Vec<u8> = region
+                .cells
+                .iter()
+                .copied()
+                .filter(|&c| grid.get(c) == 0 && grid.candidates(c).has(p.value))
+                .collect();
+            if positions.len() == 2 && positions.contains(&p.cell) {
+                let other = *positions.iter().find(|&&c| c != p.cell).unwrap();
+                impls.push(ChainPotential {
+                    cell: other,
+                    value: p.value,
+                    is_on: true,
+                });
+            }
+        }
+    }
+
+    impls
+}
+
+fn report_forcing_chain(
+    acc: &mut HintAccumulator,
+    start: ChainPotential,
+    chain: &[ChainPotential],
+    _contradiction: &ChainPotential,
+) {
+    let chain_desc: Vec<String> = chain
+        .iter()
+        .map(|p| {
+            if p.is_on {
+                format!("{}={}", p.cell, p.value)
+            } else {
+                format!("{}!={}", p.cell, p.value)
+            }
+        })
+        .collect();
+
+    acc.add(Hint {
+        hint_type: crate::solver::HintType::ForcingChain,
+        difficulty: 7.0,
+        technique_name: "Forcing Chain".to_string(),
+        description: format!("Forcing Chain: {}", chain_desc.join(" -> ")),
+        cell: Cell::from(start.cell),
+        value: 0,
+        eliminations: vec![(Cell::from(start.cell), vec![start.value])],
+    });
 }
