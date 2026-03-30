@@ -53,6 +53,7 @@ pub enum HintType {
     XDiagonal,
     DisjointGroups,
     Windows,
+    CenterDot,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
