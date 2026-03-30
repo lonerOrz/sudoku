@@ -15,7 +15,7 @@
 | **Last Updated** | 2026-03-28 |
 | **Overall Progress** | 52/62 techniques (84%) |
 | **Puzzle Coverage** | ~99% (ER 1.0-8.5) |
-| **Tests** | 70 passing |
+| **Tests** | 71 passing |
 | **CLI** | generate, rate, direct input, JSON output, --version, --pearl, --diamond, --total-time, 完整格式符 |
 
 ---
@@ -28,7 +28,7 @@
 | **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 100% | 2026-Q3 |
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ✅ 100% | 2026-Q4 |
-| **Phase 5** | Variant Support | 12 | 🔄 8% | Optional |
+| **Phase 5** | Variant Support | 12 | 🔄 17% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
 | **Phase 7** | Generator | 6 | 🔄 67% | Optional |
 | **Phase 8** | Rating Enhancement | 4 | ⏳ 0% | Optional |
@@ -165,7 +165,7 @@
 | # | Variant | Difficulty | Priority | Est. | File | SE Support |
 |---|---------|------------|----------|------|------|------------|
 | 5.2.1 | X-Diagonal (Sudoku X) | Medium | P1 | 3h | `grid/variant.rs` | [x] | `XVisibleCellIndex` |
-| 5.2.2 | Disjoint Groups (DG) | Medium | P1 | 3h | `grid/variant.rs` | `DGVisibleCellIndex` |
+| 5.2.2 | Disjoint Groups (DG) | Medium | P1 | 3h | `grid/variant.rs` | [x] | `DGVisibleCellIndex` |
 | 5.2.3 | Windows (Windoku) | Medium | P2 | 3h | `grid/variant.rs` | `windowsVisibleCellIndex` |
 | 5.2.4 | Center Dot (CD) | Medium | P2 | 2h | `grid/variant.rs` | `CDVisibleCellIndex` |
 | 5.2.5 | Asterisk | Medium | P2 | 2h | `grid/variant.rs` | `asteriskVisibleCellIndex` |
