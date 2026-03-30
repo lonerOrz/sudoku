@@ -116,6 +116,7 @@ pub fn all_rules() -> Vec<Rule> {
             nested_forcing_chain_4,
             10.5,
         ),
+        Rule::new("X-Diagonal", x_diagonal_var, 5.5),
     ]
 }
 
@@ -148,6 +149,7 @@ pub mod strong_link;
 pub mod subset;
 pub mod subset_gen;
 pub mod unique;
+pub mod variant;
 pub mod vlocking;
 pub mod wing;
 
@@ -174,5 +176,6 @@ pub use unique::{
     bug_plus_four, bug_plus_one, bug_plus_three, bug_plus_two, unique_rectangle_type1,
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
+pub use variant::x_diagonal_var;
 pub use vlocking::vlocking;
 pub use wing::{als_xz_rule, tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};

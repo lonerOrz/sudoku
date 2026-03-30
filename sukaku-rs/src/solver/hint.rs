@@ -50,6 +50,7 @@ pub enum HintType {
     NestedForcingChain2,
     NestedForcingChain3,
     NestedForcingChain4,
+    XDiagonal,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
