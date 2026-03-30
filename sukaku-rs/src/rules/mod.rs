@@ -100,6 +100,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
         Rule::new("Multiple Forcing Chain", multiple_forcing_chain, 8.0),
         Rule::new("Dynamic Forcing Chain", dynamic_forcing_chain, 8.5),
+        Rule::new("Dynamic Forcing Chain+", dynamic_forcing_chain_plus, 9.0),
     ]
 }
 
@@ -136,8 +137,8 @@ pub mod vlocking;
 pub mod wing;
 
 pub use chaining::{
-    dynamic_forcing_chain, forcing_chain, multiple_forcing_chain, nishio_forcing_chain,
-    x_cycles_simple, y_cycles_simple,
+    dynamic_forcing_chain, dynamic_forcing_chain_plus, forcing_chain, multiple_forcing_chain,
+    nishio_forcing_chain, x_cycles_simple, y_cycles_simple,
 };
 pub use direct::{hidden_single, naked_single};
 pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
