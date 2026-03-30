@@ -86,3 +86,45 @@ pub fn disjoint_groups_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn windows_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let windows = [(1, 1), (1, 4), (4, 1), (4, 4)];
+    for digit in 1..=9u8 {
+        for &(wr, wc) in &windows {
+            let mut cells_in_window = Vec::new();
+            for dr in 0..3 {
+                for dc in 0..3 {
+                    let r = wr + dr;
+                    let c = wc + dc;
+                    let cell = r * 9 + c;
+                    cells_in_window.push(cell);
+                }
+            }
+            let cells_with_digit: Vec<u8> = cells_in_window
+                .iter()
+                .filter(|&&c| grid.get(c) == 0 && grid.candidates(c).has(digit))
+                .copied()
+                .collect();
+            if cells_with_digit.len() == 1 {
+                let cell = cells_with_digit[0];
+                let mut elim = Vec::new();
+                for d in 1..=9u8 {
+                    if d != digit && grid.candidates(cell).has(d) {
+                        elim.push((Cell::from(cell), vec![d]));
+                    }
+                }
+                if !elim.is_empty() {
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::Windows,
+                        difficulty: 5.5,
+                        technique_name: "Windows".to_string(),
+                        description: format!("Windows: digit {} in window", digit),
+                        cell: Cell::from(cell),
+                        value: digit,
+                        eliminations: elim,
+                    });
+                }
+            }
+        }
+    }
+}
