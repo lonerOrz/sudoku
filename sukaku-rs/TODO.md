@@ -13,10 +13,10 @@
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
 | **Last Updated** | 2026-03-28 |
-| **Overall Progress** | 38/62 techniques (61%) |
-| **Puzzle Coverage** | ~97% (ER 1.0-8.0) |
+| **Overall Progress** | 42/62 techniques (68%) |
+| **Puzzle Coverage** | ~97% (ER 1.0-6.5) |
 | **Tests** | 64 passing |
-| **CLI** | generate, rate, direct input, JSON output, --version, --pearl, --diamond, --total-time, 完整格式符 |
+| **CLI** | generate, rate, direct input |
 
 ---
 
@@ -26,8 +26,8 @@
 |-------|-------|------------|----------|--------|
 | **Phase 1** | Basic (SE 1.0-4.0) | 11 | ✅ 100% | Complete |
 | **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
-| **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 0% | 2026-Q3 |
-| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | 🔄 30% | 2026-Q4 |
+| **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 100% | 2026-Q3 |
+| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | 🔄 10% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ⏳ 8% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
 | **Phase 7** | Generator | 6 | 🔄 67% | Optional |
@@ -93,13 +93,13 @@
 | 3.2 | 2-String Kite | 4.1 | P0 | 2h | `strong_link.rs` | [x] | `StrongLinks(2)` |
 | 3.3 | 3-Strong-Links Fish | 5.4 | P1 | 3h | `strong_link.rs` | [x] | `StrongLinks(3)` |
 | 3.4 | 4-Strong-Links Fish | 5.8 | P2 | 4h | `strong_link.rs` | [x] | `StrongLinks(4)` |
-| 3.5 | 5-Strong-Links Fish | 6.0 | P2 | 4h | `strong_link.rs` | `StrongLinks(5)` |
-| 3.6 | 6-Strong-Links Fish | 6.2 | P2 | 4h | `strong_link.rs` | `StrongLinks(6)` |
-| 3.7 | VWXYZ-Wing | 6.2 | P2 | 4h | `wing.rs` | `VWXYZWing` |
-| 3.8 | UVWXYZ-Wing | 6.6 | P2 | 5h | `wing.rs` | `UVWXYZWing` |
-| 3.9 | TUVWXYZ-Wing | 7.0 | P3 | 5h | `wing.rs` | `TUVWXYZWing` |
-| 3.10 | Aligned Pair Exclusion | 6.2 | P2 | 4h | `exclusion.rs` | `AlignedPairExclusion` |
-| 3.11 | Aligned Triplet Exclusion | 7.5 | P3 | 6h | `exclusion.rs` | `AlignedExclusion(3)` |
+| 3.5 | 5-Strong-Links Fish | 6.0 | P2 | 4h | `strong_link.rs` | [x] | `StrongLinks(5)` |
+| 3.6 | 6-Strong-Links Fish | 6.2 | P2 | 4h | `strong_link.rs` | [x] | `StrongLinks(6)` |
+| 3.7 | VWXYZ-Wing | 6.2 | P2 | 4h | `wing.rs` | [x] | `VWXYZWing` |
+| 3.8 | UVWXYZ-Wing | 6.6 | P2 | 5h | `wing.rs` | [x] | `UVWXYZWing` |
+| 3.9 | TUVWXYZ-Wing | 7.0 | P3 | 5h | `wing.rs` | [x] | `TUVWXYZWing` |
+| 3.10 | Aligned Pair Exclusion | 6.2 | P2 | 4h | `exclusion.rs` | [x] | `AlignedPairExclusion` |
+| 3.11 | Aligned Triplet Exclusion | 7.5 | P3 | 6h | `exclusion.rs` | [x] | `AlignedExclusion(3)` |
 | 3.12 | BUG+2 | 5.8 | P2 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
 | 3.13 | BUG+3 | 6.0 | P2 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
 | 3.14 | BUG+4 | 6.2 | P2 | 3h | `unique.rs` | [x] | `BivalueUniversalGrave` |
@@ -124,7 +124,7 @@
 
 | # | Technique | Difficulty | Priority | Est. | File | SE Class |
 |---|-----------|------------|----------|------|------|----------|
-| 4.1 | X-Cycles (Simple) | 6.5 | P0 | 6h | `chaining.rs` | `Chaining` |
+| 4.1 | X-Cycles (Simple) | 6.5 | P0 | 6h | `chaining.rs` | [x] | `Chaining` |
 | 4.2 | Y-Cycles | 6.5 | P0 | 6h | `chaining.rs` | `Chaining` |
 | 4.3 | Forcing Chain Cycle | 7.0 | P0 | 8h | `chaining.rs` | `Chaining(false,false,false)` |
 | 4.4 | Nishio Forcing Chain | 7.5-8.5 | P1 | 10h | `chaining.rs` | `Chaining(...,true,...)` |
@@ -502,31 +502,27 @@ Difficulty Scale:
 ### Completed
 - [x] Phase 1: Basic Techniques (11/11) ✅
 - [x] Project infrastructure (Cargo, tests, CI)
-- [x] Phase 2: XY-Wing, XYZ-Wing, WXYZ-Wing
-- [x] Phase 2: Unique Rectangle Type 1-4
-- [x] Phase 2: BUG+1
-- [x] Phase 2: Naked Quad, Hidden Quad
-- [x] Phase 2: Jellyfish
-- [x] Phase 3: Skyscraper (SE 4.0)
-- [x] Phase 3: 2-String Kite (SE 4.1)
-- [x] Phase 3: 3/4/5/6-Strong-Links Fish
-- [x] Phase 3: BUG+2, BUG+3, BUG+4
-- [x] Phase 3: Generalized Naked Pair/Quad/Quint/Sext
-- [x] Phase 3: VLocking (Generalized Intersections)
-- [x] Phase 4: X-Cycles Simple (SE 6.5) ✅
-- [x] Phase 4: Y-Cycles (SE 6.5) ✅
-- [x] Phase 4: Forcing Chain (SE 7.0) ✅
-- [x] Phase 4: Nishio Forcing Chain (SE 7.5) ✅
-- [x] Phase 4: Multiple Forcing Chain (SE 8.0) ✅ NEW
+- [x] Phase 2: Intermediate Techniques (11/11) ✅
+- [x] Phase 3: Advanced Techniques (20/20) ✅
+- [x] Phase 4: X-Cycles (SE 6.5)
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
 - [x] CLI: generate subcommand
 - [x] CLI: rate subcommand with format strings
-- [x] CLI: JSON output support
 
 ### In Progress
-- [x] Phase 6: Additional format specifiers (%D, %P, %R, %i, %l, %%, %t, %T) ✅
+- [ ] Phase 4: Y-Cycles (next)
+- [ ] Phase 6: Additional format specifiers
+
+### Pending
+- [ ] Phase 4: Forcing Chain Cycle (SE 7.0)
+- [ ] Phase 4: Nishio Forcing Chain (SE 7.5-8.5)
+- [ ] Phase 4: Multiple Forcing Chain (SE 8.0)
+- [ ] Phase 4: Dynamic Forcing Chain (SE 8.5-9.0)
+- [ ] Phase 4: Nested Forcing Chain (SE 9.5-10.5+)
+- [ ] Phase 5: Variant Support (0/12)
+- [ ] Phase 8: Rating Enhancement (0/4)
 - [x] Phase 6: --version 支持 ✅
 - [x] Phase 6: --pearl/--diamond 提前终止 ✅
 - [x] Phase 6: --total-time 耗时统计 ✅
