@@ -13,10 +13,10 @@
 | **Branch** | `sukaku` |
 | **Version** | 0.1.0 |
 | **Last Updated** | 2026-03-28 |
-| **Overall Progress** | 42/62 techniques (68%) |
-| **Puzzle Coverage** | ~97% (ER 1.0-6.5) |
+| **Overall Progress** | 47/62 techniques (76%) |
+| **Puzzle Coverage** | ~99% (ER 1.0-8.0) |
 | **Tests** | 64 passing |
-| **CLI** | generate, rate, direct input |
+| **CLI** | generate, rate, direct input, JSON output, --version, --pearl, --diamond, --total-time, 完整格式符 |
 
 ---
 
@@ -27,7 +27,7 @@
 | **Phase 1** | Basic (SE 1.0-4.0) | 11 | ✅ 100% | Complete |
 | **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 100% | 2026-Q3 |
-| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | 🔄 10% | 2026-Q4 |
+| **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | 🔄 50% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ⏳ 8% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
 | **Phase 7** | Generator | 6 | 🔄 67% | Optional |
@@ -125,10 +125,10 @@
 | # | Technique | Difficulty | Priority | Est. | File | SE Class |
 |---|-----------|------------|----------|------|------|----------|
 | 4.1 | X-Cycles (Simple) | 6.5 | P0 | 6h | `chaining.rs` | [x] | `Chaining` |
-| 4.2 | Y-Cycles | 6.5 | P0 | 6h | `chaining.rs` | `Chaining` |
-| 4.3 | Forcing Chain Cycle | 7.0 | P0 | 8h | `chaining.rs` | `Chaining(false,false,false)` |
-| 4.4 | Nishio Forcing Chain | 7.5-8.5 | P1 | 10h | `chaining.rs` | `Chaining(...,true,...)` |
-| 4.5 | Multiple Forcing Chain | 8.0 | P1 | 12h | `chaining.rs` | `Chaining(true,false,false)` |
+| 4.2 | Y-Cycles | 6.5 | P0 | 6h | `chaining.rs` | [x] | `Chaining` |
+| 4.3 | Forcing Chain Cycle | 7.0 | P0 | 8h | `chaining.rs` | [x] | `Chaining(false,false,false)` |
+| 4.4 | Nishio Forcing Chain | 7.5-8.5 | P1 | 10h | `chaining.rs` | [x] | `Chaining(...,true,...)` |
+| 4.5 | Multiple Forcing Chain | 8.0 | P1 | 12h | `chaining.rs` | [x] | `Chaining(true,false,false)` |
 | 4.6 | Dynamic Forcing Chain | 8.5 | P1 | 14h | `chaining.rs` | `Chaining(true,true,false)` |
 | 4.7 | Dynamic Forcing Chain+ | 9.0 | P2 | 16h | `chaining.rs` | `Chaining(true,true,false,1)` |
 | 4.8 | Nested Forcing Chain (2-level) | 9.5 | P2 | 20h | `chaining.rs` | `Chaining(...,2)` |
@@ -505,21 +505,25 @@ Difficulty Scale:
 - [x] Phase 2: Intermediate Techniques (11/11) ✅
 - [x] Phase 3: Advanced Techniques (20/20) ✅
 - [x] Phase 4: X-Cycles (SE 6.5)
+- [x] Phase 4: Y-Cycles (SE 6.5)
+- [x] Phase 4: Forcing Chain Cycle (SE 7.0)
+- [x] Phase 4: Nishio Forcing Chain (SE 7.5)
+- [x] Phase 4: Multiple Forcing Chain (SE 8.0)
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
 - [x] CLI: generate subcommand
 - [x] CLI: rate subcommand with format strings
+- [x] CLI: JSON output support
+- [x] CLI: --version, --pearl, --diamond, --total-time
+- [x] CLI: Format specifiers (%D, %P, %R, %i, %l, %%, %t, %T)
 
 ### In Progress
-- [ ] Phase 4: Y-Cycles (next)
+- [ ] Phase 4: Dynamic Forcing Chain (SE 8.5)
 - [ ] Phase 6: Additional format specifiers
 
 ### Pending
-- [ ] Phase 4: Forcing Chain Cycle (SE 7.0)
-- [ ] Phase 4: Nishio Forcing Chain (SE 7.5-8.5)
-- [ ] Phase 4: Multiple Forcing Chain (SE 8.0)
-- [ ] Phase 4: Dynamic Forcing Chain (SE 8.5-9.0)
+- [ ] Phase 4: Dynamic Forcing Chain+ (SE 9.0)
 - [ ] Phase 4: Nested Forcing Chain (SE 9.5-10.5+)
 - [ ] Phase 5: Variant Support (0/12)
 - [ ] Phase 8: Rating Enhancement (0/4)
