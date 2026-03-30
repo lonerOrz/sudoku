@@ -45,6 +45,7 @@ pub enum HintType {
     ForcingChain,
     NishioForcingChain,
     MultipleForcingChain,
+    DynamicForcingChain,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

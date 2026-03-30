@@ -70,8 +70,6 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("UVWXYZ-Wing", uvwxyz_wing, 6.6),
         Rule::new("TUVWXYZ-Wing", tuvwxyz_wing, 7.5),
         Rule::new("ALS-XZ", als_xz_rule, 7.0),
-        Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
-        Rule::new("Multiple Forcing Chain", multiple_forcing_chain, 8.0),
         // Unique Rectangle (difficulty 5.0-5.3)
         Rule::new("Unique Rectangle Type 1", unique_rectangle_type1, 5.0),
         Rule::new("Unique Rectangle Type 2", unique_rectangle_type2, 5.1),
@@ -99,6 +97,9 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("X-Cycles", x_cycles_simple, 6.5),
         Rule::new("Y-Cycles", y_cycles_simple, 6.5),
         Rule::new("Forcing Chain", forcing_chain, 7.0),
+        Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
+        Rule::new("Multiple Forcing Chain", multiple_forcing_chain, 8.0),
+        Rule::new("Dynamic Forcing Chain", dynamic_forcing_chain, 8.5),
     ]
 }
 
@@ -135,7 +136,8 @@ pub mod vlocking;
 pub mod wing;
 
 pub use chaining::{
-    forcing_chain, multiple_forcing_chain, nishio_forcing_chain, x_cycles_simple, y_cycles_simple,
+    dynamic_forcing_chain, forcing_chain, multiple_forcing_chain, nishio_forcing_chain,
+    x_cycles_simple, y_cycles_simple,
 };
 pub use direct::{hidden_single, naked_single};
 pub use exclusion::{aligned_pair_exclusion, aligned_triplet_exclusion};
