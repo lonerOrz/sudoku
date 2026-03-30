@@ -548,6 +548,30 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_nested_forcing_chain_2() {
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "Nested Forcing Chain (2-level)",
+        );
+    }
+
+    #[test]
+    fn test_nested_forcing_chain_3() {
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "Nested Forcing Chain (3-level)",
+        );
+    }
+
+    #[test]
+    fn test_nested_forcing_chain_4() {
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "Nested Forcing Chain (4-level)",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.
