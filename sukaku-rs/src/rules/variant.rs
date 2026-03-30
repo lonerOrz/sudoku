@@ -47,3 +47,42 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn disjoint_groups_var(grid: &Grid, acc: &mut HintAccumulator) {
+    for digit in 1..=9u8 {
+        for pos_in_box in 0..9u8 {
+            let box_row = pos_in_box / 3;
+            let box_col = pos_in_box % 3;
+            let mut cells_at_position = Vec::new();
+            for box_idx in 0..9u8 {
+                let box_r = box_idx / 3;
+                let box_c = box_idx % 3;
+                let cell_row = box_r * 3 + box_row;
+                let cell_col = box_c * 3 + box_col;
+                let cell = cell_row * 9 + cell_col;
+                cells_at_position.push(cell);
+            }
+            let mut cells_with_digit = Vec::new();
+            for &cell in &cells_at_position {
+                if grid.get(cell) == 0 && grid.candidates(cell).has(digit) {
+                    cells_with_digit.push(cell);
+                }
+            }
+            for &cell in &cells_with_digit {
+                if grid.candidates(cell).cardinality() > 1 {
+                    let mut elim = Vec::new();
+                    elim.push((Cell::from(cell), vec![digit]));
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::DisjointGroups,
+                        difficulty: 5.5,
+                        technique_name: "Disjoint Groups".to_string(),
+                        description: format!("Disjoint Groups: digit {} in box position", digit),
+                        cell: Cell::from(cell),
+                        value: 0,
+                        eliminations: elim,
+                    });
+                }
+            }
+        }
+    }
+}
