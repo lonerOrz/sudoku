@@ -43,86 +43,6 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
                         }
                     }
                 }
-
-                pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
-                    let asterisk = [4, 10, 16, 36, 40, 44, 64, 70, 76];
-                    for digit in 1..=9u8 {
-                        let mut cells_with_digit = Vec::new();
-                        for &cell in &asterisk {
-                            if grid.get(cell) == 0 && grid.candidates(cell).has(digit) {
-                                cells_with_digit.push(cell);
-                            }
-                        }
-                        for &cell in &cells_with_digit {
-                            if grid.candidates(cell).cardinality() > 1 {
-                                let mut elim = Vec::new();
-                                elim.push((Cell::from(cell), vec![digit]));
-                                acc.add(Hint {
-                                    hint_type: crate::solver::HintType::Asterisk,
-                                    difficulty: 5.5,
-                                    technique_name: "Asterisk".to_string(),
-                                    description: format!(
-                                        "Asterisk: digit {} in asterisk cells",
-                                        digit
-                                    ),
-                                    cell: Cell::from(cell),
-                                    value: 0,
-                                    eliminations: elim,
-                                });
-                            }
-                        }
-                    }
-                }
-
-                pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
-                    for cell in 0..81u8 {
-                        if grid.get(cell) != 0 {
-                            continue;
-                        }
-                        let cands = grid.candidates(cell);
-                        let row = cell / 9;
-                        let col = cell % 9;
-                        let neighbors = [
-                            (row.wrapping_sub(1), col),
-                            (row + 1, col),
-                            (row, col.wrapping_sub(1)),
-                            (row, col + 1),
-                        ];
-                        for &(nr, nc) in &neighbors {
-                            if nr >= 9 || nc >= 9 {
-                                continue;
-                            }
-                            let neighbor = nr * 9 + nc;
-                            if grid.get(neighbor) == 0 {
-                                let neighbor_cands = grid.candidates(neighbor);
-                                for d in 1..=9u8 {
-                                    if cands.has(d) {
-                                        let mut elim = Vec::new();
-                                        for nd in 1..=9u8 {
-                                            if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
-                                                elim.push((Cell::from(neighbor), vec![nd]));
-                                            }
-                                        }
-                                        if !elim.is_empty() {
-                                            acc.add(Hint {
-                                hint_type: crate::solver::HintType::NonConsecutive,
-                                difficulty: 5.5,
-                                technique_name: "Non-Consecutive".to_string(),
-                                description: format!(
-                                    "Non-Consecutive: digit {} eliminates consecutive from neighbor",
-                                    d
-                                ),
-                                cell: Cell::from(cell),
-                                value: 0,
-                                eliminations: elim,
-                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -331,6 +251,53 @@ pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
                                 cell: Cell::from(cell),
                                 value: 0,
                                 eliminations: elim,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn anti_knight_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let knight_moves = [
+        (-2, -1),
+        (-2, 1),
+        (-1, -2),
+        (-1, 2),
+        (1, -2),
+        (1, 2),
+        (2, -1),
+        (2, 1),
+    ];
+    for cell in 0..81u8 {
+        if grid.get(cell) != 0 {
+            continue;
+        }
+        let row = (cell / 9) as i32;
+        let col = (cell % 9) as i32;
+        for &(dr, dc) in &knight_moves {
+            let nr = row + dr;
+            let nc = col + dc;
+            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+                let neighbor = (nr * 9 + nc) as u8;
+                if grid.get(neighbor) == 0 {
+                    let cands = grid.candidates(cell);
+                    let neighbor_cands = grid.candidates(neighbor);
+                    for d in 1..=9u8 {
+                        if cands.has(d) && neighbor_cands.has(d) {
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::AntiKnight,
+                                difficulty: 5.5,
+                                technique_name: "Anti-Knight".to_string(),
+                                description: format!(
+                                    "Anti-Knight: digit {} in knight-adjacent cells",
+                                    d
+                                ),
+                                cell: Cell::from(cell),
+                                value: 0,
+                                eliminations: vec![(Cell::from(neighbor), vec![d])],
                             });
                         }
                     }

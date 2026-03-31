@@ -57,6 +57,7 @@ pub enum HintType {
     Asterisk,
     Girandola,
     NonConsecutive,
+    AntiKnight,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.
