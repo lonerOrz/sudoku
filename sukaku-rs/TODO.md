@@ -242,8 +242,8 @@
 
 | # | Option | Priority | Est. | Status | Description |
 |---|--------|----------|------|--------|-------------|
-| 6.3.1 | `--pearl` | P1 | 1h | ⏳ | Terminate if not pearl |
-| 6.3.2 | `--diamond` | P1 | 1h | ⏳ | Terminate if not diamond |
+| 6.3.1 | `--pearl` | P1 | 1h | ✅ | Terminate if not pearl |
+| 6.3.2 | `--diamond` | P1 | 1h | ✅ | Terminate if not diamond |
 | 6.3.3 | `--revisedRating=N` | P2 | 2h | ⏳ | Revised rating scheme |
 | 6.3.4 | `--batch=N` | P2 | 3h | ⏳ | Batch solving mode |
 
@@ -265,15 +265,15 @@
 
 ### 6.5 Advanced Options
 
-| # | Option | Priority | Est. | Description |
-|---|--------|----------|------|-------------|
-| 6.5.1 | `--techs=TECHSTRING` | P3 | 4h | Technique selection |
-| 6.5.2 | `--showArguments` | P1 | 1h | Show parameters |
-| 6.5.3 | `--version` | P0 | 1h | Version info |
-| 6.5.4 | `--html` | P2 | 2h | HTML output mode |
-| 6.5.5 | `--json` | P2 | 3h | JSON output |
-| 6.5.6 | `--totalTime` | P1 | 1h | Total processing time |
-| 6.5.7 | `--man` | P2 | 2h | Manual/help |
+| # | Option | Priority | Est. | Status | Description |
+|---|--------|----------|------|--------|-------------|
+| 6.5.1 | `--techs=TECHSTRING` | P3 | 4h | ⏳ | Technique selection |
+| 6.5.2 | `--showArguments` | P1 | 1h | ⏳ | Show parameters |
+| 6.5.3 | `--version` | P0 | 1h | ✅ | Version info |
+| 6.5.4 | `--html` | P2 | 2h | ⏳ | HTML output mode |
+| 6.5.5 | `--json` | P2 | 3h | ✅ | JSON output |
+| 6.5.6 | `--totalTime` | P1 | 1h | ✅ | Total processing time |
+| 6.5.7 | `--man` | P2 | 2h | ⏳ | Manual/help |
 
 **New Files Required**:
 - `src/cli/format.rs` - Format string parser and formatter
@@ -505,43 +505,21 @@ Difficulty Scale:
 - [x] Phase 2: Intermediate Techniques (11/11) ✅
 - [x] Phase 3: Advanced Techniques (20/20) ✅
 - [x] Phase 4: Chaining System (10/10) ✅
+- [x] Phase 5: Variant Support (12/12) ✅
 - [x] Generator: Symmetry types (8 types)
 - [x] Generator: Difficulty-to-clue mapping
 - [x] Generator: Unique solution verification
 - [x] CLI: generate subcommand
 - [x] CLI: rate subcommand with format strings
 - [x] CLI: JSON output support
-- [x] CLI: --version, --pearl, --diamond, --total-time
-- [x] CLI: Format specifiers (%D, %P, %R, %i, %l, %%, %t, %T)
+- [x] CLI: --version, --pearl, --diamond, --total-time, --threads
+- [x] CLI: Format specifiers (%r, %p, %d, %D, %P, %R, %i, %g, %l, %%, %t, %T)
 
 ### In Progress
-- [ ] Phase 6: Additional format specifiers
+- [ ] Phase 6: Additional format specifiers (%e, %h, %m, %M, %n, %s, %S, %U)
+- [ ] Phase 6: Additional options (--start, --before, --after, --batch, --html)
 
 ### Pending
-- [ ] Phase 5: Variant Support (0/12)
-- [ ] Phase 8: Rating Enhancement (0/4)
-- [x] Phase 6: --version 支持 ✅
-- [x] Phase 6: --pearl/--diamond 提前终止 ✅
-- [x] Phase 6: --total-time 耗时统计 ✅
-- [x] Phase 6: --threads 多线程支持 ✅
-- [ ] Phase 6: --batch=N 批量模式
-
-### Pending
-- [x] Phase 3: Advanced Techniques (20/20 COMPLETE) ✅
-  - [x] VWXYZ-Wing, UVWXYZ-Wing, TUVWXYZ-Wing (wing.rs 已实现并注册)
-  - [x] Aligned Pair/Triplet Exclusion (exclusion.rs 已修复)
-- [x] Phase 4: Chaining System (10/10 COMPLETE) ✅
-  - [x] X-Cycles Simple (SE 6.5) ✅
-  - [x] Y-Cycles (SE 6.5) ✅
-  - [x] Forcing Chain (SE 7.0) ✅
-  - [x] Nishio Forcing Chain (SE 7.5) ✅
-  - [x] Multiple Forcing Chain (SE 8.0) ✅
-  - [x] Dynamic Forcing Chain (SE 8.5) ✅
-  - [x] Dynamic Forcing Chain+ (SE 9.0) ✅
-  - [x] Nested Forcing Chain 2-level (SE 9.5) ✅
-  - [x] Nested Forcing Chain 3-level (SE 10.0) ✅
-  - [x] Nested Forcing Chain 4-level (SE 10.5+) ✅
-- [ ] Phase 5: Variant Support (0/12)
 - [ ] Phase 8: Rating Enhancement (0/4)
 
 ---
