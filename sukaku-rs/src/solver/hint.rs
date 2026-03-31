@@ -60,6 +60,7 @@ pub enum HintType {
     AntiKnight,
     AntiKing,
     Toroidal,
+    FerzNC,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

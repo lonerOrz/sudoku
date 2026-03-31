@@ -401,3 +401,49 @@ pub fn toroidal_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn ferz_nc_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let ferz_moves = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
+    for cell in 0..81u8 {
+        if grid.get(cell) != 0 {
+            continue;
+        }
+        let row = (cell / 9) as i32;
+        let col = (cell % 9) as i32;
+        for &(dr, dc) in &ferz_moves {
+            let nr = row + dr;
+            let nc = col + dc;
+            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+                let neighbor = (nr * 9 + nc) as u8;
+                if grid.get(neighbor) == 0 {
+                    let cands = grid.candidates(cell);
+                    let neighbor_cands = grid.candidates(neighbor);
+                    for d in 1..=9u8 {
+                        if cands.has(d) {
+                            let mut elim = Vec::new();
+                            for nd in 1..=9u8 {
+                                if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
+                                    elim.push((Cell::from(neighbor), vec![nd]));
+                                }
+                            }
+                            if !elim.is_empty() {
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::FerzNC,
+                                    difficulty: 6.0,
+                                    technique_name: "Ferz NC".to_string(),
+                                    description: format!(
+                                        "Ferz NC: digit {} eliminates consecutive from diagonal neighbor",
+                                        d
+                                    ),
+                                    cell: Cell::from(cell),
+                                    value: 0,
+                                    eliminations: elim,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

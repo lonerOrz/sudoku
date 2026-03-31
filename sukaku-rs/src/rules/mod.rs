@@ -126,6 +126,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Anti-Knight", anti_knight_var, 5.5),
         Rule::new("Anti-King", anti_king_var, 5.5),
         Rule::new("Toroidal", toroidal_var, 6.0),
+        Rule::new("Ferz NC", ferz_nc_var, 6.0),
     ]
 }
 
@@ -186,7 +187,7 @@ pub use unique::{
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
 pub use variant::{
-    anti_king_var, anti_knight_var, asterisk_var, center_dot_var, disjoint_groups_var,
+    anti_king_var, anti_knight_var, asterisk_var, center_dot_var, disjoint_groups_var, ferz_nc_var,
     girandola_var, non_consecutive_var, toroidal_var, windows_var, x_diagonal_var,
 };
 pub use vlocking::vlocking;
