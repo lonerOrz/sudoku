@@ -6,7 +6,7 @@
 use crate::board::{Cell, Grid, Solution};
 use crate::difficulty::Difficulty;
 use rand::{Rng, seq::SliceRandom, thread_rng};
-use sukaku_rs::{Generator as SukakuGenerator, Grid as SukakuGrid, Symmetry};
+use sudoku_solver::{Generator as SukakuGenerator, Grid as SukakuGrid, Symmetry};
 
 /// 将 sukaku-rs::Grid 转换为 sudoku-core::Grid
 ///

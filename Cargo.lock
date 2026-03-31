@@ -854,20 +854,11 @@ dependencies = [
  "bitflags",
  "criterion",
  "rand",
- "sukaku-rs",
+ "sudoku-solver",
 ]
 
 [[package]]
-name = "sudoku-tui"
-version = "0.1.0"
-dependencies = [
- "crossterm",
- "ratatui",
- "sudoku-core",
-]
-
-[[package]]
-name = "sukaku-rs"
+name = "sudoku-solver"
 version = "0.1.0"
 dependencies = [
  "clap",
@@ -877,6 +868,15 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "sudoku-tui"
+version = "0.1.0"
+dependencies = [
+ "crossterm",
+ "ratatui",
+ "sudoku-core",
 ]
 
 [[package]]
