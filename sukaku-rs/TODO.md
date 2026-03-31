@@ -224,8 +224,8 @@
 | `%h` | Step description (HTML) | P1 | ⏳ |
 | `%i` | Puzzle grid (81-digit) | P0 | ✅ |
 | `%l` | Newline | P0 | ✅ |
-| `%m` | Pencilmarks (729-char) | P1 | ⏳ |
-| `%M` | Pencilmarks (multi-line) | P1 | ⏳ |
+| `%m` | Pencilmarks (729-char) | P1 | ✅ |
+| `%M` | Pencilmarks (multi-line) | P1 | ✅ |
 | `%n` | Puzzle ordinal | P0 | ✅ |
 | `%p` | Pearl rating (EP) | P0 | ✅ |
 | `%P` | Pearl technique name | P0 | ✅ |

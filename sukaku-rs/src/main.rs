@@ -124,6 +124,8 @@ fn format_output_with_time(
     ordinal: usize,
 ) -> String {
     let short_name = rating.er_technique_short();
+    let pencilmarks = format_pencilmarks(puzzle);
+    let pencilmarks_ml = format_pencilmarks_multiline(puzzle);
     let mut result = format
         .replace("%r", &format!("{:.1}", rating.er))
         .replace("%p", &format!("{:.1}", rating.ep))
@@ -138,12 +140,58 @@ fn format_output_with_time(
         .replace("%e", &format!("{:.3}", elapsed))
         .replace("%n", &ordinal.to_string())
         .replace("%S", short_name)
-        .replace("%T", short_name)
-        .replace("%U", short_name);
+        .replace("%U", short_name)
+        .replace("%m", &pencilmarks)
+        .replace("%M", &pencilmarks_ml)
+        .replace("%s", short_name);
 
     result = result.replace("%t", &rating.er_technique);
     result = result.replace("%T", "\t");
     result
+}
+
+fn format_pencilmarks(puzzle: &str) -> String {
+    let grid = match sukaku_rs::Grid::parse(puzzle) {
+        Ok(g) => g,
+        Err(_) => return "?".repeat(729),
+    };
+    let mut result = String::with_capacity(729);
+    for i in 0..81 {
+        let cands = grid.candidates(i);
+        for d in 1..=9 {
+            if cands.has(d) {
+                result.push_str(&d.to_string());
+            } else {
+                result.push('0');
+            }
+        }
+    }
+    result
+}
+
+fn format_pencilmarks_multiline(puzzle: &str) -> String {
+    let grid = match sukaku_rs::Grid::parse(puzzle) {
+        Ok(g) => g,
+        Err(_) => return "?".repeat(81),
+    };
+    let mut lines = Vec::new();
+    for row in 0..9 {
+        let mut line = String::new();
+        for col in 0..9 {
+            let cell = row * 9 + col;
+            let cands = grid.candidates(cell);
+            let cand_str: String = (1..=9)
+                .filter(|&d| cands.has(d))
+                .map(|d| d.to_string())
+                .collect();
+            if col > 0 {
+                line.push(' ');
+            }
+            line.push_str(&cand_str);
+        }
+        lines.push(line);
+    }
+    lines.join("\n")
 }
 
 fn cmd_generate(
