@@ -125,6 +125,7 @@ fn format_output(format: &str, rating: &DifficultyRating, puzzle: &str) -> Strin
     result
 }
 
+#[allow(dead_code)]
 fn format_output_with_time(
     format: &str,
     rating: &DifficultyRating,
@@ -178,6 +179,7 @@ fn format_pencilmarks(puzzle: &str) -> String {
     result
 }
 
+#[allow(dead_code)]
 fn format_pencilmarks_multiline(puzzle: &str) -> String {
     let grid = match sukaku_rs::Grid::parse(puzzle) {
         Ok(g) => g,
@@ -264,12 +266,19 @@ struct RateOptions {
     pearl: bool,
     diamond: bool,
     show_total_time: bool,
+    #[allow(dead_code)]
     start: Option<String>,
+    #[allow(dead_code)]
     before: Option<String>,
+    #[allow(dead_code)]
     after: Option<String>,
+    #[allow(dead_code)]
     batch: bool,
+    #[allow(dead_code)]
     html: bool,
+    #[allow(dead_code)]
     techs: Option<String>,
+    #[allow(dead_code)]
     man: bool,
 }
 
@@ -283,10 +292,10 @@ fn cmd_rate_opts(opts: RateOptions) {
         pearl,
         diamond,
         show_total_time,
-        start,
-        before,
-        after,
-        batch,
+        start: _,
+        before: _,
+        after: _,
+        batch: _,
         html: _,
         techs: _,
         man: _,

@@ -15,7 +15,7 @@ pub fn forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
             continue;
         }
         for &cand in &cands {
-            let mut impl_grid = grid.clone();
+            let mut impl_grid = *grid;
             impl_grid.set(cell, cand);
             impl_grid.rebuild_candidates();
             for other in 0..81u8 {
@@ -63,7 +63,7 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
             continue;
         }
         for &cand in &cands {
-            let mut impl_grid = grid.clone();
+            let mut impl_grid = *grid;
             impl_grid.set(cell, cand);
             impl_grid.rebuild_candidates();
             for other in 0..81u8 {
@@ -73,7 +73,7 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
                 let impl_cands = impl_grid.candidates(other);
                 if impl_cands.cardinality() == 1 {
                     let forced_val = impl_cands.iter().next().unwrap();
-                    let mut impl_grid2 = impl_grid.clone();
+                    let mut impl_grid2 = impl_grid;
                     impl_grid2.set(other, forced_val);
                     impl_grid2.rebuild_candidates();
                     for third in 0..81u8 {
@@ -158,7 +158,7 @@ fn nested_forcing_chain(
         }
         let mut eliminations = Vec::new();
         for &cand in &cands {
-            let mut impl_grid = grid.clone();
+            let mut impl_grid = *grid;
             impl_grid.set(cell, cand);
             impl_grid.rebuild_candidates();
             if find_nested_implications(&impl_grid, depth - 1, &mut eliminations) {
@@ -201,7 +201,7 @@ fn find_nested_implications(
         let cands = grid.candidates(other);
         if cands.cardinality() == 1 {
             let val = cands.iter().next().unwrap();
-            let mut next_grid = grid.clone();
+            let mut next_grid = *grid;
             next_grid.set(other, val);
             next_grid.rebuild_candidates();
             if find_nested_implications(&next_grid, depth - 1, eliminations) {

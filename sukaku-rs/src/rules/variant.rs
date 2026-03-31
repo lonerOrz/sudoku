@@ -70,8 +70,7 @@ pub fn disjoint_groups_var(grid: &Grid, acc: &mut HintAccumulator) {
             }
             for &cell in &cells_with_digit {
                 if grid.candidates(cell).cardinality() > 1 {
-                    let mut elim = Vec::new();
-                    elim.push((Cell::from(cell), vec![digit]));
+                    let elim = vec![(Cell::from(cell), vec![digit])];
                     acc.add(Hint {
                         hint_type: crate::solver::HintType::DisjointGroups,
                         difficulty: 5.5,
@@ -140,8 +139,7 @@ pub fn center_dot_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let mut elim = Vec::new();
-                elim.push((Cell::from(cell), vec![digit]));
+                let elim = vec![(Cell::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::CenterDot,
                     difficulty: 5.5,
@@ -167,8 +165,7 @@ pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let mut elim = Vec::new();
-                elim.push((Cell::from(cell), vec![digit]));
+                let elim = vec![(Cell::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::Asterisk,
                     difficulty: 5.5,
@@ -194,8 +191,7 @@ pub fn girandola_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let mut elim = Vec::new();
-                elim.push((Cell::from(cell), vec![digit]));
+                let elim = vec![(Cell::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::Girandola,
                     difficulty: 5.5,
@@ -280,7 +276,7 @@ pub fn anti_knight_var(grid: &Grid, acc: &mut HintAccumulator) {
         for &(dr, dc) in &knight_moves {
             let nr = row + dr;
             let nc = col + dc;
-            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+            if (0..9).contains(&nr) && (0..9).contains(&nc) {
                 let neighbor = (nr * 9 + nc) as u8;
                 if grid.get(neighbor) == 0 {
                     let cands = grid.candidates(cell);
@@ -327,7 +323,7 @@ pub fn anti_king_var(grid: &Grid, acc: &mut HintAccumulator) {
         for &(dr, dc) in &king_moves {
             let nr = row + dr;
             let nc = col + dc;
-            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+            if (0..9).contains(&nr) && (0..9).contains(&nc) {
                 let neighbor = (nr * 9 + nc) as u8;
                 if grid.get(neighbor) == 0 {
                     let cands = grid.candidates(cell);
@@ -413,7 +409,7 @@ pub fn ferz_nc_var(grid: &Grid, acc: &mut HintAccumulator) {
         for &(dr, dc) in &ferz_moves {
             let nr = row + dr;
             let nc = col + dc;
-            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+            if (0..9).contains(&nr) && (0..9).contains(&nc) {
                 let neighbor = (nr * 9 + nc) as u8;
                 if grid.get(neighbor) == 0 {
                     let cands = grid.candidates(cell);
