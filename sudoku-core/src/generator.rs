@@ -1,6 +1,6 @@
 // generator.rs: 数独谜题生成
 //
-// 使用 sukaku-rs 的 SukakuExplainer 算法生成谜题，
+// 使用 sudoku-solver 的 SukakuExplainer 算法生成谜题，
 // 然后转换为 sudoku-core 的数据格式。
 
 use crate::board::{Cell, Grid, Solution};
@@ -8,16 +8,16 @@ use crate::difficulty::Difficulty;
 use rand::{Rng, seq::SliceRandom, thread_rng};
 use sudoku_solver::{Generator as SukakuGenerator, Grid as SukakuGrid, Symmetry};
 
-/// 将 sukaku-rs::Grid 转换为 sudoku-core::Grid
+/// 将 sudoku-solver::Grid 转换为 sudoku-core::Grid
 ///
-/// sukaku-rs 的 Grid 使用 flat array [u8; 81]，
+/// sudoku-solver 的 Grid 使用 flat array [u8; 81]，
 /// sudoku-core 的 Grid 使用 [[Cell; 9]; 9]。
-fn convert_sukaku_to_core(sukaku: &SukakuGrid) -> Grid {
+fn convert_solver_to_core(solver_grid: &SukakuGrid) -> Grid {
     let mut grid = [[Cell::Empty; 9]; 9];
     for i in 0..81u8 {
         let r = (i / 9) as usize;
         let c = (i % 9) as usize;
-        let v = sukaku.get(i);
+        let v = solver_grid.get(i);
         if v > 0 {
             grid[r][c] = Cell::Given(v);
         }
@@ -117,7 +117,7 @@ fn count_givens(grid: &Grid) -> usize {
 /// 生成指定难度的数独谜题
 ///
 /// # 算法
-/// 1. 使用 sukaku-rs 的 SukakuExplainer 算法生成谜题
+/// 1. 使用 sudoku-solver 的 SukakuExplainer 算法生成谜题
 ///    - 6 轮最大化移除
 ///    - 根据目标提示数调整移除策略
 ///    - 保证唯一解
@@ -134,7 +134,7 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
     // 将 sudoku-core 的 Difficulty 映射到提示数范围
     let (min_givens, max_givens) = difficulty.givens_range();
 
-    // 创建 sukaku-rs 生成器
+    // 创建 sudoku-solver 生成器
     // 不设置难度过滤（太慢），只控制提示数
     let mut generator = SukakuGenerator::new();
     generator.require_unique = true;
@@ -144,13 +144,13 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
 
     for _ in 0..max_attempts {
         // 生成谜题
-        let sukaku_grid = match generator.generate() {
+        let solver_grid = match generator.generate() {
             Ok(g) => g,
             Err(_) => continue,
         };
 
         // 转换为 sudoku-core 格式
-        let mut grid = convert_sukaku_to_core(&sukaku_grid);
+        let mut grid = convert_solver_to_core(&solver_grid);
 
         // 检查提示数是否在目标范围内
         let givens = count_givens(&grid);
@@ -171,7 +171,7 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
     generate_fallback(difficulty)
 }
 
-/// 回退生成算法（当 sukaku-rs 生成失败时使用）
+/// 回退生成算法（当 sudoku-solver 生成失败时使用）
 fn generate_fallback(difficulty: Difficulty) -> (Grid, Solution) {
     use crate::solver::count_solutions;
 

@@ -6,7 +6,7 @@ use sudoku_solver::{DifficultyRating, Generator, Grid, Rater, Solver, Symmetry};
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Parser)]
-#[command(name = "sukaku-rs")]
+#[command(name = "sudoku-solver")]
 #[command(about = "Sudoku puzzle generator and rater", long_about = None)]
 #[command(version = VERSION)]
 struct Cli {
@@ -484,10 +484,10 @@ fn main() {
                 println!("EP: {:.1}", rating.ep);
                 println!("ED: {:.1}", rating.ed);
             } else {
-                eprintln!("Usage: sukaku-rs <puzzle>");
-                eprintln!("       sukaku-rs generate [OPTIONS]");
-                eprintln!("       sukaku-rs rate --input <file> [OPTIONS]");
-                eprintln!("       sukaku-rs --version");
+                eprintln!("Usage: sudoku-solver <puzzle>");
+                eprintln!("       sudoku-solver generate [OPTIONS]");
+                eprintln!("       sudoku-solver rate --input <file> [OPTIONS]");
+                eprintln!("       sudoku-solver --version");
                 std::process::exit(1);
             }
         }
