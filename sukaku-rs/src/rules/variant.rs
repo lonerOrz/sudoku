@@ -73,6 +73,56 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
                         }
                     }
                 }
+
+                pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
+                    for cell in 0..81u8 {
+                        if grid.get(cell) != 0 {
+                            continue;
+                        }
+                        let cands = grid.candidates(cell);
+                        let row = cell / 9;
+                        let col = cell % 9;
+                        let neighbors = [
+                            (row.wrapping_sub(1), col),
+                            (row + 1, col),
+                            (row, col.wrapping_sub(1)),
+                            (row, col + 1),
+                        ];
+                        for &(nr, nc) in &neighbors {
+                            if nr >= 9 || nc >= 9 {
+                                continue;
+                            }
+                            let neighbor = nr * 9 + nc;
+                            if grid.get(neighbor) == 0 {
+                                let neighbor_cands = grid.candidates(neighbor);
+                                for d in 1..=9u8 {
+                                    if cands.has(d) {
+                                        let mut elim = Vec::new();
+                                        for nd in 1..=9u8 {
+                                            if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
+                                                elim.push((Cell::from(neighbor), vec![nd]));
+                                            }
+                                        }
+                                        if !elim.is_empty() {
+                                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::NonConsecutive,
+                                difficulty: 5.5,
+                                technique_name: "Non-Consecutive".to_string(),
+                                description: format!(
+                                    "Non-Consecutive: digit {} eliminates consecutive from neighbor",
+                                    d
+                                ),
+                                cell: Cell::from(cell),
+                                value: 0,
+                                eliminations: elim,
+                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -235,6 +285,56 @@ pub fn girandola_var(grid: &Grid, acc: &mut HintAccumulator) {
                     value: 0,
                     eliminations: elim,
                 });
+            }
+        }
+    }
+}
+
+pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
+    for cell in 0..81u8 {
+        if grid.get(cell) != 0 {
+            continue;
+        }
+        let cands = grid.candidates(cell);
+        let row = cell / 9;
+        let col = cell % 9;
+        let neighbors = [
+            (row.wrapping_sub(1), col),
+            (row + 1, col),
+            (row, col.wrapping_sub(1)),
+            (row, col + 1),
+        ];
+        for &(nr, nc) in &neighbors {
+            if nr >= 9 || nc >= 9 {
+                continue;
+            }
+            let neighbor = nr * 9 + nc;
+            if grid.get(neighbor) == 0 {
+                let neighbor_cands = grid.candidates(neighbor);
+                for d in 1..=9u8 {
+                    if cands.has(d) {
+                        let mut elim = Vec::new();
+                        for nd in 1..=9u8 {
+                            if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
+                                elim.push((Cell::from(neighbor), vec![nd]));
+                            }
+                        }
+                        if !elim.is_empty() {
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::NonConsecutive,
+                                difficulty: 5.5,
+                                technique_name: "Non-Consecutive".to_string(),
+                                description: format!(
+                                    "Non-Consecutive: digit {} eliminates consecutive from neighbor",
+                                    d
+                                ),
+                                cell: Cell::from(cell),
+                                value: 0,
+                                eliminations: elim,
+                            });
+                        }
+                    }
+                }
             }
         }
     }
