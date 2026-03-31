@@ -353,3 +353,51 @@ pub fn anti_king_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn toroidal_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let adjacencies = [
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+    ];
+    for cell in 0..81u8 {
+        if grid.get(cell) != 0 {
+            continue;
+        }
+        let row = (cell / 9) as i32;
+        let col = (cell % 9) as i32;
+        for &(dr, dc) in &adjacencies {
+            let nr = ((row + dr + 9) % 9) as u8;
+            let nc = ((col + dc + 9) % 9) as u8;
+            let neighbor = nr * 9 + nc;
+            if neighbor == cell {
+                continue;
+            }
+            if grid.get(neighbor) == 0 {
+                let cands = grid.candidates(cell);
+                let neighbor_cands = grid.candidates(neighbor);
+                for d in 1..=9u8 {
+                    if cands.has(d) && neighbor_cands.has(d) {
+                        acc.add(Hint {
+                            hint_type: crate::solver::HintType::Toroidal,
+                            difficulty: 6.0,
+                            technique_name: "Toroidal".to_string(),
+                            description: format!(
+                                "Toroidal: digit {} in adjacent cells (wrapping)",
+                                d
+                            ),
+                            cell: Cell::from(cell),
+                            value: 0,
+                            eliminations: vec![(Cell::from(neighbor), vec![d])],
+                        });
+                    }
+                }
+            }
+        }
+    }
+}

@@ -59,6 +59,7 @@ pub enum HintType {
     NonConsecutive,
     AntiKnight,
     AntiKing,
+    Toroidal,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

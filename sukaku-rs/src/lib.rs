@@ -644,6 +644,14 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_toroidal() {
+        assert_technique_no_crash(
+            "000000000000003085001020000000507000004000100090000000500000073002010000000040009",
+            "Toroidal",
+        );
+    }
+
     /// Helper function: Assert that a technique is detectable in a puzzle.
     ///
     /// Use this when the puzzle is known to contain the technique.
