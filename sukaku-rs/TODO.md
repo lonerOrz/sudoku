@@ -208,7 +208,7 @@
 | 6.1.1 | Input file | `--input=FILE` | P0 | 2h | ✅ | `main.rs` |
 | 6.1.2 | Output file | `--output=FILE` | P0 | 2h | ✅ | `main.rs` |
 | 6.1.3 | Format string | `--format=FORMAT` | P0 | 4h | ✅ | `main.rs` |
-| 6.1.4 | Thread count | `--threads=N` | P1 | 3h | ⏳ | `main.rs` |
+| 6.1.4 | Thread count | `--threads=N` | P1 | 3h | ✅ | `main.rs` |
 | 6.1.5 | Start format | `--start=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
 | 6.1.6 | Before format | `--before=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
 | 6.1.7 | After format | `--after=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
@@ -218,25 +218,25 @@
 | Spec | Description | Priority | Status |
 |------|-------------|----------|--------|
 | `%d` | Diamond rating (ED) | P0 | ✅ |
-| `%D` | Diamond technique name | P0 | ⏳ |
+| `%D` | Diamond technique name | P0 | ✅ |
 | `%e` | Elapsed time | P0 | ⏳ |
 | `%g` | Input puzzle (81-char) | P0 | ✅ |
 | `%h` | Step description (HTML) | P1 | ⏳ |
-| `%i` | Puzzle grid (81-digit) | P0 | ⏳ |
-| `%l` | Newline | P0 | ⏳ |
+| `%i` | Puzzle grid (81-digit) | P0 | ✅ |
+| `%l` | Newline | P0 | ✅ |
 | `%m` | Pencilmarks (729-char) | P1 | ⏳ |
 | `%M` | Pencilmarks (multi-line) | P1 | ⏳ |
 | `%n` | Puzzle ordinal | P0 | ⏳ |
 | `%p` | Pearl rating (EP) | P0 | ✅ |
-| `%P` | Pearl technique name | P0 | ⏳ |
+| `%P` | Pearl technique name | P0 | ✅ |
 | `%r` | Puzzle rating (ER) | P0 | ✅ |
-| `%R` | Rating technique name | P0 | ⏳ |
+| `%R` | Rating technique name | P0 | ✅ |
 | `%s` | Step description (short) | P1 | ⏳ |
 | `%S` | Rating technique (short) | P1 | ⏳ |
-| `%t` | Tab character | P0 | ⏳ |
-| `%T` | Pearl technique (short) | P1 | ⏳ |
+| `%t` | Tab character | P0 | ✅ |
+| `%T` | Pearl technique (short) | P1 | ✅ |
 | `%U` | Diamond technique (short) | P1 | ⏳ |
-| `%%` | Literal % | P0 | ⏳ |
+| `%%` | Literal % | P0 | ✅ |
 
 ### 6.3 Rating Options
 
