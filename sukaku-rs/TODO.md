@@ -209,9 +209,9 @@
 | 6.1.2 | Output file | `--output=FILE` | P0 | 2h | ✅ | `main.rs` |
 | 6.1.3 | Format string | `--format=FORMAT` | P0 | 4h | ✅ | `main.rs` |
 | 6.1.4 | Thread count | `--threads=N` | P1 | 3h | ✅ | `main.rs` |
-| 6.1.5 | Start format | `--start=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
-| 6.1.6 | Before format | `--before=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
-| 6.1.7 | After format | `--after=FORMAT` | P1 | 2h | ⏳ | `main.rs` |
+| 6.1.5 | Start format | `--start=FORMAT` | P1 | 2h | ✅ | `main.rs` |
+| 6.1.6 | Before format | `--before=FORMAT` | P1 | 2h | ✅ | `main.rs` |
+| 6.1.7 | After format | `--after=FORMAT` | P1 | 2h | ✅ | `main.rs` |
 
 ### 6.2 Format Specifiers (20 total)
 
@@ -232,10 +232,10 @@
 | `%r` | Puzzle rating (ER) | P0 | ✅ |
 | `%R` | Rating technique name | P0 | ✅ |
 | `%s` | Step description (short) | P1 | ⏳ |
-| `%S` | Rating technique (short) | P1 | ⏳ |
+| `%S` | Rating technique (short) | P1 | ✅ |
 | `%t` | Tab character | P0 | ✅ |
 | `%T` | Pearl technique (short) | P1 | ✅ |
-| `%U` | Diamond technique (short) | P1 | ⏳ |
+| `%U` | Diamond technique (short) | P1 | ✅ |
 | `%%` | Literal % | P0 | ✅ |
 
 ### 6.3 Rating Options
@@ -245,7 +245,7 @@
 | 6.3.1 | `--pearl` | P1 | 1h | ✅ | Terminate if not pearl |
 | 6.3.2 | `--diamond` | P1 | 1h | ✅ | Terminate if not diamond |
 | 6.3.3 | `--revisedRating=N` | P2 | 2h | ⏳ | Revised rating scheme |
-| 6.3.4 | `--batch=N` | P2 | 3h | ⏳ | Batch solving mode |
+| 6.3.4 | `--batch=N` | P2 | 3h | ✅ | Batch solving mode |
 
 ### 6.4 Variant CLI Options
 

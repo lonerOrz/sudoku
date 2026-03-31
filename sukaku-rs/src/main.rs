@@ -74,6 +74,9 @@ enum Commands {
 
         #[arg(long, help = "Format string to print after each puzzle")]
         after: Option<String>,
+
+        #[arg(long, help = "Batch processing mode (default: sequential)")]
+        batch: bool,
     },
 }
 
@@ -120,6 +123,7 @@ fn format_output_with_time(
     elapsed: f64,
     ordinal: usize,
 ) -> String {
+    let short_name = &rating.er_technique;
     let mut result = format
         .replace("%r", &format!("{:.1}", rating.er))
         .replace("%p", &format!("{:.1}", rating.ep))
@@ -132,7 +136,10 @@ fn format_output_with_time(
         .replace("%l", "\n")
         .replace("%%", "%")
         .replace("%e", &format!("{:.3}", elapsed))
-        .replace("%n", &ordinal.to_string());
+        .replace("%n", &ordinal.to_string())
+        .replace("%S", short_name)
+        .replace("%T", short_name)
+        .replace("%U", short_name);
 
     result = result.replace("%t", &rating.er_technique);
     result = result.replace("%T", "\t");
@@ -203,6 +210,7 @@ struct RateOptions {
     start: Option<String>,
     before: Option<String>,
     after: Option<String>,
+    batch: bool,
 }
 
 fn cmd_rate_opts(opts: RateOptions) {
@@ -218,6 +226,7 @@ fn cmd_rate_opts(opts: RateOptions) {
         start,
         before,
         after,
+        batch,
     } = opts;
 
     let start_time = Instant::now();
@@ -362,6 +371,7 @@ fn main() {
             start,
             before,
             after,
+            batch,
         }) => {
             cmd_rate_opts(RateOptions {
                 input,
@@ -375,6 +385,7 @@ fn main() {
                 start,
                 before,
                 after,
+                batch,
             });
         }
         None => {
