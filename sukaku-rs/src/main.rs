@@ -65,6 +65,15 @@ enum Commands {
 
         #[arg(long, help = "Show total processing time")]
         total_time: bool,
+
+        #[arg(long, help = "Format string to print before processing")]
+        start: Option<String>,
+
+        #[arg(long, help = "Format string to print before each puzzle")]
+        before: Option<String>,
+
+        #[arg(long, help = "Format string to print after each puzzle")]
+        after: Option<String>,
     },
 }
 
@@ -101,6 +110,32 @@ fn format_output(format: &str, rating: &DifficultyRating, puzzle: &str) -> Strin
     // Technique name (%t) must be replaced before Tab (%T)
     result = result.replace("%t", &rating.er_technique);
     result = result.replace("%T", "\t"); // Tab
+    result
+}
+
+fn format_output_with_time(
+    format: &str,
+    rating: &DifficultyRating,
+    puzzle: &str,
+    elapsed: f64,
+    ordinal: usize,
+) -> String {
+    let mut result = format
+        .replace("%r", &format!("{:.1}", rating.er))
+        .replace("%p", &format!("{:.1}", rating.ep))
+        .replace("%d", &format!("{:.1}", rating.ed))
+        .replace("%D", &rating.er_technique)
+        .replace("%P", &rating.er_technique)
+        .replace("%R", &rating.er_technique)
+        .replace("%i", puzzle)
+        .replace("%g", puzzle)
+        .replace("%l", "\n")
+        .replace("%%", "%")
+        .replace("%e", &format!("{:.3}", elapsed))
+        .replace("%n", &ordinal.to_string());
+
+    result = result.replace("%t", &rating.er_technique);
+    result = result.replace("%T", "\t");
     result
 }
 
@@ -165,6 +200,9 @@ struct RateOptions {
     pearl: bool,
     diamond: bool,
     show_total_time: bool,
+    start: Option<String>,
+    before: Option<String>,
+    after: Option<String>,
 }
 
 fn cmd_rate_opts(opts: RateOptions) {
@@ -177,6 +215,9 @@ fn cmd_rate_opts(opts: RateOptions) {
         pearl,
         diamond,
         show_total_time,
+        start,
+        before,
+        after,
     } = opts;
 
     let start_time = Instant::now();
@@ -318,6 +359,9 @@ fn main() {
             pearl,
             diamond,
             total_time,
+            start,
+            before,
+            after,
         }) => {
             cmd_rate_opts(RateOptions {
                 input,
@@ -328,6 +372,9 @@ fn main() {
                 pearl,
                 diamond,
                 show_total_time: total_time,
+                start,
+                before,
+                after,
             });
         }
         None => {

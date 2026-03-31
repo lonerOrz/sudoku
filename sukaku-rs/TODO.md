@@ -219,14 +219,14 @@
 |------|-------------|----------|--------|
 | `%d` | Diamond rating (ED) | P0 | ✅ |
 | `%D` | Diamond technique name | P0 | ✅ |
-| `%e` | Elapsed time | P0 | ⏳ |
+| `%e` | Elapsed time | P0 | ✅ |
 | `%g` | Input puzzle (81-char) | P0 | ✅ |
 | `%h` | Step description (HTML) | P1 | ⏳ |
 | `%i` | Puzzle grid (81-digit) | P0 | ✅ |
 | `%l` | Newline | P0 | ✅ |
 | `%m` | Pencilmarks (729-char) | P1 | ⏳ |
 | `%M` | Pencilmarks (multi-line) | P1 | ⏳ |
-| `%n` | Puzzle ordinal | P0 | ⏳ |
+| `%n` | Puzzle ordinal | P0 | ✅ |
 | `%p` | Pearl rating (EP) | P0 | ✅ |
 | `%P` | Pearl technique name | P0 | ✅ |
 | `%r` | Puzzle rating (ER) | P0 | ✅ |
