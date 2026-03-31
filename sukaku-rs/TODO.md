@@ -15,7 +15,7 @@
 | **Last Updated** | 2026-03-28 |
 | **Overall Progress** | 52/62 techniques (84%) |
 | **Puzzle Coverage** | ~99% (ER 1.0-8.5) |
-| **Tests** | 77 passing |
+| **Tests** | 78 passing |
 | **CLI** | generate, rate, direct input, JSON output, --version, --pearl, --diamond, --total-time, 完整格式符 |
 
 ---
@@ -28,7 +28,7 @@
 | **Phase 2** | Intermediate (SE 4.0-5.5) | 11 | ✅ **100%** | Complete |
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 100% | 2026-Q3 |
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ✅ 100% | 2026-Q4 |
-| **Phase 5** | Variant Support | 12 | 🔄 67% | Optional |
+| **Phase 5** | Variant Support | 12 | 🔄 75% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 40% | 2026-Q3 |
 | **Phase 7** | Generator | 6 | 🔄 67% | Optional |
 | **Phase 8** | Rating Enhancement | 4 | ⏳ 0% | Optional |
@@ -179,7 +179,7 @@
 | 5.3.2 | Non-Consecutive (NC) | Medium | P2 | 4h | `grid/variant.rs` | [x] | `wazirCellsRegular`, `lockedNC` |
 | 5.3.3 | Ferz NC (Diagonal NC) | High | P3 | 4h | `grid/variant.rs` | `ferzCellsRegular`, `lockedFNC` |
 | 5.3.4 | Anti-Knight | Medium | P3 | 3h | `grid/variant.rs` | [x] | `knightCellIndex` |
-| 5.3.5 | Anti-King | Low | P3 | 2h | `grid/variant.rs` | `ferzCellIndex` |
+| 5.3.5 | Anti-King | Low | P3 | 2h | `grid/variant.rs` | [x] | `ferzCellIndex` |
 
 ### 5.4 Variant-Specific Techniques
 
