@@ -111,6 +111,10 @@ pub struct Generator {
     pub require_unique: bool,
     /// Symmetry type for the generated puzzle
     pub symmetry: Symmetry,
+    /// Techniques to exclude (e.g., ["X-Wing", "Swordfish"])
+    pub exclude_techniques: Vec<String>,
+    /// Techniques to include (only these will be used, empty = all)
+    pub include_techniques: Vec<String>,
 }
 
 impl Generator {
@@ -122,6 +126,8 @@ impl Generator {
             max_difficulty: 10.0,
             require_unique: true,
             symmetry: Symmetry::None,
+            exclude_techniques: Vec::new(),
+            include_techniques: Vec::new(),
         }
     }
 
@@ -133,6 +139,8 @@ impl Generator {
             max_difficulty: 10.0,
             require_unique: true,
             symmetry: Symmetry::None,
+            exclude_techniques: Vec::new(),
+            include_techniques: Vec::new(),
         }
     }
 
@@ -144,10 +152,11 @@ impl Generator {
             max_difficulty: max,
             require_unique: true,
             symmetry: Symmetry::None,
+            exclude_techniques: Vec::new(),
+            include_techniques: Vec::new(),
         }
     }
 
-    /// Creates a generator with a specific symmetry type.
     pub fn with_symmetry(symmetry: Symmetry) -> Self {
         Self {
             seed: None,
@@ -155,18 +164,11 @@ impl Generator {
             max_difficulty: 10.0,
             require_unique: true,
             symmetry,
+            exclude_techniques: Vec::new(),
+            include_techniques: Vec::new(),
         }
     }
 
-    /// Generates a puzzle matching the configured constraints.
-    ///
-    /// Uses difficulty-based clue count targeting:
-    /// - Easy (ER 1-2): 30-40 clues
-    /// - Medium (ER 2-3): 25-30 clues
-    /// - Hard (ER 3-5): 22-26 clues
-    /// - Expert (ER 5+): 17-22 clues
-    ///
-    /// Returns Error::GenerationFailed if no valid puzzle found after max_attempts.
     pub fn generate(&mut self) -> Result<Grid> {
         let mut rng = rand::thread_rng();
         let max_attempts = 100;
