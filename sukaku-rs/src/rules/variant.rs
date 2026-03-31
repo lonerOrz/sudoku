@@ -306,3 +306,50 @@ pub fn anti_knight_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn anti_king_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let king_moves = [
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+    ];
+    for cell in 0..81u8 {
+        if grid.get(cell) != 0 {
+            continue;
+        }
+        let row = (cell / 9) as i32;
+        let col = (cell % 9) as i32;
+        for &(dr, dc) in &king_moves {
+            let nr = row + dr;
+            let nc = col + dc;
+            if nr >= 0 && nr < 9 && nc >= 0 && nc < 9 {
+                let neighbor = (nr * 9 + nc) as u8;
+                if grid.get(neighbor) == 0 {
+                    let cands = grid.candidates(cell);
+                    let neighbor_cands = grid.candidates(neighbor);
+                    for d in 1..=9u8 {
+                        if cands.has(d) && neighbor_cands.has(d) {
+                            acc.add(Hint {
+                                hint_type: crate::solver::HintType::AntiKing,
+                                difficulty: 5.5,
+                                technique_name: "Anti-King".to_string(),
+                                description: format!(
+                                    "Anti-King: digit {} in king-adjacent cells",
+                                    d
+                                ),
+                                cell: Cell::from(cell),
+                                value: 0,
+                                eliminations: vec![(Cell::from(neighbor), vec![d])],
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

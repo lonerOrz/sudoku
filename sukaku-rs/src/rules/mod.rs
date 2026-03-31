@@ -124,6 +124,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Girandola", girandola_var, 5.5),
         Rule::new("Non-Consecutive", non_consecutive_var, 5.5),
         Rule::new("Anti-Knight", anti_knight_var, 5.5),
+        Rule::new("Anti-King", anti_king_var, 5.5),
     ]
 }
 
@@ -184,8 +185,8 @@ pub use unique::{
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
 pub use variant::{
-    anti_knight_var, asterisk_var, center_dot_var, disjoint_groups_var, girandola_var,
-    non_consecutive_var, windows_var, x_diagonal_var,
+    anti_king_var, anti_knight_var, asterisk_var, center_dot_var, disjoint_groups_var,
+    girandola_var, non_consecutive_var, windows_var, x_diagonal_var,
 };
 pub use vlocking::vlocking;
 pub use wing::{als_xz_rule, tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};
