@@ -30,8 +30,8 @@
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ✅ 100% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ✅ 100% | Optional |
 | **Phase 6** | CLI Enhancement | 20 | 🔄 80% | 2026-Q3 |
-| **Phase 7** | Generator | 6 | 🔄 67% | Optional |
-| **Phase 8** | Rating Enhancement | 4 | ⏳ 0% | Optional |
+| **Phase 7** | Generator | 6 | 🔄 83% | Optional |
+| **Phase 8** | Rating Enhancement | 4 | 🔄 75% | Optional |
 
 **Total**: 62 solving techniques + 12 variants + 20 CLI features
 
@@ -326,9 +326,9 @@ pub enum Symmetry {
 | # | Feature | Priority | Est. | Status | File | Description |
 |---|---------|----------|------|--------|------|-------------|
 | 8.1 | Short technique names | P1 | 2h | ✅ | `solver/hint.rs` | `%S/%T/%U` support |
-| 8.2 | Revised rating system | P2 | 4h | ⏳ | `rating.rs` | `revisedRating` toggle |
+| 8.2 | Revised rating system | P2 | 4h | ✅ | `rating.rs` | `revisedRating` toggle |
 | 8.3 | Technique name localization | P3 | 4h | ⏳ | `rating.rs` | Multi-language support |
-| 8.4 | Custom difficulty overrides | P3 | 2h | ⏳ | `rating.rs` | User-defined ratings |
+| 8.4 | Custom difficulty overrides | P3 | 2h | ✅ | `rating.rs` | User-defined ratings |
 
 ---
 

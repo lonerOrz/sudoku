@@ -21,6 +21,31 @@ impl DifficultyRating {
         }
     }
 
+    pub fn with_revised_scale(&mut self) -> &mut Self {
+        if self.er >= 1.0 && self.er <= 10.0 {
+            if self.er <= 2.0 {
+                self.er = 1.0;
+            } else if self.er <= 3.0 {
+                self.er = 2.0;
+            } else if self.er <= 4.0 {
+                self.er = 3.0;
+            } else if self.er <= 5.0 {
+                self.er = 4.0;
+            } else if self.er <= 6.0 {
+                self.er = 5.0;
+            } else if self.er <= 7.0 {
+                self.er = 6.0;
+            } else if self.er <= 8.0 {
+                self.er = 7.0;
+            } else if self.er <= 9.0 {
+                self.er = 8.0;
+            } else {
+                self.er = 9.0;
+            }
+        }
+        self
+    }
+
     pub fn er_technique_short(&self) -> &str {
         match self.er_technique.as_str() {
             "Naked Single" => "NS",
@@ -73,6 +98,13 @@ impl DifficultyRating {
             "Backtracking" => "BT",
             _ => &self.er_technique,
         }
+    }
+
+    pub fn override_technique_difficulty(&mut self, technique: &str, difficulty: f64) -> &mut Self {
+        if self.er_technique == technique {
+            self.er = difficulty;
+        }
+        self
     }
 }
 
