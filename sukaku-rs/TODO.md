@@ -291,10 +291,10 @@
 |---|---------|----------|------|--------|------|-------------|
 | 7.1 | Symmetry types enum | P2 | 3h | ✅ | `generator.rs` | 8 symmetry types |
 | 7.2 | Difficulty range filter | P2 | 4h | ✅ | `generator.rs` | Min/max difficulty |
-| 7.3 | Technique exclusion | P3 | 4h | ⏳ | `generator/mod.rs` | Exclude techniques |
-| 7.4 | Technique inclusion | P3 | 4h | ⏳ | `generator/mod.rs` | Include techniques |
+| 7.3 | Technique exclusion | P3 | 4h | ✅ | `generator.rs` | Exclude techniques |
+| 7.4 | Technique inclusion | P3 | 4h | ✅ | `generator.rs` | Include techniques |
 | 7.5 | Unique solution verification | P1 | 6h | ✅ | `generator.rs` | Fast verification |
-| 7.6 | Multi-threaded generation | P3 | 8h | ⏳ | `generator/mod.rs` | Parallel generation |
+| 7.6 | Multi-threaded generation | P3 | 8h | ✅ | `generator/mod.rs` | Parallel generation |
 
 **Implemented Symmetry Types**:
 ```rust
@@ -323,12 +323,12 @@ pub enum Symmetry {
 
 **Reference**: `Rule.java`, `Solver.java`, `Settings.java`
 
-| # | Feature | Priority | Est. | File | Description |
-|---|---------|----------|------|------|-------------|
-| 8.1 | Short technique names | P1 | 2h | `solver/hint.rs` | `%S/%T/%U` support |
-| 8.2 | Revised rating system | P2 | 4h | `rating.rs` | `revisedRating` toggle |
-| 8.3 | Technique name localization | P3 | 4h | `rating.rs` | Multi-language support |
-| 8.4 | Custom difficulty overrides | P3 | 2h | `rating.rs` | User-defined ratings |
+| # | Feature | Priority | Est. | Status | File | Description |
+|---|---------|----------|------|--------|------|-------------|
+| 8.1 | Short technique names | P1 | 2h | ✅ | `solver/hint.rs` | `%S/%T/%U` support |
+| 8.2 | Revised rating system | P2 | 4h | ⏳ | `rating.rs` | `revisedRating` toggle |
+| 8.3 | Technique name localization | P3 | 4h | ⏳ | `rating.rs` | Multi-language support |
+| 8.4 | Custom difficulty overrides | P3 | 2h | ⏳ | `rating.rs` | User-defined ratings |
 
 ---
 

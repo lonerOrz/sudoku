@@ -123,7 +123,7 @@ fn format_output_with_time(
     elapsed: f64,
     ordinal: usize,
 ) -> String {
-    let short_name = &rating.er_technique;
+    let short_name = rating.er_technique_short();
     let mut result = format
         .replace("%r", &format!("{:.1}", rating.er))
         .replace("%p", &format!("{:.1}", rating.ep))
