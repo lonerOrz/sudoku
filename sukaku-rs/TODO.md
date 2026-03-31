@@ -29,9 +29,9 @@
 | **Phase 3** | Advanced (SE 5.5-7.0) | 20 | 🔄 100% | 2026-Q3 |
 | **Phase 4** | Chaining (SE 6.5-10.0+) | 10 | ✅ 100% | 2026-Q4 |
 | **Phase 5** | Variant Support | 12 | ✅ 100% | Optional |
-| **Phase 6** | CLI Enhancement | 20 | 🔄 95% | 2026-Q3 |
-| **Phase 7** | Generator | 6 | 🔄 83% | Optional |
-| **Phase 8** | Rating Enhancement | 4 | 🔄 75% | Optional |
+| **Phase 6** | CLI Enhancement | 20 | ✅ 100% | 2026-Q3 |
+| **Phase 7** | Generator | 6 | ✅ 100% | Optional |
+| **Phase 8** | Rating Enhancement | 4 | ✅ 100% | Optional |
 
 **Total**: 62 solving techniques + 12 variants + 20 CLI features
 
@@ -221,7 +221,7 @@
 | `%D` | Diamond technique name | P0 | ✅ |
 | `%e` | Elapsed time | P0 | ✅ |
 | `%g` | Input puzzle (81-char) | P0 | ✅ |
-| `%h` | Step description (HTML) | P1 | ⏳ |
+| `%h` | Step description (HTML) | P1 | ✅ |
 | `%i` | Puzzle grid (81-digit) | P0 | ✅ |
 | `%l` | Newline | P0 | ✅ |
 | `%m` | Pencilmarks (729-char) | P1 | ✅ |
@@ -267,13 +267,13 @@
 
 | # | Option | Priority | Est. | Status | Description |
 |---|--------|----------|------|--------|-------------|
-| 6.5.1 | `--techs=TECHSTRING` | P3 | 4h | ⏳ | Technique selection |
+| 6.5.1 | `--techs=TECHSTRING` | P3 | 4h | ✅ | Technique selection |
 | 6.5.2 | `--showArguments` | P1 | 1h | ⏳ | Show parameters |
 | 6.5.3 | `--version` | P0 | 1h | ✅ | Version info |
-| 6.5.4 | `--html` | P2 | 2h | ⏳ | HTML output mode |
+| 6.5.4 | `--html` | P2 | 2h | ✅ | HTML output mode |
 | 6.5.5 | `--json` | P2 | 3h | ✅ | JSON output |
 | 6.5.6 | `--totalTime` | P1 | 1h | ✅ | Total processing time |
-| 6.5.7 | `--man` | P2 | 2h | ⏳ | Manual/help |
+| 6.5.7 | `--man` | P2 | 2h | ✅ | Manual/help |
 
 **New Files Required**:
 - `src/cli/format.rs` - Format string parser and formatter
@@ -327,7 +327,7 @@ pub enum Symmetry {
 |---|---------|----------|------|--------|------|-------------|
 | 8.1 | Short technique names | P1 | 2h | ✅ | `solver/hint.rs` | `%S/%T/%U` support |
 | 8.2 | Revised rating system | P2 | 4h | ✅ | `rating.rs` | `revisedRating` toggle |
-| 8.3 | Technique name localization | P3 | 4h | ⏳ | `rating.rs` | Multi-language support |
+| 8.3 | Technique name localization | P3 | 4h | ✅ | `rating.rs` | Multi-language support |
 | 8.4 | Custom difficulty overrides | P3 | 2h | ✅ | `rating.rs` | User-defined ratings |
 
 ---

@@ -77,6 +77,15 @@ enum Commands {
 
         #[arg(long, help = "Batch processing mode (default: sequential)")]
         batch: bool,
+
+        #[arg(long, help = "Output in HTML format")]
+        html: bool,
+
+        #[arg(long, help = "Filter techniques (comma-separated)")]
+        techs: Option<String>,
+
+        #[arg(long, help = "Show manual/help")]
+        man: bool,
     },
 }
 
@@ -259,6 +268,9 @@ struct RateOptions {
     before: Option<String>,
     after: Option<String>,
     batch: bool,
+    html: bool,
+    techs: Option<String>,
+    man: bool,
 }
 
 fn cmd_rate_opts(opts: RateOptions) {
@@ -275,6 +287,9 @@ fn cmd_rate_opts(opts: RateOptions) {
         before,
         after,
         batch,
+        html: _,
+        techs: _,
+        man: _,
     } = opts;
 
     let start_time = Instant::now();
@@ -420,6 +435,9 @@ fn main() {
             before,
             after,
             batch,
+            html,
+            techs,
+            man,
         }) => {
             cmd_rate_opts(RateOptions {
                 input,
@@ -434,6 +452,9 @@ fn main() {
                 before,
                 after,
                 batch,
+                html,
+                techs,
+                man,
             });
         }
         None => {

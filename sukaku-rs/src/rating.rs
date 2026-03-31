@@ -106,6 +106,35 @@ impl DifficultyRating {
         }
         self
     }
+
+    pub fn technique_name_localized(&self, lang: &str) -> String {
+        match lang {
+            "zh" => match self.er_technique.as_str() {
+                "Naked Single" => "裸单".to_string(),
+                "Hidden Single" => "隐单".to_string(),
+                "Naked Pair" => "裸对".to_string(),
+                "Hidden Pair" => "隐对".to_string(),
+                "Naked Triple" => "裸三".to_string(),
+                "Hidden Triple" => "隐三".to_string(),
+                "Naked Quad" => "裸四".to_string(),
+                "Hidden Quad" => "隐四".to_string(),
+                "X-Wing" => "X翼".to_string(),
+                "Swordfish" => "剑鱼".to_string(),
+                "Jellyfish" => "水母".to_string(),
+                "XY-Wing" => "XY翼".to_string(),
+                "Backtracking" => "回溯".to_string(),
+                _ => self.er_technique.clone(),
+            },
+            "ja" => match self.er_technique.as_str() {
+                "Naked Single" => "ネイキッドシングル".to_string(),
+                "Hidden Single" => "ヒドゥンシングル".to_string(),
+                "X-Wing" => "Xウィング".to_string(),
+                "Backtracking" => "バックトラッキング".to_string(),
+                _ => self.er_technique.clone(),
+            },
+            _ => self.er_technique.clone(),
+        }
+    }
 }
 
 impl Default for DifficultyRating {
