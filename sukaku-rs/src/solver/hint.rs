@@ -54,6 +54,7 @@ pub enum HintType {
     DisjointGroups,
     Windows,
     CenterDot,
+    Asterisk,
 }
 
 /// A hint represents a solving technique that can be applied to make progress.

@@ -43,6 +43,36 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
                         }
                     }
                 }
+
+                pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
+                    let asterisk = [4, 10, 16, 36, 40, 44, 64, 70, 76];
+                    for digit in 1..=9u8 {
+                        let mut cells_with_digit = Vec::new();
+                        for &cell in &asterisk {
+                            if grid.get(cell) == 0 && grid.candidates(cell).has(digit) {
+                                cells_with_digit.push(cell);
+                            }
+                        }
+                        for &cell in &cells_with_digit {
+                            if grid.candidates(cell).cardinality() > 1 {
+                                let mut elim = Vec::new();
+                                elim.push((Cell::from(cell), vec![digit]));
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::Asterisk,
+                                    difficulty: 5.5,
+                                    technique_name: "Asterisk".to_string(),
+                                    description: format!(
+                                        "Asterisk: digit {} in asterisk cells",
+                                        digit
+                                    ),
+                                    cell: Cell::from(cell),
+                                    value: 0,
+                                    eliminations: elim,
+                                });
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -147,6 +177,33 @@ pub fn center_dot_var(grid: &Grid, acc: &mut HintAccumulator) {
                     difficulty: 5.5,
                     technique_name: "Center Dot".to_string(),
                     description: format!("Center Dot: digit {} in center cells", digit),
+                    cell: Cell::from(cell),
+                    value: 0,
+                    eliminations: elim,
+                });
+            }
+        }
+    }
+}
+
+pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let asterisk = [4, 10, 16, 36, 40, 44, 64, 70, 76];
+    for digit in 1..=9u8 {
+        let mut cells_with_digit = Vec::new();
+        for &cell in &asterisk {
+            if grid.get(cell) == 0 && grid.candidates(cell).has(digit) {
+                cells_with_digit.push(cell);
+            }
+        }
+        for &cell in &cells_with_digit {
+            if grid.candidates(cell).cardinality() > 1 {
+                let mut elim = Vec::new();
+                elim.push((Cell::from(cell), vec![digit]));
+                acc.add(Hint {
+                    hint_type: crate::solver::HintType::Asterisk,
+                    difficulty: 5.5,
+                    technique_name: "Asterisk".to_string(),
+                    description: format!("Asterisk: digit {} in asterisk cells", digit),
                     cell: Cell::from(cell),
                     value: 0,
                     eliminations: elim,

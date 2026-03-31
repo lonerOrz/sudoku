@@ -120,6 +120,7 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Disjoint Groups", disjoint_groups_var, 5.5),
         Rule::new("Windows", windows_var, 5.5),
         Rule::new("Center Dot", center_dot_var, 5.5),
+        Rule::new("Asterisk", asterisk_var, 5.5),
     ]
 }
 
@@ -179,6 +180,6 @@ pub use unique::{
     bug_plus_four, bug_plus_one, bug_plus_three, bug_plus_two, unique_rectangle_type1,
     unique_rectangle_type2, unique_rectangle_type3, unique_rectangle_type4,
 };
-pub use variant::{center_dot_var, disjoint_groups_var, windows_var, x_diagonal_var};
+pub use variant::{asterisk_var, center_dot_var, disjoint_groups_var, windows_var, x_diagonal_var};
 pub use vlocking::vlocking;
 pub use wing::{als_xz_rule, tuvwxyz_wing, uvwxyz_wing, vwxyz_wing, wxyz_wing, xy_wing, xyz_wing};
