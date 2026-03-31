@@ -199,7 +199,8 @@ impl Generator {
                 }
             }
 
-            // Step 4: Verify difficulty (if constraints specified)
+            // Step 4: Verify difficulty only if explicitly requested
+            // Note: This is very slow for ER 2.0+ puzzles and often fails
             if verify_difficulty {
                 let mut solver = Solver::new(puzzle);
                 solver.rebuild_candidates();
@@ -212,7 +213,11 @@ impl Generator {
                 continue;
             }
 
-            return Ok(puzzle);
+            // No difficulty constraint: return based on clue count
+            let clues = (0..81).filter(|&i| puzzle.get(i) != 0).count();
+            if clues >= min_clues && clues <= max_clues {
+                return Ok(puzzle);
+            }
         }
 
         Err(Error::GenerationFailed)
