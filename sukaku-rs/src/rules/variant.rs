@@ -212,3 +212,30 @@ pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
     }
 }
+
+pub fn girandola_var(grid: &Grid, acc: &mut HintAccumulator) {
+    let girandola = [0, 8, 20, 40, 60, 72, 80, 24, 56];
+    for digit in 1..=9u8 {
+        let mut cells_with_digit = Vec::new();
+        for &cell in &girandola {
+            if grid.get(cell) == 0 && grid.candidates(cell).has(digit) {
+                cells_with_digit.push(cell);
+            }
+        }
+        for &cell in &cells_with_digit {
+            if grid.candidates(cell).cardinality() > 1 {
+                let mut elim = Vec::new();
+                elim.push((Cell::from(cell), vec![digit]));
+                acc.add(Hint {
+                    hint_type: crate::solver::HintType::Girandola,
+                    difficulty: 5.5,
+                    technique_name: "Girandola".to_string(),
+                    description: format!("Girandola: digit {} in girandola cells", digit),
+                    cell: Cell::from(cell),
+                    value: 0,
+                    eliminations: elim,
+                });
+            }
+        }
+    }
+}
