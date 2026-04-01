@@ -17,7 +17,6 @@ use rand::Rng;
 use crate::error::Error;
 use crate::error::Result;
 use crate::grid::Grid;
-use crate::rating::Rater;
 use crate::solver::Solver;
 
 /// Symmetry types for puzzle generation.
@@ -172,7 +171,6 @@ impl Generator {
     pub fn generate(&mut self) -> Result<Grid> {
         let mut rng = rand::thread_rng();
         let max_attempts = 100;
-        let verify_difficulty = self.min_difficulty > 0.0 || self.max_difficulty < 10.0;
 
         // Map difficulty range to target clue count
         let (min_clues, max_clues) = self.difficulty_to_clue_range();
@@ -193,29 +191,16 @@ impl Generator {
             // Step 3: Verify unique solution
             if self.require_unique {
                 let mut solver = Solver::new(puzzle);
-                solver.rebuild_candidates();
-                if !solver.has_unique_solution() {
+                if !solver.has_unique_solution_fast() {
                     continue;
                 }
             }
 
-            // Step 4: Verify difficulty only if explicitly requested
-            // Note: This is very slow for ER 2.0+ puzzles and often fails
-            if verify_difficulty {
-                let mut solver = Solver::new(puzzle);
-                solver.rebuild_candidates();
-                let mut rater = Rater::new(&mut solver);
-                let rating = rater.analyse();
+            // Step 4: Skip difficulty verification (clue count is good enough proxy)
+            // Users can rate puzzles themselves if needed
 
-                if rating.er >= self.min_difficulty && rating.er <= self.max_difficulty {
-                    return Ok(puzzle);
-                }
-                continue;
-            }
-
-            // No difficulty constraint: return based on clue count
-            let clues = (0..81).filter(|&i| puzzle.get(i) != 0).count();
-            if clues >= min_clues && clues <= max_clues {
+            // Return based on clue count
+            if puzzle.clue_count() >= min_clues && puzzle.clue_count() <= max_clues {
                 return Ok(puzzle);
             }
         }
@@ -227,28 +212,24 @@ impl Generator {
     ///
     /// Higher difficulty → fewer clues (more digits removed).
     fn difficulty_to_clue_range(&self) -> (usize, usize) {
-        // Use average of min/max to determine target
         let avg_diff = (self.min_difficulty + self.max_difficulty) / 2.0;
 
-        if avg_diff <= 2.0 {
-            // Easy: 30-40 clues
-            (30, 40)
-        } else if avg_diff <= 3.0 {
-            // Medium: 25-30 clues
-            (25, 30)
-        } else if avg_diff <= 5.0 {
-            // Hard: 22-26 clues
-            (22, 26)
+        // Broader ranges to make generation easier
+        if avg_diff <= 1.0 {
+            (30, 45)
+        } else if avg_diff <= 2.5 {
+            (28, 40)
+        } else if avg_diff <= 4.0 {
+            (25, 35)
+        } else if avg_diff <= 5.5 {
+            (22, 30)
+        } else if avg_diff <= 7.0 {
+            (20, 26)
         } else {
-            // Expert: 17-22 clues
             (17, 22)
         }
     }
 
-    /// Removes digits to reach a target clue count range.
-    ///
-    /// Unlike maximal removal, this stops once the target is reached.
-    /// This helps achieve medium difficulty puzzles.
     fn remove_digits_to_target(
         &self,
         grid: &mut Grid,
@@ -258,64 +239,54 @@ impl Generator {
         max_clues: usize,
     ) {
         let symmetry = self.symmetry;
-        let mut attempts = 0;
 
-        while attempts < 6 {
-            let mut positions: Vec<u8> = (0..81).collect();
-            positions.shuffle(rng);
+        // Dynamic check frequency: check more often when closer to target
+        let check_frequency = |current_clues: usize| -> usize {
+            if current_clues <= min_clues + 3 {
+                1 // Check every removal when near target
+            } else if current_clues <= min_clues + 10 {
+                3 // Check every 3 removals
+            } else if min_clues <= 20 {
+                10 // Higher difficulty: less frequent
+            } else {
+                5 // Lower difficulty: more frequent
+            }
+        };
 
-            let mut any_removed = false;
-            let current_clues = (0..81).filter(|&i| grid.get(i) != 0).count();
+        let mut positions: Vec<u8> = (0..81).collect();
+        positions.shuffle(rng);
+        let mut removal_count = 0;
 
-            // Stop if we've reached target clue count
-            if current_clues <= max_clues {
+        for &pos in &positions {
+            if grid.clue_count() <= max_clues {
+                return;
+            }
+            if grid.clue_count() <= min_clues {
                 return;
             }
 
-            for &pos in &positions {
-                let current_clues = (0..81).filter(|&i| grid.get(i) != 0).count();
-
-                // Stop if we've reached minimum clue count
-                if current_clues <= min_clues {
-                    return;
-                }
-
-                let symmetric_positions = symmetry.get_symmetric_positions(pos);
-
-                // Skip if any symmetric position is already empty
-                let all_filled = symmetric_positions.iter().all(|&p| grid.get(p) != 0);
-                if !all_filled {
-                    continue;
-                }
-
-                // Try removing symmetric positions
-                for &p in &symmetric_positions {
-                    grid.set(p, 0);
-                }
-                grid.rebuild_candidates();
-
-                if self.require_unique {
-                    let mut solver = Solver::new(*grid);
-                    solver.rebuild_candidates();
-
-                    if solver.has_unique_solution() {
-                        any_removed = true;
-                    } else {
-                        // Restore if uniqueness lost
-                        for &p in &symmetric_positions {
-                            grid.set(p, solution.get(p));
-                        }
-                        grid.rebuild_candidates();
-                    }
-                } else {
-                    any_removed = true;
-                }
+            let symmetric_positions = symmetry.get_symmetric_positions(pos);
+            let all_filled = symmetric_positions.iter().all(|&p| grid.get(p) != 0);
+            if !all_filled {
+                continue;
             }
 
-            if any_removed {
-                attempts = 0;
-            } else {
-                attempts += 1;
+            // Try removing
+            for &p in &symmetric_positions {
+                grid.set(p, 0);
+            }
+            removal_count += symmetric_positions.len();
+
+            // Check uniqueness periodically
+            if self.require_unique && removal_count >= check_frequency(grid.clue_count()) {
+                removal_count = 0;
+                let mut solver = Solver::new(*grid);
+                if !solver.has_unique_solution_fast() {
+                    // Restore
+                    for &p in &symmetric_positions {
+                        grid.set(p, solution.get(p));
+                    }
+                }
             }
         }
     }

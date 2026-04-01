@@ -765,4 +765,25 @@ mod tests {
         let gen = Generator::with_symmetry(Symmetry::Rotational180);
         assert_eq!(gen.symmetry, Symmetry::Rotational180);
     }
+
+    #[test]
+    fn test_clue_count() {
+        let grid = Grid::parse(
+            "123456789123456789123456789123456789123456789123456789123456789123456789123456789",
+        )
+        .unwrap();
+        assert_eq!(grid.clue_count(), 81);
+
+        let grid = Grid::parse(
+            "000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        )
+        .unwrap();
+        assert_eq!(grid.clue_count(), 0);
+
+        let puzzle =
+            "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+        let grid = Grid::parse(puzzle).unwrap();
+        let expected = puzzle.chars().filter(|&c| c != '0').count();
+        assert_eq!(grid.clue_count(), expected);
+    }
 }

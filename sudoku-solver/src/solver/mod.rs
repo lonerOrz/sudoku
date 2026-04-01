@@ -134,6 +134,7 @@ impl Solver {
     pub fn count_solutions(&mut self) -> usize {
         let backup = self.grid;
         let mut count = 0;
+        self.grid.rebuild_candidates();
         self.count_solutions_inner(&mut count, 2);
         self.grid = backup;
         count
@@ -174,5 +175,19 @@ impl Solver {
 
     pub fn has_unique_solution(&mut self) -> bool {
         self.count_solutions() == 1
+    }
+
+    /// Check if puzzle has exactly one solution - optimized version.
+    /// Stops searching as soon as 2 solutions are found.
+    pub fn has_unique_solution_fast(&mut self) -> bool {
+        let backup = self.grid;
+        let mut count = 0;
+        self.grid.rebuild_candidates();
+
+        // Use existing count_solutions_inner with limit=2
+        self.count_solutions_inner(&mut count, 2);
+
+        self.grid = backup;
+        count == 1
     }
 }

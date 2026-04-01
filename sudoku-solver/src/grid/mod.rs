@@ -19,6 +19,8 @@ use std::str::FromStr;
 pub struct Grid {
     cells: [u8; 81],
     candidates: [Candidates; 81],
+    /// Clue count: number of filled cells (non-zero)
+    clue_count: usize,
 }
 
 impl Grid {
@@ -26,6 +28,7 @@ impl Grid {
         Self {
             cells: [0; 81],
             candidates: [Candidates::full(); 81],
+            clue_count: 0,
         }
     }
 
@@ -40,6 +43,12 @@ impl Grid {
 
     pub fn set(&mut self, idx: u8, value: u8) {
         debug_assert!(value <= 9);
+        let old_value = self.cells[idx as usize];
+        if old_value > 0 && value == 0 {
+            self.clue_count -= 1;
+        } else if old_value == 0 && value > 0 {
+            self.clue_count += 1;
+        }
         self.cells[idx as usize] = value;
         if value > 0 {
             self.candidates[idx as usize] = Candidates::empty();
@@ -49,6 +58,11 @@ impl Grid {
     #[inline]
     pub fn candidates(&self, idx: u8) -> Candidates {
         self.candidates[idx as usize]
+    }
+
+    #[inline]
+    pub fn clue_count(&self) -> usize {
+        self.clue_count
     }
 
     pub fn remove_candidate(&mut self, idx: u8, value: u8) {
@@ -137,6 +151,7 @@ impl FromStr for Grid {
             return Err(Error::InvalidLength(digits.len()));
         }
 
+        let mut clue_count = 0;
         let mut grid = Self::new();
         for (i, &digit) in digits.iter().enumerate() {
             if digit > 9 {
@@ -144,10 +159,11 @@ impl FromStr for Grid {
             }
             grid.cells[i] = digit;
             if digit > 0 {
+                clue_count += 1;
                 grid.candidates[i] = Candidates::empty();
             }
         }
-
+        grid.clue_count = clue_count;
         grid.rebuild_candidates();
         Ok(grid)
     }
