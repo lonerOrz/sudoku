@@ -172,11 +172,9 @@ impl Generator {
         let mut rng = rand::thread_rng();
         let max_attempts = 100;
 
-        // Map difficulty range to target clue count
         let (min_clues, max_clues) = self.difficulty_to_clue_range();
 
         for _ in 0..max_attempts {
-            // Step 1: Generate a random complete grid
             let mut filled_grid = Grid::new();
             if !self.solve_random(&mut filled_grid, &mut rng) {
                 continue;
@@ -185,10 +183,8 @@ impl Generator {
             let solution = filled_grid;
             let mut puzzle = solution;
 
-            // Step 2: Remove digits to target clue count
             self.remove_digits_to_target(&mut puzzle, &solution, &mut rng, min_clues, max_clues);
 
-            // Step 3: Verify unique solution
             if self.require_unique {
                 let mut solver = Solver::new(puzzle);
                 if !solver.has_unique_solution_fast() {
@@ -196,10 +192,6 @@ impl Generator {
                 }
             }
 
-            // Step 4: Skip difficulty verification (clue count is good enough proxy)
-            // Users can rate puzzles themselves if needed
-
-            // Return based on clue count
             if puzzle.clue_count() >= min_clues && puzzle.clue_count() <= max_clues {
                 return Ok(puzzle);
             }
@@ -214,7 +206,6 @@ impl Generator {
     fn difficulty_to_clue_range(&self) -> (usize, usize) {
         let avg_diff = (self.min_difficulty + self.max_difficulty) / 2.0;
 
-        // Broader ranges to make generation easier
         if avg_diff <= 1.0 {
             (30, 45)
         } else if avg_diff <= 2.5 {
@@ -224,9 +215,9 @@ impl Generator {
         } else if avg_diff <= 5.5 {
             (22, 30)
         } else if avg_diff <= 7.0 {
-            (20, 26)
+            (22, 30)
         } else {
-            (17, 22)
+            (22, 30)
         }
     }
 
@@ -240,17 +231,13 @@ impl Generator {
     ) {
         let symmetry = self.symmetry;
 
-        // Dynamic check frequency: check more often when closer to target
-        let check_frequency = |current_clues: usize| -> usize {
-            if current_clues <= min_clues + 3 {
-                1 // Check every removal when near target
-            } else if current_clues <= min_clues + 10 {
-                3 // Check every 3 removals
-            } else if min_clues <= 20 {
-                10 // Higher difficulty: less frequent
-            } else {
-                5 // Lower difficulty: more frequent
-            }
+        // For Expert, use smaller interval for faster detection
+        let check_interval = if min_clues <= 18 {
+            3
+        } else if min_clues <= 22 {
+            4
+        } else {
+            5
         };
 
         let mut positions: Vec<u8> = (0..81).collect();
@@ -278,7 +265,7 @@ impl Generator {
             removal_count += symmetric_positions.len();
 
             // Check uniqueness periodically
-            if self.require_unique && removal_count >= check_frequency(grid.clue_count()) {
+            if self.require_unique && removal_count >= check_interval {
                 removal_count = 0;
                 let mut solver = Solver::new(*grid);
                 if !solver.has_unique_solution_fast() {
