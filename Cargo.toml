@@ -1,5 +1,5 @@
 [workspace]
-members = ["sudoku-core", "sudoku-tui"]
+members = ["sudoku-core", "sudoku-solver", "sudoku-tui"]
 resolver = "3"
 
 [workspace.package]
