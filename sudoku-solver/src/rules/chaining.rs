@@ -107,7 +107,9 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
                 }
                 let impl_cands = impl_grid.candidates(other);
                 if impl_cands.cardinality() == 1 {
-                    let Some(forced_val) = impl_cands.iter().next() else { continue };
+                    let Some(forced_val) = impl_cands.iter().next() else {
+                        continue;
+                    };
                     let mut impl_grid2 = impl_grid;
                     impl_grid2.set(other, forced_val);
                     impl_grid2.rebuild_candidates();
@@ -291,7 +293,9 @@ fn find_nested_implications(
         }
         let cands = grid.candidates(other);
         if cands.cardinality() == 1 {
-            let Some(val) = cands.iter().next() else { return false };
+            let Some(val) = cands.iter().next() else {
+                return false;
+            };
             let mut next_grid = *grid;
             next_grid.set(other, val);
             next_grid.rebuild_candidates();

@@ -7,10 +7,6 @@
 mod tests {
     use crate::{CellIndex, Grid, HintType, Solver};
 
-    /// Known valid solution for constructing test grids.
-    const SOLVED: &str =
-        "162857493534129678789643521475312986913586742628794135356478219241935867897261354";
-
     /// Easy puzzle — many singles, locked candidates.
     const EASY: &str =
         "003020600900305001001806400008102900700000008006708200002609500800203009005010300";
@@ -387,7 +383,6 @@ mod tests {
         solver.rebuild_candidates();
         if let Some(hint) = solver.detect_technique("Unique Rectangle Type 3") {
             assert_eq!(hint.hint_type, HintType::UniqueRectangleType3);
-            assert!(hint.value == 0 || hint.value > 0);
             assert!(solver.validate_hint(&hint).is_ok());
         }
     }
@@ -441,7 +436,6 @@ mod tests {
         solver.rebuild_candidates();
         if let Some(hint) = solver.detect_technique("BUG+3") {
             assert_eq!(hint.hint_type, HintType::BUGPlusThree);
-            assert!(hint.value == 0 || hint.value > 0);
             assert!(solver.validate_hint(&hint).is_ok());
         }
     }
@@ -1058,94 +1052,7 @@ mod tests {
 
     #[test]
     fn test_constructed_locked_pointing() {
-        // Locked Pointing: in box 0 (rows 0-2, cols 0-2), digit 1 can only appear
-        // in row 0 (cells 0,1,2). So eliminate 1 from rest of row 0 (cells 3-8).
-        // Solution row 0: 1 6 2 8 5 7 4 9 3
-        // Fill cells to leave only (0,0), (0,1), (0,2) as candidates for digit 1 in box 0.
-        // (0,0)=1 in solution, (0,1)=6, (0,2)=2.
-        // To make 1 a candidate at (0,1) and (0,2), we need to NOT fill those with their solutions yet.
-        // But we need to eliminate 1 from other positions in box 0 and row 0.
-        // Strategy: fill cols 0,1,2 except rows 0 with values that include all digits except 1 in those cols.
-        // Also fill row 0 cols 3-8 with values.
-        let mut cells = [0u8; 81];
-        // Row 0: _ _ _ 8 5 7 4 9 3
-        cells[3] = 8;
-        cells[4] = 5;
-        cells[5] = 7;
-        cells[6] = 4;
-        cells[7] = 9;
-        cells[8] = 3;
-        // Col 0: _ 5 7 4 9 6 3 2 8
-        cells[9] = 5;
-        cells[18] = 7;
-        cells[27] = 4;
-        cells[36] = 9;
-        cells[45] = 6;
-        cells[54] = 3;
-        cells[63] = 2;
-        cells[72] = 8;
-        // Col 1: _ 3 8 1 7 2 5 4 6
-        cells[10] = 3;
-        cells[19] = 8;
-        cells[28] = 1;
-        cells[37] = 7;
-        cells[46] = 2;
-        cells[55] = 5;
-        cells[64] = 4;
-        cells[73] = 6;
-        // Col 2: _ 4 9 5 3 1 6 7 2
-        cells[11] = 4;
-        cells[20] = 9;
-        cells[29] = 5;
-        cells[38] = 3;
-        cells[47] = 1;
-        cells[56] = 6;
-        cells[65] = 7;
-        cells[74] = 2;
-        // Now box 0 cells: (0,0)=_, (0,1)=_, (0,2)=_, (1,0)=5, (1,1)=3, (1,2)=4,
-        // (2,0)=7, (2,1)=8, (2,2)=9. Box 0 has {3,4,5,7,8,9}. Missing: {1,2,6}.
-        // In row 0, cells (0,0),(0,1),(0,2) need values from {1,2,6} ∩ col constraints.
-        // Col 0 already has {2,3,4,5,6,7,8,9} → only 1 possible at (0,0). So (0,0)=1 is Naked Single.
-        // This means Locked Pointing won't fire because Naked Single fires first.
-        // We need to prevent Naked Single. Let's adjust:
-        // Make cols 0,1,2 NOT have 1 in their filled cells, so cells (0,0),(0,1),(0,2) all can have 1.
-        let mut cells = [0u8; 81];
-        cells[3] = 8;
-        cells[4] = 5;
-        cells[5] = 7;
-        cells[6] = 4;
-        cells[7] = 9;
-        cells[8] = 3;
-        // Col 0: _ 5 7 _ 9 6 3 2 8
-        cells[9] = 5;
-        cells[18] = 7;
-        cells[36] = 9;
-        cells[45] = 6;
-        cells[54] = 3;
-        cells[63] = 2;
-        cells[72] = 8;
-        // Col 1: _ 3 8 1 _ 2 5 4 6
-        cells[10] = 3;
-        cells[19] = 8;
-        cells[28] = 1;
-        cells[46] = 2;
-        cells[55] = 5;
-        cells[64] = 4;
-        cells[73] = 6;
-        // Col 2: _ 4 9 _ 3 1 6 7 2
-        cells[11] = 4;
-        cells[20] = 9;
-        cells[47] = 3;
-        cells[56] = 1;
-        cells[65] = 6;
-        cells[74] = 7;
-        cells[80] = 2;
-        // Box 0 filled: (1,0)=5, (1,1)=3, (1,2)=4, (2,0)=7, (2,1)=8, (2,2)=9
-        // Box 0 missing: {1,2,6}. Cells (0,0),(0,1),(0,2) can be any of {1,2,6}.
-        // Col 0 has {2,3,5,6,7,8,9} → (0,0) can be {1,4}. But 4 is in box 0 → (0,0) can be {1}.
-        // No! (0,3)=8, col 0 already has 8. (0,6)=4. So (0,0) can't be 4. (0,0) can only be 1.
-        // Still Naked Single. Need to also fill (2,7) and (2,8) to remove the Naked Single.
-        // Let me just test Locked Pointing via detect_technique on EASY.
+        // Test via detect_technique on EASY puzzle.
         // If it doesn't fire, that's fine — it's tested via no-crash + solve tests.
         let grid = Grid::parse(EASY).unwrap();
         let mut solver = Solver::new(grid);

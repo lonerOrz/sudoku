@@ -46,7 +46,7 @@ mod technique_tests;
 mod tests {
     use crate::rules;
     use crate::solver::HintAccumulator;
-    use crate::{Candidates, CellIndex, Generator, Grid, Hint, HintType, Rater, Solver, Symmetry};
+    use crate::{CellIndex, Generator, Grid, Hint, HintType, Rater, Solver, Symmetry};
 
     #[test]
     fn test_all_rules_have_unique_names() {
@@ -803,7 +803,6 @@ mod tests {
 
     #[test]
     fn test_validate_hint_rejects_filled_cell() {
-        use crate::solver::apply_hint_validated;
         let grid = Grid::parse(
             "123456789456789123789123456214365897365897214897214365531642978642978531978531642",
         )
@@ -1106,7 +1105,7 @@ mod tests {
         );
         assert!(!hint.eliminations.is_empty(), "Should have eliminations");
         // Verify the eliminated value is 5
-        for &(_, ref vals) in &hint.eliminations {
+        for (_, vals) in &hint.eliminations {
             assert!(vals.contains(&5), "Should eliminate value 5");
         }
     }
@@ -1134,7 +1133,7 @@ mod tests {
             hint.value, 0,
             "Anti-King should be elimination, not placement"
         );
-        for &(_, ref vals) in &hint.eliminations {
+        for (_, vals) in &hint.eliminations {
             assert!(vals.contains(&3), "Should eliminate value 3");
         }
     }
@@ -1156,7 +1155,7 @@ mod tests {
         let hint = hint.unwrap();
         assert_eq!(hint.value, 0, "Should be elimination, not placement");
         let mut eliminated_vals = Vec::new();
-        for &(_, ref vals) in &hint.eliminations {
+        for (_, vals) in &hint.eliminations {
             eliminated_vals.extend(vals);
         }
         assert!(
@@ -1337,7 +1336,7 @@ mod tests {
                     // Check if placement matches solution (only for value placements)
                     if hint.value > 0 {
                         let expected = sol.as_bytes()[hint.cell.index as usize] - b'0';
-                        if hint.value as u8 != expected as u8 {
+                        if hint.value != expected {
                             eprintln!(
                                 "  *** WRONG: placed {} at ({},{}) but solution has {} ***",
                                 hint.value,

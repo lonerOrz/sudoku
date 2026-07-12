@@ -131,7 +131,7 @@ cargo test variant
 
 ## License
 
-MIT
+BSD-3-Clause
 
 ## Acknowledgments
 

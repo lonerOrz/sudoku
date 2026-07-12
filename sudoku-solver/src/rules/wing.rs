@@ -952,7 +952,9 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
             if !wing1_values.contains(&x) {
                 continue;
             }
-            let Some(&z_wing1) = wing1_values.iter().find(|&&v| v != x) else { continue };
+            let Some(&z_wing1) = wing1_values.iter().find(|&&v| v != x) else {
+                continue;
+            };
 
             if !is_visible(pivot_idx, wing1_idx) {
                 continue;
@@ -973,7 +975,9 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
                 if !wing2_values.contains(&y) {
                     continue;
                 }
-                let Some(&z_wing2) = wing2_values.iter().find(|&&v| v != y) else { continue };
+                let Some(&z_wing2) = wing2_values.iter().find(|&&v| v != y) else {
+                    continue;
+                };
 
                 if z_wing1 != z_wing2 {
                     continue;

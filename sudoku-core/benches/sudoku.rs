@@ -141,7 +141,8 @@ fn check_is_solved(c: &mut Criterion) {
     let (puzzle, solution) = generate(Difficulty::Medium);
     let solved: sudoku_core::Grid = core::array::from_fn(|r| {
         core::array::from_fn(|c| sudoku_core::Cell::Given(solution[r][c]))
-    });
+    })
+    .into();
 
     c.bench_function("is_solved_true", |b| {
         b.iter(|| {
