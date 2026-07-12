@@ -212,10 +212,6 @@ impl Generator {
             (28, 40)
         } else if avg_diff <= 4.0 {
             (25, 35)
-        } else if avg_diff <= 5.5 {
-            (22, 30)
-        } else if avg_diff <= 7.0 {
-            (22, 30)
         } else {
             (22, 30)
         }

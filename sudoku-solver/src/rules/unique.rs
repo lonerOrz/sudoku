@@ -28,7 +28,9 @@ pub fn unique_rectangle_type1(grid: &Grid, acc: &mut HintAccumulator) {
                     {
                         let mut bs = [b1, b2, b3, b4];
                         bs.sort();
-                        let n = (bs[0] != bs[1]) as u8 + (bs[1] != bs[2]) as u8 + (bs[2] != bs[3]) as u8;
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
                         if n != 1 {
                             continue;
                         }
@@ -128,7 +130,9 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                     {
                         let mut bs = [b1, b2, b3, b4];
                         bs.sort();
-                        let n = (bs[0] != bs[1]) as u8 + (bs[1] != bs[2]) as u8 + (bs[2] != bs[3]) as u8;
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
                         if n != 1 {
                             continue;
                         }
@@ -247,7 +251,6 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
-#[allow(dead_code)]
 pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
     for r1 in 0..9 {
         for r2 in (r1 + 1)..9 {
@@ -275,7 +278,9 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                     {
                         let mut bs = [b1, b2, b3, b4];
                         bs.sort();
-                        let n = (bs[0] != bs[1]) as u8 + (bs[1] != bs[2]) as u8 + (bs[2] != bs[3]) as u8;
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
                         if n != 1 {
                             continue;
                         }
@@ -377,7 +382,6 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
-#[allow(dead_code)]
 pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
     for r1 in 0..9 {
         for r2 in (r1 + 1)..9 {
@@ -404,7 +408,9 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                     let mut boxes = [b1, b2, b3, b4];
                     boxes.sort();
                     {
-                        let n = (boxes[0] != boxes[1]) as u8 + (boxes[1] != boxes[2]) as u8 + (boxes[2] != boxes[3]) as u8;
+                        let n = (boxes[0] != boxes[1]) as u8
+                            + (boxes[1] != boxes[2]) as u8
+                            + (boxes[2] != boxes[3]) as u8;
                         if n != 1 {
                             continue;
                         }
@@ -432,7 +438,11 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                     // sharing a row or column). Eliminate the OTHER base digit from
                     // cells outside the UR in the complementary row/column.
                     for &base_digit in &base {
-                        let other_digit = if base_digit == base[0] { base[1] } else { base[0] };
+                        let other_digit = if base_digit == base[0] {
+                            base[1]
+                        } else {
+                            base[0]
+                        };
 
                         // Strong link in row r1: base_digit only in cells 0,1
                         // → eliminate other_digit from row r2 (outside cells 2,3)
@@ -449,7 +459,10 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                     && cell != idx[3]
                                     && grid.candidates(cell).has(other_digit)
                                 {
-                                    eliminations.push((crate::grid::CellIndex::from(cell), vec![other_digit]));
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
                             }
                             if !eliminations.is_empty() {
@@ -484,7 +497,10 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                     && cell != idx[1]
                                     && grid.candidates(cell).has(other_digit)
                                 {
-                                    eliminations.push((crate::grid::CellIndex::from(cell), vec![other_digit]));
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
                             }
                             if !eliminations.is_empty() {
@@ -519,7 +535,10 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                     && cell != idx[3]
                                     && grid.candidates(cell).has(other_digit)
                                 {
-                                    eliminations.push((crate::grid::CellIndex::from(cell), vec![other_digit]));
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
                             }
                             if !eliminations.is_empty() {
@@ -554,7 +573,10 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                     && cell != idx[2]
                                     && grid.candidates(cell).has(other_digit)
                                 {
-                                    eliminations.push((crate::grid::CellIndex::from(cell), vec![other_digit]));
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
                             }
                             if !eliminations.is_empty() {

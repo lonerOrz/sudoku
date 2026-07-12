@@ -125,10 +125,10 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
 
     // Reduce attempts for faster fallback - sudoku-solver often fails for specific clue counts
     let max_attempts = match difficulty {
-        Difficulty::Easy => 30,      // 38-43 clues: easy to hit
-        Difficulty::Medium => 20,    // 32-37 clues: moderate
-        Difficulty::Hard => 15,      // 26-31 clues: harder to hit
-        Difficulty::Expert => 10,    // 20-25 clues: very hard to hit, fallback quickly
+        Difficulty::Easy => 30,   // 38-43 clues: easy to hit
+        Difficulty::Medium => 20, // 32-37 clues: moderate
+        Difficulty::Hard => 15,   // 26-31 clues: harder to hit
+        Difficulty::Expert => 10, // 20-25 clues: very hard to hit, fallback quickly
     };
 
     for _ in 0..max_attempts {

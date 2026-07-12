@@ -14,6 +14,20 @@ use std::collections::HashSet;
 use crate::grid::Grid;
 use crate::rules::{self, Strategy};
 
+/// Rule-based Sudoku solver that detects solving techniques.
+///
+/// Applies techniques in order of difficulty (Naked Single → Hidden Single → ...) to find the next move.
+/// Falls back to MRV backtracking when no rule-based technique applies.
+///
+/// ```
+/// use sudoku_solver::{Grid, Solver};
+///
+/// let grid = Grid::parse("003020600900305001001806400008102900700000008006708200002609500800203009005010300").unwrap();
+/// let mut solver = Solver::new(grid);
+/// if let Some(hint) = solver.next_hint() {
+///     println!("Technique: {} at cell {}, value {}", hint.technique_name, hint.cell.index, hint.value);
+/// }
+/// ```
 pub struct Solver {
     grid: Grid,
     steps: usize,
@@ -132,13 +146,19 @@ impl Solver {
             let c = (idx % 9) as usize;
             let b = (r / 3) * 3 + c / 3;
             for &j in &crate::grid::ROWS[r].cells {
-                if j != idx { self.grid.remove_candidate(j, val); }
+                if j != idx {
+                    self.grid.remove_candidate(j, val);
+                }
             }
             for &j in &crate::grid::COLS[c].cells {
-                if j != idx { self.grid.remove_candidate(j, val); }
+                if j != idx {
+                    self.grid.remove_candidate(j, val);
+                }
             }
             for &j in &crate::grid::BLOCKS[b].cells {
-                if j != idx { self.grid.remove_candidate(j, val); }
+                if j != idx {
+                    self.grid.remove_candidate(j, val);
+                }
             }
             // Validate: all empty cells must have candidates
             for i in 0..81u8 {
@@ -159,9 +179,7 @@ impl Solver {
             // Pre-validate: all targets must be empty cells with the candidate
             for &(cell, ref values) in &hint.eliminations {
                 for &v in values {
-                    if self.grid.get(cell.index) != 0
-                        || !self.grid.candidates(cell.index).has(v)
-                    {
+                    if self.grid.get(cell.index) != 0 || !self.grid.candidates(cell.index).has(v) {
                         self.rejected_elim_keys.insert(Self::elim_key(hint));
                         return false;
                     }
@@ -171,7 +189,13 @@ impl Solver {
             for &(cell, ref values) in &hint.eliminations {
                 for &v in values {
                     #[cfg(test)]
-                    eprintln!("    elim cell={}({},{}) val={}", cell.index, cell.index/9, cell.index%9, v);
+                    eprintln!(
+                        "    elim cell={}({},{}) val={}",
+                        cell.index,
+                        cell.index / 9,
+                        cell.index % 9,
+                        v
+                    );
                     self.grid.remove_candidate(cell.index, v);
                 }
             }

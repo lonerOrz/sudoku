@@ -2,8 +2,11 @@
 name = "sudoku-solver"
 version = "0.1.0"
 edition = "2021"
-description = "Sudoku difficulty rater and generator"
+description = "Sudoku difficulty rater, solver, and generator with 40+ solving techniques"
 license = "MIT"
+keywords = ["sudoku", "solver", "puzzle", "rating", "generator"]
+categories = ["puzzle", "algorithms"]
+readme = "README.md"
 
 [dependencies]
 thiserror = "1.0"

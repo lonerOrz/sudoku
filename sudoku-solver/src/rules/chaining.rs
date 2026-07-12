@@ -107,7 +107,7 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
                 }
                 let impl_cands = impl_grid.candidates(other);
                 if impl_cands.cardinality() == 1 {
-                    let forced_val = impl_cands.iter().next().unwrap();
+                    let Some(forced_val) = impl_cands.iter().next() else { continue };
                     let mut impl_grid2 = impl_grid;
                     impl_grid2.set(other, forced_val);
                     impl_grid2.rebuild_candidates();
@@ -130,8 +130,8 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
         // Only eliminate if ALL branches agree
         if branch_elims.len() >= 2 {
             let mut common = branch_elims[0].clone();
-            for i in 1..branch_elims.len() {
-                common = common.intersection(&branch_elims[i]).copied().collect();
+            for item in branch_elims.iter().skip(1) {
+                common = common.intersection(item).copied().collect();
             }
             let mut grouped: std::collections::HashMap<u8, Vec<u8>> =
                 std::collections::HashMap::new();
@@ -291,7 +291,7 @@ fn find_nested_implications(
         }
         let cands = grid.candidates(other);
         if cands.cardinality() == 1 {
-            let val = cands.iter().next().unwrap();
+            let Some(val) = cands.iter().next() else { return false };
             let mut next_grid = *grid;
             next_grid.set(other, val);
             next_grid.rebuild_candidates();

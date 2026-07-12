@@ -1,5 +1,10 @@
+//! Hint accumulator for collecting solving technique results.
+
 use super::Hint;
 
+/// Collects hints produced by solving techniques.
+///
+/// Rules push their discovered hints here; the solver picks the best one.
 pub struct HintAccumulator {
     hints: Vec<Hint>,
 }

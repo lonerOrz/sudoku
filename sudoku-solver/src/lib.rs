@@ -841,7 +841,10 @@ mod tests {
             eliminations: vec![(CellIndex::from(1u8), vec![3])], // 3 is in row 0, not a candidate for cell 1
         };
         let result = solver.validate_hint(&hint);
-        assert!(result.is_err(), "Should reject invalid elimination candidate");
+        assert!(
+            result.is_err(),
+            "Should reject invalid elimination candidate"
+        );
     }
 
     // ==================== Consistency Tests ====================
@@ -852,7 +855,10 @@ mod tests {
             "003020600900305001001806400008102900700000008006708200002609500800203009005010300",
         )
         .unwrap();
-        assert!(grid.check_consistency(), "Valid grid should pass consistency check");
+        assert!(
+            grid.check_consistency(),
+            "Valid grid should pass consistency check"
+        );
     }
 
     #[test]
@@ -861,7 +867,10 @@ mod tests {
             "123456789456789123789123456214365897365897214897214365531642978642978531978531642",
         )
         .unwrap();
-        assert!(grid.check_consistency(), "Solved grid should pass consistency check");
+        assert!(
+            grid.check_consistency(),
+            "Solved grid should pass consistency check"
+        );
     }
 
     // ==================== End-to-End Solve Tests ====================
@@ -935,7 +944,9 @@ mod tests {
             solver.apply_hint(&hint);
             assert!(solver.grid().check_consistency());
             steps += 1;
-            if steps > 200 { break; }
+            if steps > 200 {
+                break;
+            }
         }
         // This puzzle is too extreme for rule-based solving — 0 steps is expected.
     }
@@ -981,7 +992,10 @@ mod tests {
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
         if let Some(hint) = solver.detect_technique("Locked Pointing") {
-            assert!(!hint.eliminations.is_empty(), "Locked Pointing should eliminate candidates");
+            assert!(
+                !hint.eliminations.is_empty(),
+                "Locked Pointing should eliminate candidates"
+            );
             solver.validate_hint(&hint).unwrap();
         }
     }
@@ -995,7 +1009,10 @@ mod tests {
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
         if let Some(hint) = solver.detect_technique("XY-Wing") {
-            assert!(!hint.eliminations.is_empty(), "XY-Wing should eliminate candidates");
+            assert!(
+                !hint.eliminations.is_empty(),
+                "XY-Wing should eliminate candidates"
+            );
             solver.validate_hint(&hint).unwrap();
         }
     }
@@ -1078,9 +1095,15 @@ mod tests {
         let mut acc = HintAccumulator::new();
         anti_knight_var(&grid, &mut acc);
         let hint = acc.first();
-        assert!(hint.is_some(), "Anti-Knight should detect elimination from filled cell");
+        assert!(
+            hint.is_some(),
+            "Anti-Knight should detect elimination from filled cell"
+        );
         let hint = hint.unwrap();
-        assert_eq!(hint.value, 0, "Anti-Knight should be elimination, not placement");
+        assert_eq!(
+            hint.value, 0,
+            "Anti-Knight should be elimination, not placement"
+        );
         assert!(!hint.eliminations.is_empty(), "Should have eliminations");
         // Verify the eliminated value is 5
         for &(_, ref vals) in &hint.eliminations {
@@ -1102,9 +1125,15 @@ mod tests {
         let mut acc = HintAccumulator::new();
         anti_king_var(&grid, &mut acc);
         let hint = acc.first();
-        assert!(hint.is_some(), "Anti-King should detect elimination from filled cell");
+        assert!(
+            hint.is_some(),
+            "Anti-King should detect elimination from filled cell"
+        );
         let hint = hint.unwrap();
-        assert_eq!(hint.value, 0, "Anti-King should be elimination, not placement");
+        assert_eq!(
+            hint.value, 0,
+            "Anti-King should be elimination, not placement"
+        );
         for &(_, ref vals) in &hint.eliminations {
             assert!(vals.contains(&3), "Should eliminate value 3");
         }
@@ -1163,7 +1192,11 @@ mod tests {
         let mut solver = Solver::new(grid);
         let mut rater = Rater::new(&mut solver);
         let rating = rater.analyse();
-        assert!(rating.er >= 0.1 && rating.er <= 11.0, "ER out of range: {}", rating.er);
+        assert!(
+            rating.er >= 0.1 && rating.er <= 11.0,
+            "ER out of range: {}",
+            rating.er
+        );
         assert!(rating.ed >= 0.1, "ED out of range: {}", rating.ed);
         assert!(rating.ep >= 0.1, "EP out of range: {}", rating.ep);
     }
@@ -1230,7 +1263,9 @@ mod tests {
         for i in 0..81u8 {
             if grid.get(i) == 0 {
                 let cands = grid.candidates(i);
-                if cands.is_empty() { return false; }
+                if cands.is_empty() {
+                    return false;
+                }
                 if best.is_none() || cands.cardinality() < best.unwrap().1 {
                     best = Some((i, cands.cardinality()));
                 }
@@ -1245,7 +1280,9 @@ mod tests {
             let backup = *grid;
             grid.set(idx, v);
             grid.rebuild_candidates();
-            if backtrack_solve(grid) { return true; }
+            if backtrack_solve(grid) {
+                return true;
+            }
             *grid = backup;
         }
         false
@@ -1273,15 +1310,25 @@ mod tests {
         let mut steps = 0;
         while !solver.grid().is_solved() {
             steps += 1;
-            if steps > 200 { eprintln!("Giving up after {} steps", steps); break; }
+            if steps > 200 {
+                eprintln!("Giving up after {} steps", steps);
+                break;
+            }
 
             if let Some(hint) = solver.next_hint() {
                 let accepted = solver.apply_hint(&hint);
-                eprintln!("Step {}: {} cell={}({},{}) val={} elim={:?} -> {}",
-                    steps, hint.technique_name,
-                    hint.cell.index, hint.cell.y(), hint.cell.x(),
+                eprintln!(
+                    "Step {}: {} cell={}({},{}) val={} elim={:?} -> {}",
+                    steps,
+                    hint.technique_name,
+                    hint.cell.index,
+                    hint.cell.y(),
+                    hint.cell.x(),
                     hint.value,
-                    hint.eliminations.iter().map(|(c,v)| format!("{}:rem{:?}", c.index, v)).collect::<Vec<_>>(),
+                    hint.eliminations
+                        .iter()
+                        .map(|(c, v)| format!("{}:rem{:?}", c.index, v))
+                        .collect::<Vec<_>>(),
                     if accepted { "OK" } else { "REJECTED" }
                 );
 
@@ -1291,7 +1338,13 @@ mod tests {
                     if hint.value > 0 {
                         let expected = sol.as_bytes()[hint.cell.index as usize] - b'0';
                         if hint.value as u8 != expected as u8 {
-                            eprintln!("  *** WRONG: placed {} at ({},{}) but solution has {} ***", hint.value, hint.cell.y(), hint.cell.x(), expected);
+                            eprintln!(
+                                "  *** WRONG: placed {} at ({},{}) but solution has {} ***",
+                                hint.value,
+                                hint.cell.y(),
+                                hint.cell.x(),
+                                expected
+                            );
                         }
                     }
                 }
@@ -1301,10 +1354,15 @@ mod tests {
                     let val = solver.grid().get(i);
                     let cands: Vec<u8> = solver.grid().candidates(i).iter().collect();
                     if val == 0 && cands.is_empty() {
-                        eprintln!("  INCONSISTENT: Cell {} (row {} col {}) has 0 candidates", i, i/9, i%9);
-                        eprintln!("  Row {}:", i/9);
+                        eprintln!(
+                            "  INCONSISTENT: Cell {} (row {} col {}) has 0 candidates",
+                            i,
+                            i / 9,
+                            i % 9
+                        );
+                        eprintln!("  Row {}:", i / 9);
                         for cc in 0..9 {
-                            let ii = (i/9)*9+cc;
+                            let ii = (i / 9) * 9 + cc;
                             let v = solver.grid().get(ii);
                             let c: Vec<u8> = solver.grid().candidates(ii).iter().collect();
                             eprintln!("    col {}: val={} cands={:?}", cc, v, c);
@@ -1316,13 +1374,23 @@ mod tests {
                 break;
             }
         }
-        eprintln!("Done: steps={}, solved={}", steps, solver.grid().is_solved());
+        eprintln!(
+            "Done: steps={}, solved={}",
+            steps,
+            solver.grid().is_solved()
+        );
         if !solver.grid().is_solved() {
             eprintln!("\nRemaining empty cells:");
             for i in 0..81u8 {
                 if solver.grid().get(i) == 0 {
                     let cands: Vec<u8> = solver.grid().candidates(i).iter().collect();
-                    eprintln!("  Cell {} (row {} col {}): cands={:?}", i, i/9, i%9, cands);
+                    eprintln!(
+                        "  Cell {} (row {} col {}): cands={:?}",
+                        i,
+                        i / 9,
+                        i % 9,
+                        cands
+                    );
                 }
             }
             // Rebuild candidates to see what they SHOULD be
@@ -1332,7 +1400,13 @@ mod tests {
             for i in 0..81u8 {
                 if check.get(i) == 0 {
                     let cands: Vec<u8> = check.candidates(i).iter().collect();
-                    eprintln!("  Cell {} (row {} col {}): cands={:?}", i, i/9, i%9, cands);
+                    eprintln!(
+                        "  Cell {} (row {} col {}): cands={:?}",
+                        i,
+                        i / 9,
+                        i % 9,
+                        cands
+                    );
                 }
             }
         }
@@ -1375,21 +1449,31 @@ mod tests {
             if !hints.is_empty() {
                 eprintln!("Rule '{}' found {} hints", rule.name, hints.len());
                 for h in hints.iter().take(3) {
-                    eprintln!("  cell={} ({},{}) val={} elim={:?}",
-                        h.cell.index, h.cell.y(), h.cell.x(), h.value,
-                        h.eliminations.iter().map(|(c,v)| format!("{}:rem{:?}", c.index, v)).collect::<Vec<_>>());
+                    eprintln!(
+                        "  cell={} ({},{}) val={} elim={:?}",
+                        h.cell.index,
+                        h.cell.y(),
+                        h.cell.x(),
+                        h.value,
+                        h.eliminations
+                            .iter()
+                            .map(|(c, v)| format!("{}:rem{:?}", c.index, v))
+                            .collect::<Vec<_>>()
+                    );
                 }
                 found_any = true;
             }
         }
         if !found_any {
-            eprintln!("NO RULES FOUND ANY HINTS after step 1 (puzzle too sparse for basic techniques)");
+            eprintln!(
+                "NO RULES FOUND ANY HINTS after step 1 (puzzle too sparse for basic techniques)"
+            );
             // Dump remaining empty cells
             for i in 0..81u8 {
                 if grid.get(i) == 0 {
                     let cands: Vec<u8> = grid.candidates(i).iter().collect();
                     if cands.len() <= 3 {
-                        eprintln!("  Cell {} ({},{}): cands={:?}", i, i/9, i%9, cands);
+                        eprintln!("  Cell {} ({},{}): cands={:?}", i, i / 9, i % 9, cands);
                     }
                 }
             }
@@ -1433,12 +1517,7 @@ mod tests {
                             "Eliminations: {:?}",
                             hint.eliminations
                                 .iter()
-                                .map(|(c, vs)| format!(
-                                    "R{}C{} rem {:?}",
-                                    c.x() + 1,
-                                    c.y() + 1,
-                                    vs
-                                ))
+                                .map(|(c, vs)| format!("R{}C{} rem {:?}", c.x() + 1, c.y() + 1, vs))
                                 .collect::<Vec<_>>()
                         );
                         eprintln!("====================");
@@ -1548,7 +1627,8 @@ mod tests {
                                 if v > 0 {
                                     eprint!("{} ", v);
                                 } else {
-                                    let cands: Vec<u8> = solver.grid().candidates(idx).iter().collect();
+                                    let cands: Vec<u8> =
+                                        solver.grid().candidates(idx).iter().collect();
                                     eprint!("({:?})", cands);
                                 }
                             }
@@ -1558,12 +1638,7 @@ mod tests {
                             "Eliminations: {:?}",
                             hint.eliminations
                                 .iter()
-                                .map(|(c, vs)| format!(
-                                    "R{}C{} rem {:?}",
-                                    c.x() + 1,
-                                    c.y() + 1,
-                                    vs
-                                ))
+                                .map(|(c, vs)| format!("R{}C{} rem {:?}", c.x() + 1, c.y() + 1, vs))
                                 .collect::<Vec<_>>()
                         );
                         eprintln!("====================");
@@ -1609,15 +1684,9 @@ mod tests {
         //
         // I'll use the solution and remove cells strategically:
         let solution = [
-            1,6,2,8,5,7,4,9,3,
-            5,3,4,1,2,9,6,7,8,
-            7,8,9,6,4,3,5,2,1,
-            4,7,5,3,1,2,9,8,6,
-            9,1,3,5,8,6,7,4,2,
-            6,2,8,7,9,4,1,3,5,
-            3,5,6,4,7,8,2,1,9,
-            2,4,1,9,3,5,8,6,7,
-            8,9,7,2,6,1,3,5,4,
+            1, 6, 2, 8, 5, 7, 4, 9, 3, 5, 3, 4, 1, 2, 9, 6, 7, 8, 7, 8, 9, 6, 4, 3, 5, 2, 1, 4, 7,
+            5, 3, 1, 2, 9, 8, 6, 9, 1, 3, 5, 8, 6, 7, 4, 2, 6, 2, 8, 7, 9, 4, 1, 3, 5, 3, 5, 6, 4,
+            7, 8, 2, 1, 9, 2, 4, 1, 9, 3, 5, 8, 6, 7, 8, 9, 7, 2, 6, 1, 3, 5, 4,
         ];
 
         // Remove cells to create ALS groups in box 3 (rows 3-5, cols 0-2):
@@ -1725,8 +1794,8 @@ mod tests {
         // Test on a partial grid
         let mut partial = solution;
         // Remove a few cells to create empty cells
-        partial[4] = 0;  // (0,4) = empty
-        partial[5] = 0;  // (0,5) = empty
+        partial[4] = 0; // (0,4) = empty
+        partial[5] = 0; // (0,5) = empty
         partial[13] = 0; // (1,4) = empty
         partial[14] = 0; // (1,5) = empty
         let partial_grid = Grid::from_flat(partial);
@@ -1746,4 +1815,3 @@ mod tests {
         // The test passes as long as no panics occur — this is a demonstration test.
     }
 }
-

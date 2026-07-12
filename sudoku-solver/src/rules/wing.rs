@@ -651,7 +651,13 @@ pub fn uvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                 .filter(|&(i, _)| i != elim_idx)
                 .map(|(_, &v)| v)
                 .collect();
-            let wing_config = (wing_vals[0], wing_vals[1], wing_vals[2], wing_vals[3], wing_vals[4]);
+            let wing_config = (
+                wing_vals[0],
+                wing_vals[1],
+                wing_vals[2],
+                wing_vals[3],
+                wing_vals[4],
+            );
             find_uvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, wing_config);
         }
     }
@@ -774,7 +780,14 @@ pub fn tuvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                 .filter(|&(i, _)| i != elim_idx)
                 .map(|(_, &v)| v)
                 .collect();
-            let wing_config = (wing_vals[0], wing_vals[1], wing_vals[2], wing_vals[3], wing_vals[4], wing_vals[5]);
+            let wing_config = (
+                wing_vals[0],
+                wing_vals[1],
+                wing_vals[2],
+                wing_vals[3],
+                wing_vals[4],
+                wing_vals[5],
+            );
             find_tuvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, wing_config);
         }
     }
@@ -939,7 +952,7 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
             if !wing1_values.contains(&x) {
                 continue;
             }
-            let z_wing1 = *wing1_values.iter().find(|&&v| v != x).unwrap();
+            let Some(&z_wing1) = wing1_values.iter().find(|&&v| v != x) else { continue };
 
             if !is_visible(pivot_idx, wing1_idx) {
                 continue;
@@ -960,7 +973,7 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
                 if !wing2_values.contains(&y) {
                     continue;
                 }
-                let z_wing2 = *wing2_values.iter().find(|&&v| v != y).unwrap();
+                let Some(&z_wing2) = wing2_values.iter().find(|&&v| v != y) else { continue };
 
                 if z_wing1 != z_wing2 {
                     continue;
@@ -1127,9 +1140,9 @@ pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
                 }
 
                 // X is restricted common iff every cell in A with X sees every cell in B with X
-                let restricted = cells_a_x.iter().all(|&ca| {
-                    cells_b_x.iter().all(|&cb| is_visible(ca, cb))
-                });
+                let restricted = cells_a_x
+                    .iter()
+                    .all(|&ca| cells_b_x.iter().all(|&cb| is_visible(ca, cb)));
 
                 if !restricted {
                     continue;
@@ -1182,7 +1195,8 @@ pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
                                 format!(
                                     "R{}C{{{}}}",
                                     (c / 9) + 1,
-                                    cands.iter()
+                                    cands
+                                        .iter()
                                         .map(|v| v.to_string())
                                         .collect::<Vec<_>>()
                                         .join(",")

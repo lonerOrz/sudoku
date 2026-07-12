@@ -142,7 +142,10 @@ pub fn windows_var(grid: &Grid, acc: &mut HintAccumulator) {
                         hint_type: crate::solver::HintType::Windows,
                         difficulty: 5.5,
                         technique_name: "Windows".to_string(),
-                        description: format!("Windows: digit {} restricted to one cell in window", digit),
+                        description: format!(
+                            "Windows: digit {} restricted to one cell in window",
+                            digit
+                        ),
                         cell: CellIndex::from(cell),
                         value: digit,
                         eliminations: elim,

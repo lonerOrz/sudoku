@@ -4,8 +4,9 @@ use crate::command::Command;
 use crate::input::playing::Mode;
 use crate::state::{AppState, HistoryEntry, PencilMarks};
 use crossterm::event::KeyCode;
-use sudoku_core::{Cell, Difficulty, clear_peers, compute_conflicts, find_solver_hint, generate,
-    has_empty};
+use sudoku_core::{
+    Cell, Difficulty, clear_peers, compute_conflicts, find_solver_hint, generate, has_empty,
+};
 
 pub fn init_menu(difficulty: Difficulty) -> AppState {
     AppState::Menu { difficulty }
@@ -289,7 +290,9 @@ impl Game {
     }
 
     pub fn hint_technique(&self) -> Option<&str> {
-        self.current_hint.as_ref().map(|h| h.technique_name.as_str())
+        self.current_hint
+            .as_ref()
+            .map(|h| h.technique_name.as_str())
     }
 
     pub fn move_cursor(&mut self, dr: i32, dc: i32) {

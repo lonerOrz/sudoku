@@ -833,9 +833,7 @@ fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         .cells
                         .iter()
                         .copied()
-                        .filter(|&cell| {
-                            grid.get(cell) == 0 && grid.candidates(cell).has(digit)
-                        })
+                        .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
                         .map(|cell| cell % 9)
                         .collect();
 
@@ -923,9 +921,7 @@ fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         .cells
                         .iter()
                         .copied()
-                        .filter(|&cell| {
-                            grid.get(cell) == 0 && grid.candidates(cell).has(digit)
-                        })
+                        .filter(|&cell| grid.get(cell) == 0 && grid.candidates(cell).has(digit))
                         .map(|cell| cell / 9)
                         .collect();
 

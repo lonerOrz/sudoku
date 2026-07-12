@@ -4,6 +4,7 @@
 
 use crate::grid::CellIndex;
 
+/// The type of solving technique that produced a hint.
 #[derive(Debug, Clone, PartialEq)]
 pub enum HintType {
     NakedSingle,

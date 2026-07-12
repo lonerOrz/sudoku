@@ -740,7 +740,10 @@ mod tests {
 
             if let Some(hint) = solver.next_hint() {
                 solver.validate_hint(&hint).unwrap_or_else(|e| {
-                    panic!("Invalid hint '{}' at step {}: {}", hint.technique_name, steps, e);
+                    panic!(
+                        "Invalid hint '{}' at step {}: {}",
+                        hint.technique_name, steps, e
+                    );
                 });
                 solver.apply_hint(&hint);
                 assert!(
@@ -770,7 +773,10 @@ mod tests {
 
             if let Some(hint) = solver.next_hint() {
                 solver.validate_hint(&hint).unwrap_or_else(|e| {
-                    panic!("Invalid hint '{}' at step {}: {}", hint.technique_name, steps, e);
+                    panic!(
+                        "Invalid hint '{}' at step {}: {}",
+                        hint.technique_name, steps, e
+                    );
                 });
                 solver.apply_hint(&hint);
                 assert!(
@@ -800,7 +806,10 @@ mod tests {
 
             if let Some(hint) = solver.next_hint() {
                 solver.validate_hint(&hint).unwrap_or_else(|e| {
-                    panic!("Invalid hint '{}' at step {}: {}", hint.technique_name, steps, e);
+                    panic!(
+                        "Invalid hint '{}' at step {}: {}",
+                        hint.technique_name, steps, e
+                    );
                 });
                 solver.apply_hint(&hint);
                 assert!(
@@ -828,7 +837,10 @@ mod tests {
         solver.rebuild_candidates();
         let hint = solver.detect_technique("Naked Single").unwrap();
         assert!(hint.value > 0, "Naked Single must be a placement");
-        assert!(hint.eliminations.is_empty(), "Naked Single has no eliminations");
+        assert!(
+            hint.eliminations.is_empty(),
+            "Naked Single has no eliminations"
+        );
         assert_eq!(hint.hint_type, HintType::NakedSingle);
         assert!(hint.difficulty >= 1.0 && hint.difficulty <= 2.0);
     }
@@ -885,26 +897,57 @@ mod tests {
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
         let techniques = [
-            "Naked Single", "Hidden Single", "Locked Pointing", "Locked Claiming",
-            "Hidden Pair", "Hidden Triple", "Hidden Quad",
-            "Naked Pair", "Naked Triple", "Naked Quad",
-            "X-Wing", "Swordfish", "Jellyfish",
-            "XY-Wing", "XYZ-Wing", "WXYZ-Wing", "VWXYZ-Wing", "UVWXYZ-Wing", "TUVWXYZ-Wing",
-            "Unique Rectangle Type 1", "Unique Rectangle Type 2",
-            "Unique Rectangle Type 3", "Unique Rectangle Type 4",
-            "BUG+1", "BUG+2", "BUG+3", "BUG+4",
-            "Skyscraper", "2-String Kite",
-            "3-Strong-Links Fish", "4-Strong-Links Fish",
-            "5-Strong-Links Fish", "6-Strong-Links Fish",
-            "Aligned Pair Exclusion", "Aligned Triplet Exclusion",
+            "Naked Single",
+            "Hidden Single",
+            "Locked Pointing",
+            "Locked Claiming",
+            "Hidden Pair",
+            "Hidden Triple",
+            "Hidden Quad",
+            "Naked Pair",
+            "Naked Triple",
+            "Naked Quad",
+            "X-Wing",
+            "Swordfish",
+            "Jellyfish",
+            "XY-Wing",
+            "XYZ-Wing",
+            "WXYZ-Wing",
+            "VWXYZ-Wing",
+            "UVWXYZ-Wing",
+            "TUVWXYZ-Wing",
+            "Unique Rectangle Type 1",
+            "Unique Rectangle Type 2",
+            "Unique Rectangle Type 3",
+            "Unique Rectangle Type 4",
+            "BUG+1",
+            "BUG+2",
+            "BUG+3",
+            "BUG+4",
+            "Skyscraper",
+            "2-String Kite",
+            "3-Strong-Links Fish",
+            "4-Strong-Links Fish",
+            "5-Strong-Links Fish",
+            "6-Strong-Links Fish",
+            "Aligned Pair Exclusion",
+            "Aligned Triplet Exclusion",
             "ALS-XZ",
-            "Generalized Naked Pair", "Generalized Naked Triplet", "Generalized Naked Quad",
-            "Generalized Naked Quint", "Generalized Naked Sext",
+            "Generalized Naked Pair",
+            "Generalized Naked Triplet",
+            "Generalized Naked Quad",
+            "Generalized Naked Quint",
+            "Generalized Naked Sext",
             "VLocking",
-            "X-Cycles", "Y-Cycles",
-            "Forcing Chain", "Nishio Forcing Chain", "Multiple Forcing Chain",
-            "Dynamic Forcing Chain", "Dynamic Forcing Chain+",
-            "Nested Forcing Chain (2-level)", "Nested Forcing Chain (3-level)",
+            "X-Cycles",
+            "Y-Cycles",
+            "Forcing Chain",
+            "Nishio Forcing Chain",
+            "Multiple Forcing Chain",
+            "Dynamic Forcing Chain",
+            "Dynamic Forcing Chain+",
+            "Nested Forcing Chain (2-level)",
+            "Nested Forcing Chain (3-level)",
             "Nested Forcing Chain (4-level)",
         ];
         for technique in techniques {
@@ -918,26 +961,57 @@ mod tests {
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
         let techniques = [
-            "Naked Single", "Hidden Single", "Locked Pointing", "Locked Claiming",
-            "Hidden Pair", "Hidden Triple", "Hidden Quad",
-            "Naked Pair", "Naked Triple", "Naked Quad",
-            "X-Wing", "Swordfish", "Jellyfish",
-            "XY-Wing", "XYZ-Wing", "WXYZ-Wing", "VWXYZ-Wing", "UVWXYZ-Wing", "TUVWXYZ-Wing",
-            "Unique Rectangle Type 1", "Unique Rectangle Type 2",
-            "Unique Rectangle Type 3", "Unique Rectangle Type 4",
-            "BUG+1", "BUG+2", "BUG+3", "BUG+4",
-            "Skyscraper", "2-String Kite",
-            "3-Strong-Links Fish", "4-Strong-Links Fish",
-            "5-Strong-Links Fish", "6-Strong-Links Fish",
-            "Aligned Pair Exclusion", "Aligned Triplet Exclusion",
+            "Naked Single",
+            "Hidden Single",
+            "Locked Pointing",
+            "Locked Claiming",
+            "Hidden Pair",
+            "Hidden Triple",
+            "Hidden Quad",
+            "Naked Pair",
+            "Naked Triple",
+            "Naked Quad",
+            "X-Wing",
+            "Swordfish",
+            "Jellyfish",
+            "XY-Wing",
+            "XYZ-Wing",
+            "WXYZ-Wing",
+            "VWXYZ-Wing",
+            "UVWXYZ-Wing",
+            "TUVWXYZ-Wing",
+            "Unique Rectangle Type 1",
+            "Unique Rectangle Type 2",
+            "Unique Rectangle Type 3",
+            "Unique Rectangle Type 4",
+            "BUG+1",
+            "BUG+2",
+            "BUG+3",
+            "BUG+4",
+            "Skyscraper",
+            "2-String Kite",
+            "3-Strong-Links Fish",
+            "4-Strong-Links Fish",
+            "5-Strong-Links Fish",
+            "6-Strong-Links Fish",
+            "Aligned Pair Exclusion",
+            "Aligned Triplet Exclusion",
             "ALS-XZ",
-            "Generalized Naked Pair", "Generalized Naked Triplet", "Generalized Naked Quad",
-            "Generalized Naked Quint", "Generalized Naked Sext",
+            "Generalized Naked Pair",
+            "Generalized Naked Triplet",
+            "Generalized Naked Quad",
+            "Generalized Naked Quint",
+            "Generalized Naked Sext",
             "VLocking",
-            "X-Cycles", "Y-Cycles",
-            "Forcing Chain", "Nishio Forcing Chain", "Multiple Forcing Chain",
-            "Dynamic Forcing Chain", "Dynamic Forcing Chain+",
-            "Nested Forcing Chain (2-level)", "Nested Forcing Chain (3-level)",
+            "X-Cycles",
+            "Y-Cycles",
+            "Forcing Chain",
+            "Nishio Forcing Chain",
+            "Multiple Forcing Chain",
+            "Dynamic Forcing Chain",
+            "Dynamic Forcing Chain+",
+            "Nested Forcing Chain (2-level)",
+            "Nested Forcing Chain (3-level)",
             "Nested Forcing Chain (4-level)",
         ];
         for technique in techniques {
@@ -956,12 +1030,23 @@ mod tests {
         // Fill all of row 0 except (0,0), and fill columns/boxes to leave only 1 candidate.
         let mut cells = [0u8; 81];
         // Row 0: _ 6 2 8 5 7 4 9 3
-        cells[1] = 6; cells[2] = 2; cells[3] = 8; cells[4] = 5;
-        cells[5] = 7; cells[6] = 4; cells[7] = 9; cells[8] = 3;
+        cells[1] = 6;
+        cells[2] = 2;
+        cells[3] = 8;
+        cells[4] = 5;
+        cells[5] = 7;
+        cells[6] = 4;
+        cells[7] = 9;
+        cells[8] = 3;
         // Col 0: _ 5 7 4 9 6 3 2 8
-        cells[9] = 5; cells[18] = 7; cells[27] = 4;
-        cells[36] = 9; cells[45] = 6; cells[54] = 3;
-        cells[63] = 2; cells[72] = 8;
+        cells[9] = 5;
+        cells[18] = 7;
+        cells[27] = 4;
+        cells[36] = 9;
+        cells[45] = 6;
+        cells[54] = 3;
+        cells[63] = 2;
+        cells[72] = 8;
         let grid = Grid::from_flat(cells);
         let mut solver = Solver::new(grid);
         solver.rebuild_candidates();
@@ -984,16 +1069,39 @@ mod tests {
         // Also fill row 0 cols 3-8 with values.
         let mut cells = [0u8; 81];
         // Row 0: _ _ _ 8 5 7 4 9 3
-        cells[3] = 8; cells[4] = 5; cells[5] = 7; cells[6] = 4; cells[7] = 9; cells[8] = 3;
+        cells[3] = 8;
+        cells[4] = 5;
+        cells[5] = 7;
+        cells[6] = 4;
+        cells[7] = 9;
+        cells[8] = 3;
         // Col 0: _ 5 7 4 9 6 3 2 8
-        cells[9] = 5; cells[18] = 7; cells[27] = 4; cells[36] = 9;
-        cells[45] = 6; cells[54] = 3; cells[63] = 2; cells[72] = 8;
+        cells[9] = 5;
+        cells[18] = 7;
+        cells[27] = 4;
+        cells[36] = 9;
+        cells[45] = 6;
+        cells[54] = 3;
+        cells[63] = 2;
+        cells[72] = 8;
         // Col 1: _ 3 8 1 7 2 5 4 6
-        cells[10] = 3; cells[19] = 8; cells[28] = 1; cells[37] = 7;
-        cells[46] = 2; cells[55] = 5; cells[64] = 4; cells[73] = 6;
+        cells[10] = 3;
+        cells[19] = 8;
+        cells[28] = 1;
+        cells[37] = 7;
+        cells[46] = 2;
+        cells[55] = 5;
+        cells[64] = 4;
+        cells[73] = 6;
         // Col 2: _ 4 9 5 3 1 6 7 2
-        cells[11] = 4; cells[20] = 9; cells[29] = 5; cells[38] = 3;
-        cells[47] = 1; cells[56] = 6; cells[65] = 7; cells[74] = 2;
+        cells[11] = 4;
+        cells[20] = 9;
+        cells[29] = 5;
+        cells[38] = 3;
+        cells[47] = 1;
+        cells[56] = 6;
+        cells[65] = 7;
+        cells[74] = 2;
         // Now box 0 cells: (0,0)=_, (0,1)=_, (0,2)=_, (1,0)=5, (1,1)=3, (1,2)=4,
         // (2,0)=7, (2,1)=8, (2,2)=9. Box 0 has {3,4,5,7,8,9}. Missing: {1,2,6}.
         // In row 0, cells (0,0),(0,1),(0,2) need values from {1,2,6} ∩ col constraints.
@@ -1002,16 +1110,36 @@ mod tests {
         // We need to prevent Naked Single. Let's adjust:
         // Make cols 0,1,2 NOT have 1 in their filled cells, so cells (0,0),(0,1),(0,2) all can have 1.
         let mut cells = [0u8; 81];
-        cells[3] = 8; cells[4] = 5; cells[5] = 7; cells[6] = 4; cells[7] = 9; cells[8] = 3;
+        cells[3] = 8;
+        cells[4] = 5;
+        cells[5] = 7;
+        cells[6] = 4;
+        cells[7] = 9;
+        cells[8] = 3;
         // Col 0: _ 5 7 _ 9 6 3 2 8
-        cells[9] = 5; cells[18] = 7; cells[36] = 9;
-        cells[45] = 6; cells[54] = 3; cells[63] = 2; cells[72] = 8;
+        cells[9] = 5;
+        cells[18] = 7;
+        cells[36] = 9;
+        cells[45] = 6;
+        cells[54] = 3;
+        cells[63] = 2;
+        cells[72] = 8;
         // Col 1: _ 3 8 1 _ 2 5 4 6
-        cells[10] = 3; cells[19] = 8; cells[28] = 1;
-        cells[46] = 2; cells[55] = 5; cells[64] = 4; cells[73] = 6;
+        cells[10] = 3;
+        cells[19] = 8;
+        cells[28] = 1;
+        cells[46] = 2;
+        cells[55] = 5;
+        cells[64] = 4;
+        cells[73] = 6;
         // Col 2: _ 4 9 _ 3 1 6 7 2
-        cells[11] = 4; cells[20] = 9;
-        cells[47] = 3; cells[56] = 1; cells[65] = 6; cells[74] = 7; cells[80] = 2;
+        cells[11] = 4;
+        cells[20] = 9;
+        cells[47] = 3;
+        cells[56] = 1;
+        cells[65] = 6;
+        cells[74] = 7;
+        cells[80] = 2;
         // Box 0 filled: (1,0)=5, (1,1)=3, (1,2)=4, (2,0)=7, (2,1)=8, (2,2)=9
         // Box 0 missing: {1,2,6}. Cells (0,0),(0,1),(0,2) can be any of {1,2,6}.
         // Col 0 has {2,3,5,6,7,8,9} → (0,0) can be {1,4}. But 4 is in box 0 → (0,0) can be {1}.
@@ -1065,7 +1193,12 @@ mod tests {
             for &(cell, ref vals) in &hint.eliminations {
                 let cands = solver.grid().candidates(cell.index);
                 for &v in vals {
-                    assert!(cands.has(v), "Candidate {} should exist at cell {} before elimination", v, cell.index);
+                    assert!(
+                        cands.has(v),
+                        "Candidate {} should exist at cell {} before elimination",
+                        v,
+                        cell.index
+                    );
                 }
             }
         }
@@ -1113,7 +1246,9 @@ mod tests {
                         };
                         assert!(
                             solver.validate_hint(&hint).is_err(),
-                            "Should reject elimination of non-candidate {} at cell {}", v, i
+                            "Should reject elimination of non-candidate {} at cell {}",
+                            v,
+                            i
                         );
                         return;
                     }

@@ -3,7 +3,13 @@
 //! ER (Experience Rating) measures puzzle difficulty by the hardest technique required.
 //! EP (Entry Point) and ED (Entry Difficulty) track the initial solving step.
 
-#[derive(Debug, Clone)]
+/// Difficulty rating for a Sudoku puzzle.
+///
+/// - `er` (Experience Rating): hardest technique required (SER-like scale 1.0-11.0)
+/// - `er_technique`: name of the hardest technique
+/// - `ep` (Entry Point): difficulty of the first technique
+/// - `ed` (Entry Difficulty): numeric difficulty of the first technique
+#[derive(Debug, Clone, PartialEq)]
 pub struct DifficultyRating {
     pub er: f64,
     pub er_technique: String,
@@ -143,6 +149,7 @@ impl Default for DifficultyRating {
     }
 }
 
+/// Rates Sudoku puzzle difficulty by running the solver and analyzing techniques used.
 pub struct Rater<'a> {
     solver: &'a mut crate::solver::Solver,
 }

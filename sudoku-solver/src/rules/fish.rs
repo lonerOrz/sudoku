@@ -24,8 +24,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx % 9)
                     .collect();
 
-                if row1_cols.len() == 2 && row2_cols.len() == 2
-                {
+                if row1_cols.len() == 2 && row2_cols.len() == 2 {
                     let common: Vec<u8> = row1_cols
                         .iter()
                         .filter(|&&c| row2_cols.contains(&c))
@@ -92,8 +91,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx / 9)
                     .collect();
 
-                if col1_rows.len() == 2 && col2_rows.len() == 2
-                {
+                if col1_rows.len() == 2 && col2_rows.len() == 2 {
                     let common: Vec<u8> = col1_rows
                         .iter()
                         .filter(|&&r| col2_rows.contains(&r))
@@ -369,7 +367,10 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                             })
                             .collect();
 
-                        if row_cols.iter().any(|cols| cols.is_empty() || cols.len() > 4) {
+                        if row_cols
+                            .iter()
+                            .any(|cols| cols.is_empty() || cols.len() > 4)
+                        {
                             continue;
                         }
 
@@ -418,7 +419,9 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: CellIndex::from(ROWS[row0_idx].cells[all_cols[0] as usize]),
+                                    cell: CellIndex::from(
+                                        ROWS[row0_idx].cells[all_cols[0] as usize],
+                                    ),
                                     value: 0,
                                     eliminations,
                                 });
@@ -457,7 +460,10 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                             })
                             .collect();
 
-                        if col_rows.iter().any(|rows| rows.is_empty() || rows.len() > 4) {
+                        if col_rows
+                            .iter()
+                            .any(|rows| rows.is_empty() || rows.len() > 4)
+                        {
                             continue;
                         }
 
@@ -505,7 +511,9 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: CellIndex::from(COLS[col0_idx].cells[all_rows[0] as usize]),
+                                    cell: CellIndex::from(
+                                        COLS[col0_idx].cells[all_rows[0] as usize],
+                                    ),
                                     value: 0,
                                     eliminations,
                                 });

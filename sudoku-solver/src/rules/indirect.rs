@@ -136,7 +136,10 @@ pub fn naked_pair(grid: &Grid, acc: &mut HintAccumulator) {
                                                 description: desc,
                                                 cell: CellIndex::from(*cell3),
                                                 value: 0,
-                                                eliminations: vec![(CellIndex::from(*cell3), removed)],
+                                                eliminations: vec![(
+                                                    CellIndex::from(*cell3),
+                                                    removed,
+                                                )],
                                             });
                                         }
                                     }

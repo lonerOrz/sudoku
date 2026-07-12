@@ -15,7 +15,21 @@ use crate::error::Error;
 use crate::error::Result;
 use std::str::FromStr;
 
-#[derive(Clone, Copy)]
+/// A 9x9 Sudoku grid with candidate tracking.
+///
+/// Stores 81 cell values as `u8` (0 = empty, 1-9 = placed digit) and
+/// per-cell candidate bitmasks for pencilmark-style solving.
+///
+/// Implements `FromStr` for parsing from 81-character strings where
+/// digits 1-9 are clues, `0` or `.` are empty cells.
+///
+/// ```
+/// use sudoku_solver::Grid;
+///
+/// let grid = Grid::parse("003020600900305001001806400008102900700000008006708200002609500800203009005010300").unwrap();
+/// assert_eq!(grid.clue_count(), 32);
+/// ```
+#[derive(Clone, Copy, PartialEq)]
 pub struct Grid {
     cells: [u8; 81],
     candidates: [Candidates; 81],
@@ -223,7 +237,7 @@ impl FromStr for Grid {
             .filter(|c| c.is_ascii_digit() || *c == '.')
             .map(|c| match c {
                 '0' | '.' => 0,
-                _ => c.to_digit(10).unwrap() as u8,
+                _ => c.to_digit(10).unwrap_or(0) as u8,
             })
             .collect();
 

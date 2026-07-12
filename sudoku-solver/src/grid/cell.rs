@@ -1,3 +1,8 @@
+//! Cell index type for flat grid addressing.
+
+/// Index of a cell in a flat 81-element grid (row-major: 0..80).
+///
+/// Provides `x()` (column), `y()` (row), and `box_index()` helpers.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct CellIndex {
     pub index: u8,
