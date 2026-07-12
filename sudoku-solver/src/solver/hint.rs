@@ -2,7 +2,7 @@
 //!
 //! Represents the output of rule-based solving - a technique with its difficulty.
 
-use crate::grid::Cell;
+use crate::grid::CellIndex;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HintType {
@@ -73,27 +73,27 @@ pub struct Hint {
     pub difficulty: f64,
     pub technique_name: String,
     pub description: String,
-    pub cell: Cell,
+    pub cell: CellIndex,
     /// The digit to fill in the cell (0 for elimination techniques)
     pub value: u8,
     /// Eliminations: (cell, candidates to remove from that cell)
-    pub eliminations: Vec<(Cell, Vec<u8>)>,
+    pub eliminations: Vec<(CellIndex, Vec<u8>)>,
 }
 
 impl Hint {
-    pub fn naked_single(cell: Cell, value: u8) -> Self {
+    pub fn naked_single(cell: CellIndex, value: u8) -> Self {
         Self {
             hint_type: HintType::NakedSingle,
             difficulty: 1.6,
             technique_name: "Naked Single".to_string(),
-            description: format!("Cell {:?} = {}", cell, value),
+            description: format!("CellIndex {:?} = {}", cell, value),
             cell,
             value,
             eliminations: vec![],
         }
     }
 
-    pub fn hidden_single(cell: Cell, value: u8, difficulty: f64) -> Self {
+    pub fn hidden_single(cell: CellIndex, value: u8, difficulty: f64) -> Self {
         Self {
             hint_type: HintType::HiddenSingle,
             difficulty,

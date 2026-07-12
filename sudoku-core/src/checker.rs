@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_compute_conflicts_row() {
-        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = crate::Cell::Given(5);
         grid[0][3] = crate::Cell::UserInput(5);
 
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn test_compute_conflicts_no_conflict() {
-        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = crate::Cell::Given(5);
         grid[0][3] = crate::Cell::Given(3);
 

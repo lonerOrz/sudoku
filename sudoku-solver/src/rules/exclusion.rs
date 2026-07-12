@@ -3,7 +3,7 @@
 //! APE works by enumerating all possible candidate combinations in base cells
 //! and checking which combinations are "locked out" by exclusion cells.
 
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Check if two cells can see each other (same row, column, or box)
@@ -219,13 +219,13 @@ fn check_ape_for_pair(grid: &Grid, acc: &mut HintAccumulator, cell1: u8, cell2: 
     }
 
     // Report eliminations
-    let mut all_eliminations: Vec<(Cell, Vec<u8>)> = Vec::new();
+    let mut all_eliminations: Vec<(CellIndex, Vec<u8>)> = Vec::new();
 
     if !eliminations_cell1.is_empty() {
-        all_eliminations.push((Cell::from(cell1), eliminations_cell1.clone()));
+        all_eliminations.push((CellIndex::from(cell1), eliminations_cell1.clone()));
     }
     if !eliminations_cell2.is_empty() {
-        all_eliminations.push((Cell::from(cell2), eliminations_cell2.clone()));
+        all_eliminations.push((CellIndex::from(cell2), eliminations_cell2.clone()));
     }
 
     if !all_eliminations.is_empty() {
@@ -244,7 +244,7 @@ fn check_ape_for_pair(grid: &Grid, acc: &mut HintAccumulator, cell1: u8, cell2: 
             difficulty: 6.2,
             technique_name: "Aligned Pair Exclusion".to_string(),
             description: desc,
-            cell: Cell::from(cell1),
+            cell: CellIndex::from(cell1),
             value: 0,
             eliminations: all_eliminations,
         });
@@ -460,16 +460,16 @@ fn check_ate_for_triplet(grid: &Grid, acc: &mut HintAccumulator, cell1: u8, cell
     }
 
     // Report eliminations
-    let mut all_eliminations: Vec<(Cell, Vec<u8>)> = Vec::new();
+    let mut all_eliminations: Vec<(CellIndex, Vec<u8>)> = Vec::new();
 
     if !elim1.is_empty() {
-        all_eliminations.push((Cell::from(cell1), elim1.clone()));
+        all_eliminations.push((CellIndex::from(cell1), elim1.clone()));
     }
     if !elim2.is_empty() {
-        all_eliminations.push((Cell::from(cell2), elim2.clone()));
+        all_eliminations.push((CellIndex::from(cell2), elim2.clone()));
     }
     if !elim3.is_empty() {
-        all_eliminations.push((Cell::from(cell3), elim3.clone()));
+        all_eliminations.push((CellIndex::from(cell3), elim3.clone()));
     }
 
     if !all_eliminations.is_empty() {
@@ -487,7 +487,7 @@ fn check_ate_for_triplet(grid: &Grid, acc: &mut HintAccumulator, cell1: u8, cell
             difficulty: 7.5,
             technique_name: "Aligned Triplet Exclusion".to_string(),
             description: desc,
-            cell: Cell::from(cell1),
+            cell: CellIndex::from(cell1),
             value: 0,
             eliminations: all_eliminations,
         });

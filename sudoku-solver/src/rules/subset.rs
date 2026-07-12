@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find three cells in a region with exactly three candidates total, eliminating those candidates from other cells.
@@ -59,7 +59,7 @@ pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
                             }
 
                             if !to_remove.is_empty() {
-                                eliminations.push((Cell::from(cell), to_remove));
+                                eliminations.push((CellIndex::from(cell), to_remove));
                             }
                         }
 
@@ -78,7 +78,7 @@ pub fn naked_triple(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 3.6,
                                 technique_name: "Naked Triple".to_string(),
                                 description: desc,
-                                cell: Cell::from(cell1),
+                                cell: CellIndex::from(cell1),
                                 value: 0,
                                 eliminations,
                             });
@@ -152,7 +152,7 @@ pub fn naked_quad(grid: &Grid, acc: &mut HintAccumulator) {
                                 }
 
                                 if !to_remove.is_empty() {
-                                    eliminations.push((Cell::from(cell), to_remove));
+                                    eliminations.push((CellIndex::from(cell), to_remove));
                                 }
                             }
 
@@ -171,7 +171,7 @@ pub fn naked_quad(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.0,
                                     technique_name: "Naked Quad".to_string(),
                                     description: desc,
-                                    cell: Cell::from(cell1),
+                                    cell: CellIndex::from(cell1),
                                     value: 0,
                                     eliminations,
                                 });
@@ -273,7 +273,7 @@ pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
                             .collect();
 
                         if !to_remove.is_empty() {
-                            eliminations.push((Cell::from(cell), to_remove));
+                            eliminations.push((CellIndex::from(cell), to_remove));
                         }
                     }
 
@@ -287,7 +287,7 @@ pub fn hidden_triple(grid: &Grid, acc: &mut HintAccumulator) {
                             difficulty: 4.0,
                             technique_name: "Hidden Triple".to_string(),
                             description: desc,
-                            cell: Cell::from(cell1),
+                            cell: CellIndex::from(cell1),
                             value: 0,
                             eliminations,
                         });
@@ -406,7 +406,7 @@ pub fn hidden_quad(grid: &Grid, acc: &mut HintAccumulator) {
                                 .collect();
 
                             if !to_remove.is_empty() {
-                                eliminations.push((Cell::from(cell), to_remove));
+                                eliminations.push((CellIndex::from(cell), to_remove));
                             }
                         }
 
@@ -420,7 +420,7 @@ pub fn hidden_quad(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 5.4,
                                 technique_name: "Hidden Quad".to_string(),
                                 description: desc,
-                                cell: Cell::from(cell1),
+                                cell: CellIndex::from(cell1),
                                 value: 0,
                                 eliminations,
                             });

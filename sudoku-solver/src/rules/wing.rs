@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 fn is_visible(cell1: u8, cell2: u8) -> bool {
@@ -135,7 +135,7 @@ pub fn xy_wing(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(target).has(z) {
-                        eliminations.push((Cell::from(target), vec![z]));
+                        eliminations.push((CellIndex::from(target), vec![z]));
                     }
                 }
 
@@ -157,7 +157,7 @@ pub fn xy_wing(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 4.2,
                         technique_name: "XY-Wing".to_string(),
                         description: desc,
-                        cell: Cell::from(pivot_idx),
+                        cell: CellIndex::from(pivot_idx),
                         value: 0,
                         eliminations,
                     });
@@ -284,7 +284,7 @@ pub fn xyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(target).has(z) {
-                        eliminations.push((Cell::from(target), vec![z]));
+                        eliminations.push((CellIndex::from(target), vec![z]));
                     }
                 }
 
@@ -303,7 +303,7 @@ pub fn xyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 4.4,
                         technique_name: "XYZ-Wing".to_string(),
                         description: desc,
-                        cell: Cell::from(pivot_idx),
+                        cell: CellIndex::from(pivot_idx),
                         value: 0,
                         eliminations,
                     });
@@ -421,7 +421,7 @@ pub fn wxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             continue;
                         }
                         if grid.candidates(target).has(w) {
-                            eliminations.push((Cell::from(target), vec![w]));
+                            eliminations.push((CellIndex::from(target), vec![w]));
                         }
                     }
 
@@ -441,7 +441,7 @@ pub fn wxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             difficulty: 5.5,
                             technique_name: "WXYZ-Wing".to_string(),
                             description: desc,
-                            cell: Cell::from(pivot_idx),
+                            cell: CellIndex::from(pivot_idx),
                             value: 0,
                             eliminations,
                         });
@@ -594,7 +594,7 @@ pub fn vwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 continue;
                             }
                             if grid.candidates(target).has(v) {
-                                eliminations.push((Cell::from(target), vec![v]));
+                                eliminations.push((CellIndex::from(target), vec![v]));
                             }
                         }
 
@@ -615,7 +615,7 @@ pub fn vwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 6.2,
                                 technique_name: "VWXYZ-Wing".to_string(),
                                 description: desc,
-                                cell: Cell::from(pivot_idx),
+                                cell: CellIndex::from(pivot_idx),
                                 value: 0,
                                 eliminations,
                             });
@@ -767,7 +767,7 @@ fn find_uvwxyz_wing_pattern(
     let mut eliminations = Vec::new();
     for &target in &common {
         if grid.get(target) == 0 && grid.candidates(target).has(elim_digit) {
-            eliminations.push((Cell::from(target), vec![elim_digit]));
+            eliminations.push((CellIndex::from(target), vec![elim_digit]));
         }
     }
 
@@ -783,7 +783,7 @@ fn find_uvwxyz_wing_pattern(
             difficulty: 6.6,
             technique_name: "UVWXYZ-Wing".to_string(),
             description: desc,
-            cell: Cell::from(pivot_idx),
+            cell: CellIndex::from(pivot_idx),
             value: 0,
             eliminations,
         });
@@ -935,7 +935,7 @@ fn find_tuvwxyz_wing_pattern(
     let mut eliminations = Vec::new();
     for &target in &common {
         if grid.get(target) == 0 && grid.candidates(target).has(elim_digit) {
-            eliminations.push((Cell::from(target), vec![elim_digit]));
+            eliminations.push((CellIndex::from(target), vec![elim_digit]));
         }
     }
 
@@ -951,7 +951,7 @@ fn find_tuvwxyz_wing_pattern(
             difficulty: 7.0,
             technique_name: "TUVWXYZ-Wing".to_string(),
             description: desc,
-            cell: Cell::from(pivot_idx),
+            cell: CellIndex::from(pivot_idx),
             value: 0,
             eliminations,
         });
@@ -1070,7 +1070,7 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(target).has(z_wing1) {
-                        eliminations.push((Cell::from(target), vec![z_wing1]));
+                        eliminations.push((CellIndex::from(target), vec![z_wing1]));
                     }
                 }
 
@@ -1092,7 +1092,7 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: if has_double { 4.0 } else { 4.2 },
                         technique_name: "XY-Wing".to_string(),
                         description: desc,
-                        cell: Cell::from(pivot_idx),
+                        cell: CellIndex::from(pivot_idx),
                         value: 0,
                         eliminations,
                     });
@@ -1164,8 +1164,8 @@ pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
                 .collect();
 
             if !targets.is_empty() {
-                let eliminations: Vec<(Cell, Vec<u8>)> =
-                    targets.iter().map(|&t| (Cell::from(t), vec![z])).collect();
+                let eliminations: Vec<(CellIndex, Vec<u8>)> =
+                    targets.iter().map(|&t| (CellIndex::from(t), vec![z])).collect();
 
                 let desc =
                     format!(
@@ -1182,7 +1182,7 @@ pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
                     difficulty: 7.0,
                     technique_name: "ALS-XZ".to_string(),
                     description: desc,
-                    cell: Cell::from(cell1),
+                    cell: CellIndex::from(cell1),
                     value: 0,
                     eliminations,
                 });

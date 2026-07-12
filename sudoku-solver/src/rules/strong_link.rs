@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 pub fn skyscraper(grid: &Grid, acc: &mut HintAccumulator) {
@@ -61,7 +61,7 @@ fn find_skyscraper_row(grid: &Grid, acc: &mut HintAccumulator, digit: u8, row_id
                             4.0,
                             "Skyscraper",
                             format!("Skyscraper: digit {} in row {}", digit, row_idx + 1),
-                            Cell::from(base1),
+                            CellIndex::from(base1),
                             eliminations,
                         );
                     }
@@ -117,7 +117,7 @@ fn find_skyscraper_col(grid: &Grid, acc: &mut HintAccumulator, digit: u8, col_id
                             4.0,
                             "Skyscraper",
                             format!("Skyscraper: digit {} in column {}", digit, col_idx + 1),
-                            Cell::from(base1),
+                            CellIndex::from(base1),
                             eliminations,
                         );
                     }
@@ -208,7 +208,7 @@ fn find_kite(grid: &Grid, acc: &mut HintAccumulator, digit: u8, row_idx: usize, 
                         4.1,
                         "2-String Kite",
                         format!("2-String Kite: digit {}", digit),
-                        Cell::from(base1),
+                        CellIndex::from(base1),
                         eliminations,
                     );
                 }
@@ -321,7 +321,7 @@ fn find_eliminations(
     end1: u8,
     end2: u8,
     digit: u8,
-) -> Vec<(Cell, Vec<u8>)> {
+) -> Vec<(CellIndex, Vec<u8>)> {
     let mut eliminations = Vec::new();
 
     for cell in 0..81u8 {
@@ -337,7 +337,7 @@ fn find_eliminations(
             && !is_visible(base1, cell)
             && !is_visible(base2, cell)
         {
-            eliminations.push((Cell::from(cell), vec![digit]));
+            eliminations.push((CellIndex::from(cell), vec![digit]));
         }
     }
 
@@ -455,7 +455,7 @@ fn find_strong_links_fish_4_rows(grid: &Grid, acc: &mut HintAccumulator, digit: 
                         for &c in &all_cols {
                             let cell_idx = row.cells[c as usize];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
                     }
@@ -478,7 +478,7 @@ fn find_strong_links_fish_4_rows(grid: &Grid, acc: &mut HintAccumulator, digit: 
                             difficulty: 5.8,
                             technique_name: "4-Strong-Links Fish".to_string(),
                             description: desc,
-                            cell: Cell::from(r1.cells[all_cols[0] as usize]),
+                            cell: CellIndex::from(r1.cells[all_cols[0] as usize]),
                             value: 0,
                             eliminations,
                         });
@@ -546,7 +546,7 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                         for &r in &all_rows {
                             let cell_idx = col.cells[r as usize];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
                     }
@@ -569,7 +569,7 @@ fn find_strong_links_fish_4_cols(grid: &Grid, acc: &mut HintAccumulator, digit: 
                             difficulty: 5.8,
                             technique_name: "4-Strong-Links Fish".to_string(),
                             description: desc,
-                            cell: Cell::from(c1.cells[all_rows[0] as usize]),
+                            cell: CellIndex::from(c1.cells[all_rows[0] as usize]),
                             value: 0,
                             eliminations,
                         });
@@ -656,7 +656,7 @@ fn find_strong_links_fish_n_rows(
             for &c in &all_cols {
                 let cell_idx = row.cells[c as usize];
                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                 }
             }
         }
@@ -682,7 +682,7 @@ fn find_strong_links_fish_n_rows(
                 difficulty,
                 technique_name: technique_name.to_string(),
                 description: desc,
-                cell: Cell::from(rows_data[0].cells[all_cols[0] as usize]),
+                cell: CellIndex::from(rows_data[0].cells[all_cols[0] as usize]),
                 value: 0,
                 eliminations,
             });
@@ -748,7 +748,7 @@ fn find_strong_links_fish_n_cols(
             for &r in &all_rows {
                 let cell_idx = col.cells[r as usize];
                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                 }
             }
         }
@@ -774,7 +774,7 @@ fn find_strong_links_fish_n_cols(
                 difficulty,
                 technique_name: technique_name.to_string(),
                 description: desc,
-                cell: Cell::from(cols_data[0].cells[all_rows[0] as usize]),
+                cell: CellIndex::from(cols_data[0].cells[all_rows[0] as usize]),
                 value: 0,
                 eliminations,
             });
@@ -877,7 +877,7 @@ fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                     for &c in &all_cols {
                         let cell_idx = row.cells[c as usize];
                         if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                            eliminations.push((Cell::from(cell_idx), vec![digit]));
+                            eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                         }
                     }
                 }
@@ -898,7 +898,7 @@ fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         difficulty: 5.4,
                         technique_name: "3-Strong-Links Fish".to_string(),
                         description: desc,
-                        cell: Cell::from(r1.cells[all_cols[0] as usize]),
+                        cell: CellIndex::from(r1.cells[all_cols[0] as usize]),
                         value: 0,
                         eliminations,
                     });
@@ -970,7 +970,7 @@ fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                     for &r in &all_rows {
                         let cell_idx = col.cells[r as usize];
                         if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                            eliminations.push((Cell::from(cell_idx), vec![digit]));
+                            eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                         }
                     }
                 }
@@ -991,7 +991,7 @@ fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         difficulty: 5.4,
                         technique_name: "3-Strong-Links Fish".to_string(),
                         description: desc,
-                        cell: Cell::from(c1.cells[all_rows[0] as usize]),
+                        cell: CellIndex::from(c1.cells[all_rows[0] as usize]),
                         value: 0,
                         eliminations,
                     });
@@ -1008,8 +1008,8 @@ fn add_hint_unique(
     difficulty: f64,
     technique_name: &str,
     description: String,
-    cell: Cell,
-    eliminations: Vec<(Cell, Vec<u8>)>,
+    cell: CellIndex,
+    eliminations: Vec<(CellIndex, Vec<u8>)>,
 ) {
     // Check if an equivalent hint already exists
     for existing in acc.hints() {

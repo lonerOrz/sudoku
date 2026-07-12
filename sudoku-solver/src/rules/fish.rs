@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find X-Wing patterns: when a digit appears in exactly two rows/columns forming a rectangle.
@@ -49,7 +49,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             for &c in &common {
                                 let cell_idx = row.cells[c as usize];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -64,7 +64,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 3.2,
                                 technique_name: "X-Wing".to_string(),
                                 description: desc,
-                                cell: Cell::from(row1.cells[col1 as usize]),
+                                cell: CellIndex::from(row1.cells[col1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -119,7 +119,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             let row = &ROWS[row1 as usize];
                             let cell_idx = row.cells[c];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
 
@@ -130,7 +130,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             let row = &ROWS[row2 as usize];
                             let cell_idx = row.cells[c];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
 
@@ -144,7 +144,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 3.2,
                                 technique_name: "X-Wing".to_string(),
                                 description: desc,
-                                cell: Cell::from(COLS[col1_idx].cells[row1 as usize]),
+                                cell: CellIndex::from(COLS[col1_idx].cells[row1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -241,7 +241,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                             for &c in &all_cols {
                                 let cell_idx = row.cells[c as usize];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -256,7 +256,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.0,
                                 technique_name: "Swordfish".to_string(),
                                 description: desc,
-                                cell: Cell::from(row1.cells[col1 as usize]),
+                                cell: CellIndex::from(row1.cells[col1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -349,7 +349,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 let row = &ROWS[r as usize];
                                 let cell_idx = row.cells[c];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -364,7 +364,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.0,
                                 technique_name: "Swordfish".to_string(),
                                 description: desc,
-                                cell: Cell::from(COLS[col1_idx].cells[row1 as usize]),
+                                cell: CellIndex::from(COLS[col1_idx].cells[row1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -434,7 +434,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     if grid.get(cell_idx) == 0
                                         && grid.candidates(cell_idx).has(digit)
                                     {
-                                        eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                        eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                     }
                                 }
                             }
@@ -457,7 +457,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: Cell::from(ROWS[row0_idx].cells[all_cols[0] as usize]),
+                                    cell: CellIndex::from(ROWS[row0_idx].cells[all_cols[0] as usize]),
                                     value: 0,
                                     eliminations,
                                 });
@@ -524,7 +524,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     if grid.get(cell_idx) == 0
                                         && grid.candidates(cell_idx).has(digit)
                                     {
-                                        eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                        eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                     }
                                 }
                             }
@@ -547,7 +547,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: Cell::from(COLS[col0_idx].cells[all_rows[0] as usize]),
+                                    cell: CellIndex::from(COLS[col0_idx].cells[all_rows[0] as usize]),
                                     value: 0,
                                     eliminations,
                                 });

@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid};
+use crate::grid::{CellIndex, Grid};
 use crate::solver::{Hint, HintAccumulator};
 
 pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
@@ -27,7 +27,7 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
                         let mut elim = Vec::new();
                         for d in 1..=9u8 {
                             if d != digit && grid.candidates(target).has(d) {
-                                elim.push((Cell::from(target), vec![d]));
+                                elim.push((CellIndex::from(target), vec![d]));
                             }
                         }
                         if !elim.is_empty() {
@@ -36,7 +36,7 @@ pub fn x_diagonal_var(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 5.5,
                                 technique_name: "X-Diagonal".to_string(),
                                 description: format!("X-Diagonal: digit {} in diagonal", digit),
-                                cell: Cell::from(cell1),
+                                cell: CellIndex::from(cell1),
                                 value: 0,
                                 eliminations: elim,
                             });
@@ -70,13 +70,13 @@ pub fn disjoint_groups_var(grid: &Grid, acc: &mut HintAccumulator) {
             }
             for &cell in &cells_with_digit {
                 if grid.candidates(cell).cardinality() > 1 {
-                    let elim = vec![(Cell::from(cell), vec![digit])];
+                    let elim = vec![(CellIndex::from(cell), vec![digit])];
                     acc.add(Hint {
                         hint_type: crate::solver::HintType::DisjointGroups,
                         difficulty: 5.5,
                         technique_name: "Disjoint Groups".to_string(),
                         description: format!("Disjoint Groups: digit {} in box position", digit),
-                        cell: Cell::from(cell),
+                        cell: CellIndex::from(cell),
                         value: 0,
                         eliminations: elim,
                     });
@@ -109,7 +109,7 @@ pub fn windows_var(grid: &Grid, acc: &mut HintAccumulator) {
                 let mut elim = Vec::new();
                 for d in 1..=9u8 {
                     if d != digit && grid.candidates(cell).has(d) {
-                        elim.push((Cell::from(cell), vec![d]));
+                        elim.push((CellIndex::from(cell), vec![d]));
                     }
                 }
                 if !elim.is_empty() {
@@ -118,7 +118,7 @@ pub fn windows_var(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 5.5,
                         technique_name: "Windows".to_string(),
                         description: format!("Windows: digit {} in window", digit),
-                        cell: Cell::from(cell),
+                        cell: CellIndex::from(cell),
                         value: digit,
                         eliminations: elim,
                     });
@@ -139,13 +139,13 @@ pub fn center_dot_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let elim = vec![(Cell::from(cell), vec![digit])];
+                let elim = vec![(CellIndex::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::CenterDot,
                     difficulty: 5.5,
                     technique_name: "Center Dot".to_string(),
                     description: format!("Center Dot: digit {} in center cells", digit),
-                    cell: Cell::from(cell),
+                    cell: CellIndex::from(cell),
                     value: 0,
                     eliminations: elim,
                 });
@@ -165,13 +165,13 @@ pub fn asterisk_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let elim = vec![(Cell::from(cell), vec![digit])];
+                let elim = vec![(CellIndex::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::Asterisk,
                     difficulty: 5.5,
                     technique_name: "Asterisk".to_string(),
                     description: format!("Asterisk: digit {} in asterisk cells", digit),
-                    cell: Cell::from(cell),
+                    cell: CellIndex::from(cell),
                     value: 0,
                     eliminations: elim,
                 });
@@ -191,13 +191,13 @@ pub fn girandola_var(grid: &Grid, acc: &mut HintAccumulator) {
         }
         for &cell in &cells_with_digit {
             if grid.candidates(cell).cardinality() > 1 {
-                let elim = vec![(Cell::from(cell), vec![digit])];
+                let elim = vec![(CellIndex::from(cell), vec![digit])];
                 acc.add(Hint {
                     hint_type: crate::solver::HintType::Girandola,
                     difficulty: 5.5,
                     technique_name: "Girandola".to_string(),
                     description: format!("Girandola: digit {} in girandola cells", digit),
-                    cell: Cell::from(cell),
+                    cell: CellIndex::from(cell),
                     value: 0,
                     eliminations: elim,
                 });
@@ -232,7 +232,7 @@ pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
                         let mut elim = Vec::new();
                         for nd in 1..=9u8 {
                             if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
-                                elim.push((Cell::from(neighbor), vec![nd]));
+                                elim.push((CellIndex::from(neighbor), vec![nd]));
                             }
                         }
                         if !elim.is_empty() {
@@ -244,7 +244,7 @@ pub fn non_consecutive_var(grid: &Grid, acc: &mut HintAccumulator) {
                                     "Non-Consecutive: digit {} eliminates consecutive from neighbor",
                                     d
                                 ),
-                                cell: Cell::from(cell),
+                                cell: CellIndex::from(cell),
                                 value: 0,
                                 eliminations: elim,
                             });
@@ -291,9 +291,9 @@ pub fn anti_knight_var(grid: &Grid, acc: &mut HintAccumulator) {
                                     "Anti-Knight: digit {} in knight-adjacent cells",
                                     d
                                 ),
-                                cell: Cell::from(cell),
+                                cell: CellIndex::from(cell),
                                 value: 0,
-                                eliminations: vec![(Cell::from(neighbor), vec![d])],
+                                eliminations: vec![(CellIndex::from(neighbor), vec![d])],
                             });
                         }
                     }
@@ -338,9 +338,9 @@ pub fn anti_king_var(grid: &Grid, acc: &mut HintAccumulator) {
                                     "Anti-King: digit {} in king-adjacent cells",
                                     d
                                 ),
-                                cell: Cell::from(cell),
+                                cell: CellIndex::from(cell),
                                 value: 0,
-                                eliminations: vec![(Cell::from(neighbor), vec![d])],
+                                eliminations: vec![(CellIndex::from(neighbor), vec![d])],
                             });
                         }
                     }
@@ -387,9 +387,9 @@ pub fn toroidal_var(grid: &Grid, acc: &mut HintAccumulator) {
                                 "Toroidal: digit {} in adjacent cells (wrapping)",
                                 d
                             ),
-                            cell: Cell::from(cell),
+                            cell: CellIndex::from(cell),
                             value: 0,
-                            eliminations: vec![(Cell::from(neighbor), vec![d])],
+                            eliminations: vec![(CellIndex::from(neighbor), vec![d])],
                         });
                     }
                 }
@@ -419,7 +419,7 @@ pub fn ferz_nc_var(grid: &Grid, acc: &mut HintAccumulator) {
                             let mut elim = Vec::new();
                             for nd in 1..=9u8 {
                                 if nd.abs_diff(d) == 1 && neighbor_cands.has(nd) {
-                                    elim.push((Cell::from(neighbor), vec![nd]));
+                                    elim.push((CellIndex::from(neighbor), vec![nd]));
                                 }
                             }
                             if !elim.is_empty() {
@@ -431,7 +431,7 @@ pub fn ferz_nc_var(grid: &Grid, acc: &mut HintAccumulator) {
                                         "Ferz NC: digit {} eliminates consecutive from diagonal neighbor",
                                         d
                                     ),
-                                    cell: Cell::from(cell),
+                                    cell: CellIndex::from(cell),
                                     value: 0,
                                     eliminations: elim,
                                 });

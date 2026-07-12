@@ -1,5 +1,5 @@
 use crate::grid::RegionType;
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find cells with only one candidate (obvious solutions).
@@ -9,7 +9,7 @@ pub fn naked_single(grid: &Grid, acc: &mut HintAccumulator) {
             let cands = grid.candidates(i);
             if cands.cardinality() == 1 {
                 if let Some(v) = cands.first() {
-                    acc.add(Hint::naked_single(Cell::from(i), v));
+                    acc.add(Hint::naked_single(CellIndex::from(i), v));
                 }
             }
         }
@@ -33,7 +33,7 @@ pub fn hidden_single(grid: &Grid, acc: &mut HintAccumulator) {
                     1.5
                 };
                 acc.add(Hint::hidden_single(
-                    Cell::from(*positions[0]),
+                    CellIndex::from(*positions[0]),
                     value,
                     difficulty,
                 ));

@@ -83,7 +83,7 @@ pub fn unique_rectangle_type1(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.5,
                                 technique_name: "Unique Rectangle Type 1".to_string(),
                                 description: desc,
-                                cell: crate::grid::Cell::from(pivot_idx),
+                                cell: crate::grid::CellIndex::from(pivot_idx),
                                 value: z,
                                 eliminations: vec![],
                             });
@@ -184,7 +184,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                                 && grid.candidates(cell_idx).has(z)
                                             {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(cell_idx),
+                                                    crate::grid::CellIndex::from(cell_idx),
                                                     vec![z],
                                                 ));
                                             }
@@ -200,7 +200,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                                 && grid.candidates(cell_idx).has(z)
                                             {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(cell_idx),
+                                                    crate::grid::CellIndex::from(cell_idx),
                                                     vec![z],
                                                 ));
                                             }
@@ -220,7 +220,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                             difficulty: 4.6,
                                             technique_name: "Unique Rectangle Type 2".to_string(),
                                             description: desc,
-                                            cell: crate::grid::Cell::from(c1_idx),
+                                            cell: crate::grid::CellIndex::from(c1_idx),
                                             value: 0,
                                             eliminations,
                                         });
@@ -326,7 +326,7 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                                             && grid.candidates(idx).has(extra_digit)
                                         {
                                             eliminations.push((
-                                                crate::grid::Cell::from(idx),
+                                                crate::grid::CellIndex::from(idx),
                                                 vec![extra_digit],
                                             ));
                                         }
@@ -344,7 +344,7 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                                         difficulty: 4.8,
                                         technique_name: "Unique Rectangle Type 3".to_string(),
                                         description: desc,
-                                        cell: crate::grid::Cell::from(c1_idx),
+                                        cell: crate::grid::CellIndex::from(c1_idx),
                                         value: 0,
                                         eliminations,
                                     });
@@ -453,13 +453,13 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                             let mut eliminations = Vec::new();
                                             if grid.candidates(idx_i).has(x) {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(idx_i),
+                                                    crate::grid::CellIndex::from(idx_i),
                                                     vec![x],
                                                 ));
                                             }
                                             if grid.candidates(idx_j).has(x) {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(idx_j),
+                                                    crate::grid::CellIndex::from(idx_j),
                                                     vec![x],
                                                 ));
                                             }
@@ -475,7 +475,7 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                                     technique_name: "Unique Rectangle Type 4"
                                                         .to_string(),
                                                     description: desc,
-                                                    cell: crate::grid::Cell::from(c1_idx),
+                                                    cell: crate::grid::CellIndex::from(c1_idx),
                                                     value: 0,
                                                     eliminations,
                                                 });
@@ -506,13 +506,13 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                             let mut eliminations = Vec::new();
                                             if grid.candidates(idx_i).has(x) {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(idx_i),
+                                                    crate::grid::CellIndex::from(idx_i),
                                                     vec![x],
                                                 ));
                                             }
                                             if grid.candidates(idx_j).has(x) {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(idx_j),
+                                                    crate::grid::CellIndex::from(idx_j),
                                                     vec![x],
                                                 ));
                                             }
@@ -528,7 +528,7 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                                                     technique_name: "Unique Rectangle Type 4"
                                                         .to_string(),
                                                     description: desc,
-                                                    cell: crate::grid::Cell::from(c1_idx),
+                                                    cell: crate::grid::CellIndex::from(c1_idx),
                                                     value: 0,
                                                     eliminations,
                                                 });
@@ -570,7 +570,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
                     return; // More than one triple-cell, not BUG+1
                 }
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+1
+                return; // CellIndex with != 2 or 3 candidates, not BUG+1
             }
         }
     }
@@ -594,7 +594,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
             // Found BUG+1: d must be the solution
             let desc =
                 format!(
-                "BUG+1: Cell ({},{}) with extra candidate {} breaks deadly pattern -> must be {}",
+                "BUG+1: CellIndex ({},{}) with extra candidate {} breaks deadly pattern -> must be {}",
                 pivot_idx / 9 + 1, pivot_idx % 9 + 1, d, d
             );
 
@@ -603,7 +603,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
                 difficulty: 5.6,
                 technique_name: "BUG+1".to_string(),
                 description: desc,
-                cell: crate::grid::Cell::from(pivot_idx),
+                cell: crate::grid::CellIndex::from(pivot_idx),
                 value: d,
                 eliminations: vec![],
             });
@@ -740,7 +740,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
             if count == 3 {
                 triple_cells.push((i, cands));
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+2
+                return; // CellIndex with != 2 or 3 candidates, not BUG+2
             }
         }
     }
@@ -787,7 +787,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
     }
 
     // Step 5: Find common visible cells for elimination
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
 
     let mut eliminations = Vec::new();
 
@@ -798,7 +798,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
             if cands.has(extra_value) {
                 // Check if this cell is visible to both triple-cells
                 if is_visible_cell(cell1_idx, i) && is_visible_cell(cell2_idx, i) {
-                    eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                    eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
                 }
             }
         }
@@ -932,7 +932,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
             if count == 3 {
                 triple_cells.push((i, cands));
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+3
+                return; // CellIndex with != 2 or 3 candidates, not BUG+3
             }
         }
     }
@@ -989,7 +989,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
     }
 
     // Step 5: Find common visible cells for elimination
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
 
     let mut eliminations = Vec::new();
 
@@ -1003,7 +1003,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
                     && is_visible_cell(cell2_idx, i)
                     && is_visible_cell(cell3_idx, i)
                 {
-                    eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                    eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
                 }
             }
         }
@@ -1184,7 +1184,7 @@ pub fn bug_plus_four(grid: &Grid, acc: &mut HintAccumulator) {
         return;
     }
 
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
     let mut eliminations = Vec::new();
 
     for i in 0..81 {
@@ -1197,7 +1197,7 @@ pub fn bug_plus_four(grid: &Grid, acc: &mut HintAccumulator) {
                 && is_visible_cell(cell3_idx, i)
                 && is_visible_cell(cell4_idx, i)
             {
-                eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
             }
         }
     }

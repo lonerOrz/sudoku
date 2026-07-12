@@ -35,7 +35,7 @@ pub mod solver;
 
 pub use error::{Error, Result};
 pub use generator::{Generator, Symmetry};
-pub use grid::{Candidates, Cell, Grid, RegionType, BLOCKS, COLS, ROWS};
+pub use grid::{Candidates, CellIndex, Grid, RegionType, BLOCKS, COLS, ROWS};
 pub use rating::{DifficultyRating, Rater};
 pub use solver::{Hint, HintType, Solver};
 

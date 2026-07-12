@@ -8,7 +8,7 @@ pub mod cell;
 pub mod region;
 
 pub use candidates::Candidates;
-pub use cell::Cell;
+pub use cell::CellIndex;
 pub use region::{Region, RegionType, BLOCKS, COLS, ROWS};
 
 use crate::error::Error;

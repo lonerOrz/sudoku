@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Locked Candidates - Pointing: When a candidate in a block appears only in
@@ -53,7 +53,7 @@ pub fn locked_pointing(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(row_cell).has(digit) {
-                        eliminations.push((Cell::from(row_cell), vec![digit]));
+                        eliminations.push((CellIndex::from(row_cell), vec![digit]));
                     }
                 }
 
@@ -64,7 +64,7 @@ pub fn locked_pointing(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 1.7,
                         technique_name: "Locked Pointing".to_string(),
                         description: desc,
-                        cell: Cell::from(cells_with_digit[0]),
+                        cell: CellIndex::from(cells_with_digit[0]),
                         value: 0,
                         eliminations,
                     });
@@ -92,7 +92,7 @@ pub fn locked_pointing(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(col_cell).has(digit) {
-                        eliminations.push((Cell::from(col_cell), vec![digit]));
+                        eliminations.push((CellIndex::from(col_cell), vec![digit]));
                     }
                 }
 
@@ -103,7 +103,7 @@ pub fn locked_pointing(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 2.6,
                         technique_name: "Locked Pointing".to_string(),
                         description: desc,
-                        cell: Cell::from(cells_with_digit[0]),
+                        cell: CellIndex::from(cells_with_digit[0]),
                         value: 0,
                         eliminations,
                     });
@@ -163,7 +163,7 @@ pub fn locked_claiming(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(block_cell).has(digit) {
-                        eliminations.push((Cell::from(block_cell), vec![digit]));
+                        eliminations.push((CellIndex::from(block_cell), vec![digit]));
                     }
                 }
 
@@ -174,7 +174,7 @@ pub fn locked_claiming(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 1.9,
                         technique_name: "Locked Claiming".to_string(),
                         description: desc,
-                        cell: Cell::from(cells_with_digit[0]),
+                        cell: CellIndex::from(cells_with_digit[0]),
                         value: 0,
                         eliminations,
                     });
@@ -230,7 +230,7 @@ pub fn locked_claiming(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
                     if grid.candidates(block_cell).has(digit) {
-                        eliminations.push((Cell::from(block_cell), vec![digit]));
+                        eliminations.push((CellIndex::from(block_cell), vec![digit]));
                     }
                 }
 
@@ -241,7 +241,7 @@ pub fn locked_claiming(grid: &Grid, acc: &mut HintAccumulator) {
                         difficulty: 2.8,
                         technique_name: "Locked Claiming".to_string(),
                         description: desc,
-                        cell: Cell::from(cells_with_digit[0]),
+                        cell: CellIndex::from(cells_with_digit[0]),
                         value: 0,
                         eliminations,
                     });

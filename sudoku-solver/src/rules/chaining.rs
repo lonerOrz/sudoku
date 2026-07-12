@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid};
+use crate::grid::{CellIndex, Grid};
 use crate::solver::{Hint, HintAccumulator};
 
 pub fn x_cycles_simple(_grid: &Grid, _acc: &mut HintAccumulator) {}
@@ -36,9 +36,9 @@ pub fn forcing_chain(grid: &Grid, acc: &mut HintAccumulator) {
                                 other / 9 + 1,
                                 other % 9 + 1
                             ),
-                            cell: Cell::from(cell),
+                            cell: CellIndex::from(cell),
                             value: 0,
-                            eliminations: vec![(Cell::from(other), vec![d])],
+                            eliminations: vec![(CellIndex::from(other), vec![d])],
                         });
                     }
                 }
@@ -94,9 +94,9 @@ pub fn dynamic_forcing_chain_plus(grid: &Grid, acc: &mut HintAccumulator) {
                                         third / 9 + 1,
                                         third % 9 + 1
                                     ),
-                                    cell: Cell::from(cell),
+                                    cell: CellIndex::from(cell),
                                     value: 0,
-                                    eliminations: vec![(Cell::from(third), vec![d])],
+                                    eliminations: vec![(CellIndex::from(third), vec![d])],
                                 });
                             }
                         }
@@ -171,7 +171,7 @@ fn nested_forcing_chain(
                 difficulty,
                 technique_name: name.to_string(),
                 description: format!("{}: cell ({},{})", name, cell / 9 + 1, cell % 9 + 1),
-                cell: Cell::from(cell),
+                cell: CellIndex::from(cell),
                 value: 0,
                 eliminations,
             });
@@ -182,12 +182,12 @@ fn nested_forcing_chain(
 fn find_nested_implications(
     grid: &Grid,
     depth: usize,
-    eliminations: &mut Vec<(Cell, Vec<u8>)>,
+    eliminations: &mut Vec<(CellIndex, Vec<u8>)>,
 ) -> bool {
     if depth == 0 {
         for other in 0..81u8 {
             if grid.get(other) == 0 && grid.candidates(other).is_empty() {
-                eliminations.push((Cell::from(other), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]));
+                eliminations.push((CellIndex::from(other), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]));
                 return true;
             }
         }

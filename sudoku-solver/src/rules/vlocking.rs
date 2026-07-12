@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find VLocking (Generalized Intersections) patterns.
@@ -45,7 +45,7 @@ pub fn vlocking(grid: &Grid, acc: &mut HintAccumulator) {
                                 continue;
                             }
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
                     }
@@ -62,7 +62,7 @@ pub fn vlocking(grid: &Grid, acc: &mut HintAccumulator) {
                             difficulty: 4.0 + (cells_in_row.len() - 2) as f64 * 0.5, // 2 cells -> 4.0, 3 cells -> 4.5
                             technique_name: "VLocking".to_string(),
                             description: desc,
-                            cell: Cell::from(cells_in_row[0]),
+                            cell: CellIndex::from(cells_in_row[0]),
                             value: 0,
                             eliminations,
                         });
@@ -108,7 +108,7 @@ pub fn vlocking(grid: &Grid, acc: &mut HintAccumulator) {
                                 continue;
                             }
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
                     }
@@ -125,7 +125,7 @@ pub fn vlocking(grid: &Grid, acc: &mut HintAccumulator) {
                             difficulty: 4.0 + (cells_in_col.len() - 2) as f64 * 0.5, // 2 cells -> 4.0, 3 cells -> 4.5
                             technique_name: "VLocking".to_string(),
                             description: desc,
-                            cell: Cell::from(cells_in_col[0]),
+                            cell: CellIndex::from(cells_in_col[0]),
                             value: 0,
                             eliminations,
                         });

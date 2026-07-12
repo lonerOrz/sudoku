@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find Hidden Pairs: two digits that only appear in exactly two cells in a region.
@@ -69,11 +69,11 @@ pub fn hidden_pair(grid: &Grid, acc: &mut HintAccumulator) {
                             difficulty: 2.9,
                             technique_name: "Hidden Pair".to_string(),
                             description: desc,
-                            cell: Cell::from(cell1),
+                            cell: CellIndex::from(cell1),
                             value: 0,
                             eliminations: vec![
-                                (Cell::from(cell1), elim1),
-                                (Cell::from(cell2), elim2),
+                                (CellIndex::from(cell1), elim1),
+                                (CellIndex::from(cell2), elim2),
                             ],
                         });
                     }
@@ -127,16 +127,16 @@ pub fn naked_pair(grid: &Grid, acc: &mut HintAccumulator) {
                                             let desc = format!(
                                                 "Naked Pair in {:?}: eliminated from {:?}",
                                                 region.region_type,
-                                                Cell::from(*cell3)
+                                                CellIndex::from(*cell3)
                                             );
                                             acc.add(Hint {
                                                 hint_type: crate::solver::HintType::NakedPair,
                                                 difficulty: 3.0,
                                                 technique_name: "Naked Pair".to_string(),
                                                 description: desc,
-                                                cell: Cell::from(*cell3),
+                                                cell: CellIndex::from(*cell3),
                                                 value: 0,
-                                                eliminations: vec![(Cell::from(*cell3), removed)],
+                                                eliminations: vec![(CellIndex::from(*cell3), removed)],
                                             });
                                         }
                                     }

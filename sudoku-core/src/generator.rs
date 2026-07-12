@@ -6,24 +6,7 @@
 use crate::board::{Cell, Grid, Solution};
 use crate::difficulty::Difficulty;
 use rand::{Rng, seq::SliceRandom, thread_rng};
-use sudoku_solver::{Generator as SukakuGenerator, Grid as SukakuGrid, Symmetry};
-
-/// 将 sudoku-solver::Grid 转换为 sudoku-core::Grid
-///
-/// sudoku-solver 的 Grid 使用 flat array [u8; 81]，
-/// sudoku-core 的 Grid 使用 [[Cell; 9]; 9]。
-fn convert_solver_to_core(solver_grid: &SukakuGrid) -> Grid {
-    let mut grid = [[Cell::Empty; 9]; 9];
-    for i in 0..81u8 {
-        let r = (i / 9) as usize;
-        let c = (i % 9) as usize;
-        let v = solver_grid.get(i);
-        if v > 0 {
-            grid[r][c] = Cell::Given(v);
-        }
-    }
-    grid
-}
+use sudoku_solver::{Generator as SukakuGenerator, Symmetry};
 
 /// 将 sudoku-core::Grid 转换为 Solution
 fn grid_to_solution(grid: &Grid) -> Solution {
@@ -88,7 +71,7 @@ fn apply_transformations(grid: &mut Grid) {
     let mut bands: Vec<usize> = (0..3).collect();
     bands.shuffle(&mut rng);
     let mut temp = [[Cell::Empty; 9]; 9];
-    temp.copy_from_slice(grid);
+    temp.copy_from_slice(&**grid);
     for r in 0..9 {
         grid[r] = temp[bands[r / 3] * 3 + r % 3];
     }
@@ -156,7 +139,8 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
         };
 
         // 转换为 sudoku-core 格式
-        let mut grid = convert_solver_to_core(&solver_grid);
+        let flat: [u8; 81] = core::array::from_fn(|i| solver_grid.get(i as u8));
+        let mut grid = Grid::from_flat(flat);
 
         // 检查提示数是否在目标范围内
         let givens = count_givens(&grid);
@@ -181,7 +165,7 @@ pub fn generate(difficulty: Difficulty) -> (Grid, Solution) {
 fn generate_fallback(difficulty: Difficulty) -> (Grid, Solution) {
     use crate::solver::count_solutions;
 
-    let mut grid: Grid = [[Cell::Empty; 9]; 9];
+    let mut grid = Grid::new();
     crate::solver::solve(&mut grid);
 
     // 应用变换
