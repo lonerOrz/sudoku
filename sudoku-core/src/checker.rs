@@ -3,21 +3,44 @@
 #![allow(clippy::needless_range_loop)]
 
 use crate::board::{Grid, build_candidates};
-use bitflags::bitflags;
 
-bitflags! {
-    #[derive(Clone, Copy, Default)]
-    pub struct ConflictType: u8 {
-        const ROW = 0b001;
-        const COL = 0b010;
-        const BOX = 0b100;
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub struct ConflictType(u8);
+
+impl ConflictType {
+    pub const NONE: Self = Self(0);
+    pub const ROW: Self = Self(1);
+    pub const COL: Self = Self(2);
+    pub const BOX: Self = Self(4);
+
+    pub fn is_empty(self) -> bool {
+        self.0 == 0
+    }
+    pub fn contains(self, other: Self) -> bool {
+        (self.0 & other.0) != 0
+    }
+    pub fn insert(&mut self, other: Self) {
+        self.0 |= other.0;
+    }
+}
+
+impl std::ops::BitOr for ConflictType {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self {
+        Self(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOrAssign for ConflictType {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 |= rhs.0;
     }
 }
 
 pub type Conflicts = [[ConflictType; 9]; 9];
 
 pub fn compute_conflicts(grid: &Grid) -> Conflicts {
-    let mut conflicts: Conflicts = [[ConflictType::empty(); 9]; 9];
+    let mut conflicts: Conflicts = [[ConflictType::NONE; 9]; 9];
 
     for r in 0..9 {
         let mut seen = 0u16;
@@ -199,20 +222,20 @@ mod tests {
 
     #[test]
     fn test_conflict_type_flags() {
-        let mut ct = ConflictType::empty();
-        assert!(!ct.intersects(ConflictType::ROW));
-        assert!(!ct.intersects(ConflictType::COL));
-        assert!(!ct.intersects(ConflictType::BOX));
+        let mut ct = ConflictType::NONE;
+        assert!(!ct.contains(ConflictType::ROW));
+        assert!(!ct.contains(ConflictType::COL));
+        assert!(!ct.contains(ConflictType::BOX));
 
         ct.insert(ConflictType::ROW);
-        assert!(ct.intersects(ConflictType::ROW));
-        assert!(!ct.intersects(ConflictType::COL));
+        assert!(ct.contains(ConflictType::ROW));
+        assert!(!ct.contains(ConflictType::COL));
 
         ct.insert(ConflictType::COL);
         ct.insert(ConflictType::BOX);
-        assert!(ct.intersects(ConflictType::ROW));
-        assert!(ct.intersects(ConflictType::COL));
-        assert!(ct.intersects(ConflictType::BOX));
+        assert!(ct.contains(ConflictType::ROW));
+        assert!(ct.contains(ConflictType::COL));
+        assert!(ct.contains(ConflictType::BOX));
     }
 
     #[test]
@@ -222,8 +245,8 @@ mod tests {
         grid[0][3] = crate::Cell::UserInput(5);
 
         let conflicts = compute_conflicts(&grid);
-        assert!(conflicts[0][0].intersects(ConflictType::ROW));
-        assert!(conflicts[0][3].intersects(ConflictType::ROW));
+        assert!(conflicts[0][0].contains(ConflictType::ROW));
+        assert!(conflicts[0][3].contains(ConflictType::ROW));
     }
 
     #[test]

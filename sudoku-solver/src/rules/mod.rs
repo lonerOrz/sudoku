@@ -41,23 +41,6 @@ impl Rule {
     }
 }
 
-/// Get variant constraint rules. Only use for variant puzzles.
-pub fn variant_rules() -> Vec<Rule> {
-    vec![
-        Rule::new("X-Diagonal", x_diagonal_var, 5.5),
-        Rule::new("Disjoint Groups", disjoint_groups_var, 5.5),
-        Rule::new("Windows", windows_var, 5.5),
-        Rule::new("Center Dot", center_dot_var, 5.5),
-        Rule::new("Asterisk", asterisk_var, 5.5),
-        Rule::new("Girandola", girandola_var, 5.5),
-        Rule::new("Non-Consecutive", non_consecutive_var, 5.5),
-        Rule::new("Anti-Knight", anti_knight_var, 5.5),
-        Rule::new("Anti-King", anti_king_var, 5.5),
-        Rule::new("Toroidal", toroidal_var, 6.0),
-        Rule::new("Ferz NC", ferz_nc_var, 6.0),
-    ]
-}
-
 /// Get all rules ordered by difficulty (ascending for Solve mode).
 pub fn all_rules() -> Vec<Rule> {
     vec![

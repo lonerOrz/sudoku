@@ -35,15 +35,6 @@ impl Difficulty {
         }
     }
 
-    pub fn all() -> &'static [Difficulty] {
-        &[
-            Difficulty::Easy,
-            Difficulty::Medium,
-            Difficulty::Hard,
-            Difficulty::Expert,
-        ]
-    }
-
     pub fn next(&self) -> Difficulty {
         match self {
             Difficulty::Easy => Difficulty::Medium,

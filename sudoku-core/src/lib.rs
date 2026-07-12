@@ -24,7 +24,7 @@ pub use checker::{
 };
 pub use difficulty::Difficulty;
 pub use generator::generate;
-pub use hints::{Clue, find_clue, find_hidden_single, find_naked_single, find_solver_hint};
+pub use hints::find_solver_hint;
 pub use solver::{count_solutions, solve};
 pub use sudoku_solver::Hint;
 
