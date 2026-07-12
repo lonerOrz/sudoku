@@ -26,5 +26,9 @@ rayon = { version = "1.8", optional = true }
 name = "sudoku-solver"
 required-features = ["cli"]
 
+[[bench]]
+name = "solver_bench"
+harness = false
+
 [dev-dependencies]
 criterion = "0.5"

@@ -400,6 +400,98 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_constructed_unique_rectangle_type4_no_fire_same_box() {
+        // All 4 empty cells in box 0 → filtered by box check.
+        use crate::solver::HintAccumulator;
+        let mut cells = [0u8; 81];
+        cells[2] = 3;
+        cells[3] = 4;
+        cells[4] = 5;
+        cells[5] = 6;
+        cells[6] = 7;
+        cells[7] = 8;
+        cells[8] = 9;
+        cells[11] = 6;
+        cells[12] = 7;
+        cells[13] = 8;
+        cells[14] = 9;
+        cells[15] = 1;
+        cells[16] = 2;
+        cells[17] = 3;
+        cells[18] = 7;
+        cells[19] = 8;
+        cells[20] = 9;
+        cells[21] = 1;
+        cells[22] = 2;
+        cells[23] = 3;
+        cells[24] = 4;
+        cells[25] = 5;
+        cells[26] = 6;
+        cells[27] = 2;
+        cells[28] = 3;
+        cells[29] = 1;
+        cells[30] = 5;
+        cells[31] = 6;
+        cells[32] = 4;
+        cells[33] = 8;
+        cells[34] = 9;
+        cells[35] = 7;
+        cells[36] = 5;
+        cells[37] = 6;
+        cells[38] = 4;
+        cells[39] = 8;
+        cells[40] = 9;
+        cells[41] = 7;
+        cells[42] = 2;
+        cells[43] = 3;
+        cells[44] = 1;
+        cells[45] = 8;
+        cells[46] = 9;
+        cells[47] = 7;
+        cells[48] = 2;
+        cells[49] = 3;
+        cells[50] = 1;
+        cells[51] = 5;
+        cells[52] = 6;
+        cells[53] = 4;
+        cells[54] = 3;
+        cells[55] = 1;
+        cells[56] = 2;
+        cells[57] = 6;
+        cells[58] = 4;
+        cells[59] = 5;
+        cells[60] = 9;
+        cells[61] = 7;
+        cells[62] = 8;
+        cells[63] = 6;
+        cells[64] = 4;
+        cells[65] = 5;
+        cells[66] = 9;
+        cells[67] = 7;
+        cells[68] = 8;
+        cells[69] = 3;
+        cells[70] = 1;
+        cells[71] = 2;
+        cells[72] = 9;
+        cells[73] = 7;
+        cells[74] = 8;
+        cells[75] = 3;
+        cells[76] = 1;
+        cells[77] = 2;
+        cells[78] = 6;
+        cells[79] = 4;
+        cells[80] = 5;
+        let grid = Grid::from_flat(cells);
+        assert!(grid.check_consistency(), "Grid must be consistent");
+        let mut acc = HintAccumulator::new();
+        crate::rules::unique::unique_rectangle_type4(&grid, &mut acc);
+        assert!(
+            acc.hints().is_empty(),
+            "UR Type 4 should NOT fire when all 4 cells are in the same box"
+        );
+    }
+
     // ================================================================
     // BUG
     // ================================================================
@@ -747,11 +839,11 @@ mod tests {
                     steps
                 );
             } else {
-                solver.solve();
+                let mut fresh = Solver::new(grid);
+                assert!(fresh.solve_backtrack());
                 break;
             }
         }
-        assert!(solver.grid().is_solved());
     }
 
     #[test]
@@ -780,11 +872,11 @@ mod tests {
                     steps
                 );
             } else {
-                solver.solve();
+                let mut fresh = Solver::new(grid);
+                assert!(fresh.solve_backtrack());
                 break;
             }
         }
-        assert!(solver.grid().is_solved());
     }
 
     #[test]

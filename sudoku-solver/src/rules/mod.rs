@@ -111,10 +111,12 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Generalized Naked Quint", generalized_naked_quint, 5.4),
         Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
         Rule::new("VLocking", vlocking, 4.5),
-        // Stub techniques — not registered, functions exist but return no hints:
-        // x_cycles_simple, y_cycles_simple, nishio_forcing_chain,
-        // multiple_forcing_chain, dynamic_forcing_chain
+        Rule::new("X-Cycles Simple", x_cycles_simple, 6.5),
+        Rule::new("Y-Cycles Simple", y_cycles_simple, 6.5),
         Rule::new("Forcing Chain", forcing_chain, 7.0),
+        Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
+        Rule::new("Multiple Forcing Chain", multiple_forcing_chain, 8.0),
+        Rule::new("Dynamic Forcing Chain", dynamic_forcing_chain, 8.5),
         Rule::new("Dynamic Forcing Chain+", dynamic_forcing_chain_plus, 9.0),
         Rule::new(
             "Nested Forcing Chain (2-level)",

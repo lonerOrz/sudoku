@@ -160,7 +160,18 @@ impl<'a> Rater<'a> {
     }
 
     pub fn analyse(&mut self) -> DifficultyRating {
+        let (rating, _) = self.analyse_with_counts();
+        rating
+    }
+
+    /// Analyse puzzle difficulty and return technique frequency counts.
+    ///
+    /// Returns `(DifficultyRating, HashMap<technique_name, count>)`.
+    pub fn analyse_with_counts(
+        &mut self,
+    ) -> (DifficultyRating, std::collections::HashMap<String, usize>) {
         let mut rating = DifficultyRating::new();
+        let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
         let backup = self.solver.grid();
 
         self.solver.rebuild_candidates();
@@ -179,6 +190,8 @@ impl<'a> Rater<'a> {
             }
 
             if let Some(hint) = self.solver.next_hint() {
+                *counts.entry(hint.technique_name.clone()).or_insert(0) += 1;
+
                 if hint.difficulty > rating.er {
                     rating.er = hint.difficulty;
                     rating.er_technique = hint.technique_name.clone();
@@ -208,6 +221,6 @@ impl<'a> Rater<'a> {
             rating.er_technique = "Trivial".to_string();
         }
 
-        rating
+        (rating, counts)
     }
 }

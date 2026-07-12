@@ -33,6 +33,8 @@ pub struct Solver {
     steps: usize,
     skipped: Vec<(u8, u8)>,
     rejected_elim_keys: HashSet<u64>,
+    /// All committed eliminations (cell_index, value). Applied after every rebuild.
+    committed: Vec<(u8, u8)>,
 }
 
 impl Solver {
@@ -42,6 +44,7 @@ impl Solver {
             steps: 0,
             skipped: Vec::new(),
             rejected_elim_keys: HashSet::new(),
+            committed: Vec::new(),
         }
     }
 
@@ -133,37 +136,32 @@ impl Solver {
         None
     }
 
+    /// Replay all committed eliminations on the grid.
+    fn replay_committed(&mut self) {
+        for &(idx, val) in &self.committed {
+            self.grid.remove_candidate(idx, val);
+        }
+    }
+
     /// Apply a hint. Returns true if applied successfully, false if skipped due to inconsistency.
     pub fn apply_hint(&mut self, hint: &Hint) -> bool {
         if hint.value > 0 {
-            // Placement: set value, clear cell candidates, remove value from row/col/box peers
+            // Placement: set value, rebuild candidates from scratch, replay committed eliminations
             let backup = self.grid;
+            let backup_committed_len = self.committed.len();
             let idx = hint.cell.index;
             let val = hint.value;
             self.grid.set(idx, val);
             self.grid.clear_candidates(idx);
-            let r = (idx / 9) as usize;
-            let c = (idx % 9) as usize;
-            let b = (r / 3) * 3 + c / 3;
-            for &j in &crate::grid::ROWS[r].cells {
-                if j != idx {
-                    self.grid.remove_candidate(j, val);
-                }
-            }
-            for &j in &crate::grid::COLS[c].cells {
-                if j != idx {
-                    self.grid.remove_candidate(j, val);
-                }
-            }
-            for &j in &crate::grid::BLOCKS[b].cells {
-                if j != idx {
-                    self.grid.remove_candidate(j, val);
-                }
-            }
+            // Rebuild candidates based on all placed values
+            self.grid.rebuild_candidates();
+            // Replay all committed eliminations
+            self.replay_committed();
             // Validate: all empty cells must have candidates
             for i in 0..81u8 {
                 if self.grid.get(i) == 0 && self.grid.candidates(i).is_empty() {
                     self.grid = backup;
+                    self.committed.truncate(backup_committed_len);
                     self.skipped.push((idx, val));
                     #[cfg(test)]
                     eprintln!("    REJECT: placing {} at cell {} leaves cell {} (row {} col {}) with 0 cands",
@@ -172,9 +170,9 @@ impl Solver {
                 }
             }
         } else {
-            // Elimination: validate targets are empty cells with the candidate,
-            // and no cell loses all candidates.
+            // Elimination: validate targets, remove candidates, add to committed list
             let backup = self.grid;
+            let committed_before = self.committed.len();
 
             // Pre-validate: all targets must be empty cells with the candidate
             for &(cell, ref values) in &hint.eliminations {
@@ -197,6 +195,7 @@ impl Solver {
                         v
                     );
                     self.grid.remove_candidate(cell.index, v);
+                    self.committed.push((cell.index, v));
                 }
             }
             let mut valid = true;
@@ -208,6 +207,7 @@ impl Solver {
             }
             if !valid {
                 self.grid = backup;
+                self.committed.truncate(committed_before);
                 self.rejected_elim_keys.insert(Self::elim_key(hint));
                 return false;
             }
@@ -230,6 +230,7 @@ impl Solver {
     pub fn solve(&mut self) -> bool {
         self.skipped.clear();
         self.rejected_elim_keys.clear();
+        self.committed.clear();
         self.grid.rebuild_candidates();
 
         let mut max_steps = 200;
@@ -254,7 +255,9 @@ impl Solver {
     }
 
     /// Complete the puzzle using MRV backtracking when rule-based solver gets stuck.
-    fn solve_backtrack(&mut self) -> bool {
+    /// Rebuilds candidates from scratch to eliminate any incremental tracking corruption.
+    pub fn solve_backtrack(&mut self) -> bool {
+        self.grid.rebuild_candidates();
         self.backtrack_inner()
     }
 
