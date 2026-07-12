@@ -5,7 +5,6 @@ edition.workspace = true
 
 [dependencies]
 rand = "0.8"
-bitflags = "2"
 sudoku-solver = { path = "../sudoku-solver" }
 
 [dev-dependencies]

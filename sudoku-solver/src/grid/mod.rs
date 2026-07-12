@@ -8,14 +8,28 @@ pub mod cell;
 pub mod region;
 
 pub use candidates::Candidates;
-pub use cell::Cell;
+pub use cell::CellIndex;
 pub use region::{Region, RegionType, BLOCKS, COLS, ROWS};
 
 use crate::error::Error;
 use crate::error::Result;
 use std::str::FromStr;
 
-#[derive(Clone, Copy)]
+/// A 9x9 Sudoku grid with candidate tracking.
+///
+/// Stores 81 cell values as `u8` (0 = empty, 1-9 = placed digit) and
+/// per-cell candidate bitmasks for pencilmark-style solving.
+///
+/// Implements `FromStr` for parsing from 81-character strings where
+/// digits 1-9 are clues, `0` or `.` are empty cells.
+///
+/// ```
+/// use sudoku_solver::Grid;
+///
+/// let grid = Grid::parse("003020600900305001001806400008102900700000008006708200002609500800203009005010300").unwrap();
+/// assert_eq!(grid.clue_count(), 32);
+/// ```
+#[derive(Clone, Copy, PartialEq)]
 pub struct Grid {
     cells: [u8; 81],
     candidates: [Candidates; 81],
@@ -34,6 +48,21 @@ impl Grid {
 
     pub fn parse(s: &str) -> Result<Self> {
         Self::from_str(s)
+    }
+
+    pub fn from_flat(cells: [u8; 81]) -> Self {
+        let mut grid = Self::new();
+        let mut clue_count = 0;
+        for (i, &v) in cells.iter().enumerate() {
+            grid.cells[i] = v;
+            if v > 0 {
+                clue_count += 1;
+                grid.candidates[i] = Candidates::empty();
+            }
+        }
+        grid.clue_count = clue_count;
+        grid.rebuild_candidates();
+        grid
     }
 
     #[inline]
@@ -69,6 +98,11 @@ impl Grid {
         if self.cells[idx as usize] == 0 {
             self.candidates[idx as usize].remove(value);
         }
+    }
+
+    /// Clear all candidates for a cell (used when a value is placed).
+    pub fn clear_candidates(&mut self, idx: u8) {
+        self.candidates[idx as usize] = Candidates::empty();
     }
 
     pub fn rebuild_candidates(&mut self) {
@@ -132,6 +166,66 @@ impl Grid {
         }
         true
     }
+
+    /// Check grid invariants. Returns true if consistent.
+    pub fn check_consistency(&self) -> bool {
+        for i in 0..81 {
+            let val = self.cells[i];
+            if val == 0 {
+                if self.candidates[i].is_empty() {
+                    return false;
+                }
+            } else {
+                if !self.candidates[i].is_empty() {
+                    return false;
+                }
+                if val > 9 {
+                    return false;
+                }
+            }
+        }
+        // Check rows and columns
+        for unit in 0..9 {
+            let mut seen = [false; 10];
+            for c in 0..9 {
+                let v = self.cells[unit * 9 + c] as usize;
+                if v > 0 && seen[v] {
+                    return false;
+                }
+                if v > 0 {
+                    seen[v] = true;
+                }
+            }
+            let mut seen = [false; 10];
+            for r in 0..9 {
+                let v = self.cells[r * 9 + unit] as usize;
+                if v > 0 && seen[v] {
+                    return false;
+                }
+                if v > 0 {
+                    seen[v] = true;
+                }
+            }
+        }
+        // Check boxes
+        for b in 0..9 {
+            let mut seen = [false; 10];
+            let br = (b / 3) * 3;
+            let bc = (b % 3) * 3;
+            for r in br..br + 3 {
+                for c in bc..bc + 3 {
+                    let v = self.cells[r * 9 + c] as usize;
+                    if v > 0 && seen[v] {
+                        return false;
+                    }
+                    if v > 0 {
+                        seen[v] = true;
+                    }
+                }
+            }
+        }
+        true
+    }
 }
 
 impl FromStr for Grid {
@@ -143,7 +237,7 @@ impl FromStr for Grid {
             .filter(|c| c.is_ascii_digit() || *c == '.')
             .map(|c| match c {
                 '0' | '.' => 0,
-                _ => c.to_digit(10).unwrap() as u8,
+                _ => c.to_digit(10).unwrap_or(0) as u8,
             })
             .collect();
 

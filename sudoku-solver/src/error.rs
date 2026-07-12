@@ -10,12 +10,6 @@ pub enum Error {
     #[error("invalid digit at position {0}: {1}")]
     InvalidDigit(usize, u8),
 
-    #[error("puzzle has no solution")]
-    NoSolution,
-
-    #[error("puzzle has multiple solutions")]
-    MultipleSolutions,
-
     #[error("generation failed")]
     GenerationFailed,
 }

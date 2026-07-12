@@ -16,7 +16,65 @@ impl Cell {
     }
 }
 
-pub type Grid = [[Cell; 9]; 9];
+/// 9×9 Sudoku board. Transparent 2D indexing via Deref.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct Grid {
+    cells: [[Cell; 9]; 9],
+}
+
+impl Grid {
+    pub fn new() -> Self {
+        Self {
+            cells: [[Cell::Empty; 9]; 9],
+        }
+    }
+
+    pub fn flat(&self) -> [u8; 81] {
+        let mut out = [0u8; 81];
+        for r in 0..9 {
+            for c in 0..9 {
+                out[r * 9 + c] = self.cells[r][c].value().unwrap_or(0);
+            }
+        }
+        out
+    }
+
+    pub fn from_flat(values: [u8; 81]) -> Self {
+        let mut grid = Self::new();
+        for (i, &v) in values.iter().enumerate() {
+            if v > 0 {
+                grid.cells[i / 9][i % 9] = Cell::Given(v);
+            }
+        }
+        grid
+    }
+}
+
+impl Default for Grid {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl std::ops::Deref for Grid {
+    type Target = [[Cell; 9]; 9];
+    fn deref(&self) -> &Self::Target {
+        &self.cells
+    }
+}
+
+impl std::ops::DerefMut for Grid {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.cells
+    }
+}
+
+impl From<[[Cell; 9]; 9]> for Grid {
+    fn from(cells: [[Cell; 9]; 9]) -> Self {
+        Self { cells }
+    }
+}
+
 pub type Solution = [[u8; 9]; 9];
 
 pub const ALL_VALUES: u16 = 0x3FE;
@@ -79,6 +137,24 @@ impl BitmaskGrid {
         self.cols[c] &= !bit;
         self.boxes[(r / 3) * 3 + c / 3] &= !bit;
     }
+}
+
+pub fn build_candidates(grid: &Grid) -> [sudoku_solver::Candidates; 81] {
+    let mut cands = [sudoku_solver::Candidates::full(); 81];
+    for i in 0..81 {
+        let r = i / 9;
+        let c = i % 9;
+        if let Some(v) = grid[r][c].value() {
+            cands[i] = sudoku_solver::Candidates::empty();
+            for &peer in &PEERS[i] {
+                if peer == SENTINEL {
+                    break;
+                }
+                cands[peer as usize].remove(v);
+            }
+        }
+    }
+    cands
 }
 
 const SENTINEL: u8 = u8::MAX;

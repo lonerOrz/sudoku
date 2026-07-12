@@ -1,3 +1,9 @@
+//! Candidate bitmask for pencilmark-style solving.
+
+/// Bitmask of possible values (1-9) for a cell. Bit `n` represents digit `n`.
+///
+/// `Candidates::EMPTY` = no candidates (cell is filled).
+/// `Candidates::FULL` = digits 1-9 all possible (empty cell, no eliminations).
 #[derive(Clone, Copy, Default)]
 pub struct Candidates(u16);
 

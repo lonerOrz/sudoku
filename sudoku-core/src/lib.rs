@@ -7,7 +7,7 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-pub use board::{BitmaskGrid, Cell, Grid, PEERS, Solution, is_valid};
+pub use board::{Cell, Grid, PEERS, Solution, build_candidates, is_valid};
 
 pub fn clear_peers(pencil_marks: &mut [[Vec<u8>; 9]; 9], row: usize, col: usize, val: u8) {
     for &peer_idx in &PEERS[row * 9 + col] {
@@ -24,8 +24,9 @@ pub use checker::{
 };
 pub use difficulty::Difficulty;
 pub use generator::generate;
-pub use hints::{Clue, find_clue, find_hidden_single, find_naked_single};
+pub use hints::find_solver_hint;
 pub use solver::{count_solutions, solve};
+pub use sudoku_solver::Hint;
 
 #[cfg(test)]
 mod tests {
@@ -48,27 +49,27 @@ mod tests {
         assert!(has_empty);
 
         let solution_grid: Grid =
-            core::array::from_fn(|r| core::array::from_fn(|c| Cell::Given(solution[r][c])));
+            core::array::from_fn(|r| core::array::from_fn(|c| Cell::Given(solution[r][c]))).into();
         assert!(is_solved(&solution_grid));
     }
 
     #[test]
     fn test_count_solutions() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         assert!(solve(&mut grid));
         assert_eq!(count_solutions(&mut grid), 1);
     }
 
     #[test]
     fn test_solve() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         assert!(solve(&mut grid));
         assert!(is_solved(&grid));
     }
 
     #[test]
     fn test_is_valid_same_row() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(5);
 
         assert!(!is_valid(&grid, 3, 5));
@@ -77,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_is_valid_same_col() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(5);
 
         assert!(!is_valid(&grid, 45, 5));
@@ -86,7 +87,7 @@ mod tests {
 
     #[test]
     fn test_is_valid_same_box() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(5);
 
         assert!(!is_valid(&grid, 20, 5));
@@ -95,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_is_solved_empty() {
-        let grid: Grid = [[Cell::Empty; 9]; 9];
+        let grid: Grid = Grid::new();
         assert!(!is_solved(&grid));
     }
 
@@ -108,7 +109,7 @@ mod tests {
 
     #[test]
     fn test_possible_values() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(5);
         grid[1][1] = Cell::Given(3);
 
@@ -120,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_find_errors() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(5);
         grid[0][1] = Cell::Given(5);
 
@@ -131,7 +132,7 @@ mod tests {
 
     #[test]
     fn test_find_errors_column() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(3);
         grid[4][0] = Cell::Given(3);
 
@@ -148,7 +149,7 @@ mod tests {
 
     #[test]
     fn test_find_errors_box() {
-        let mut grid: Grid = [[Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = Cell::Given(7);
         grid[1][2] = Cell::Given(7);
 
@@ -159,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_find_errors_empty() {
-        let grid: Grid = [[Cell::Empty; 9]; 9];
+        let grid: Grid = Grid::new();
         let errors = find_errors(&grid);
         assert!(errors.is_empty());
     }

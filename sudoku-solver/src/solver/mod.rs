@@ -9,17 +9,43 @@ pub mod hint;
 pub use accumulator::HintAccumulator;
 pub use hint::{Hint, HintType};
 
+use std::collections::HashSet;
+
 use crate::grid::Grid;
 use crate::rules::{self, Strategy};
 
+/// Rule-based Sudoku solver that detects solving techniques.
+///
+/// Applies techniques in order of difficulty (Naked Single → Hidden Single → ...) to find the next move.
+/// Falls back to MRV backtracking when no rule-based technique applies.
+///
+/// ```
+/// use sudoku_solver::{Grid, Solver};
+///
+/// let grid = Grid::parse("003020600900305001001806400008102900700000008006708200002609500800203009005010300").unwrap();
+/// let mut solver = Solver::new(grid);
+/// if let Some(hint) = solver.next_hint() {
+///     println!("Technique: {} at cell {}, value {}", hint.technique_name, hint.cell.index, hint.value);
+/// }
+/// ```
 pub struct Solver {
     grid: Grid,
     steps: usize,
+    skipped: Vec<(u8, u8)>,
+    rejected_elim_keys: HashSet<u64>,
+    /// All committed eliminations (cell_index, value). Applied after every rebuild.
+    committed: Vec<(u8, u8)>,
 }
 
 impl Solver {
     pub fn new(grid: Grid) -> Self {
-        Self { grid, steps: 0 }
+        Self {
+            grid,
+            steps: 0,
+            skipped: Vec::new(),
+            rejected_elim_keys: HashSet::new(),
+            committed: Vec::new(),
+        }
     }
 
     pub fn grid(&self) -> Grid {
@@ -60,8 +86,19 @@ impl Solver {
             let mut acc = HintAccumulator::new();
             (rule.func)(&self.grid, &mut acc);
 
-            if let Some(hint) = acc.first() {
-                return Some(hint);
+            for hint in acc.hints() {
+                // Skip hints that have been rejected
+                if hint.value > 0 && self.skipped.contains(&(hint.cell.index, hint.value)) {
+                    continue;
+                }
+                // Skip elimination hints that were rejected
+                if hint.value == 0 {
+                    let key = Self::elim_key(hint);
+                    if self.rejected_elim_keys.contains(&key) {
+                        continue;
+                    }
+                }
+                return Some(hint.clone());
             }
         }
 
@@ -99,36 +136,173 @@ impl Solver {
         None
     }
 
-    pub fn apply_hint(&mut self, hint: &Hint) {
-        if hint.value > 0 {
-            self.grid.set(hint.cell.index, hint.value);
+    /// Replay all committed eliminations on the grid.
+    fn replay_committed(&mut self) {
+        for &(idx, val) in &self.committed {
+            self.grid.remove_candidate(idx, val);
         }
+    }
 
-        for &(cell, ref values) in &hint.eliminations {
-            for &v in values {
-                self.grid.remove_candidate(cell.index, v);
+    /// Apply a hint. Returns true if applied successfully, false if skipped due to inconsistency.
+    pub fn apply_hint(&mut self, hint: &Hint) -> bool {
+        if hint.value > 0 {
+            // Placement: set value, rebuild candidates from scratch, replay committed eliminations
+            let backup = self.grid;
+            let backup_committed_len = self.committed.len();
+            let idx = hint.cell.index;
+            let val = hint.value;
+            self.grid.set(idx, val);
+            self.grid.clear_candidates(idx);
+            // Rebuild candidates based on all placed values
+            self.grid.rebuild_candidates();
+            // Replay all committed eliminations
+            self.replay_committed();
+            // Validate: all empty cells must have candidates
+            for i in 0..81u8 {
+                if self.grid.get(i) == 0 && self.grid.candidates(i).is_empty() {
+                    self.grid = backup;
+                    self.committed.truncate(backup_committed_len);
+                    self.skipped.push((idx, val));
+                    #[cfg(test)]
+                    eprintln!("    REJECT: placing {} at cell {} leaves cell {} (row {} col {}) with 0 cands",
+                        val, idx, i, i/9, i%9);
+                    return false;
+                }
+            }
+        } else {
+            // Elimination: validate targets, remove candidates, add to committed list
+            let backup = self.grid;
+            let committed_before = self.committed.len();
+
+            // Pre-validate: all targets must be empty cells with the candidate
+            for &(cell, ref values) in &hint.eliminations {
+                for &v in values {
+                    if self.grid.get(cell.index) != 0 || !self.grid.candidates(cell.index).has(v) {
+                        self.rejected_elim_keys.insert(Self::elim_key(hint));
+                        return false;
+                    }
+                }
+            }
+
+            for &(cell, ref values) in &hint.eliminations {
+                for &v in values {
+                    #[cfg(test)]
+                    eprintln!(
+                        "    elim cell={}({},{}) val={}",
+                        cell.index,
+                        cell.index / 9,
+                        cell.index % 9,
+                        v
+                    );
+                    self.grid.remove_candidate(cell.index, v);
+                    self.committed.push((cell.index, v));
+                }
+            }
+            let mut valid = true;
+            for i in 0..81u8 {
+                if self.grid.get(i) == 0 && self.grid.candidates(i).is_empty() {
+                    valid = false;
+                    break;
+                }
+            }
+            if !valid {
+                self.grid = backup;
+                self.committed.truncate(committed_before);
+                self.rejected_elim_keys.insert(Self::elim_key(hint));
+                return false;
             }
         }
 
-        self.grid.rebuild_candidates();
         self.steps += 1;
+        true
+    }
+
+    fn elim_key(hint: &Hint) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        for &(cell, ref values) in &hint.eliminations {
+            cell.index.hash(&mut hasher);
+            values.hash(&mut hasher);
+        }
+        hasher.finish()
     }
 
     pub fn solve(&mut self) -> bool {
+        self.skipped.clear();
+        self.rejected_elim_keys.clear();
+        self.committed.clear();
         self.grid.rebuild_candidates();
 
+        let mut max_steps = 200;
         while !self.grid.is_solved() {
-            if let Some(hint) = self.next_hint() {
-                self.apply_hint(&hint);
-            } else {
+            max_steps -= 1;
+            if max_steps == 0 {
                 return false;
+            }
+            if let Some(hint) = self.next_hint() {
+                if self.apply_hint(&hint) {
+                    // Success: clear skip lists so rejected hints get retried
+                    // (grid changed, they may work now)
+                    self.skipped.clear();
+                    self.rejected_elim_keys.clear();
+                }
+            } else {
+                // Rule-based solver stuck — fall back to backtracking
+                return self.solve_backtrack();
             }
         }
         true
     }
 
+    /// Complete the puzzle using MRV backtracking when rule-based solver gets stuck.
+    /// Rebuilds candidates from scratch to eliminate any incremental tracking corruption.
+    pub fn solve_backtrack(&mut self) -> bool {
+        self.grid.rebuild_candidates();
+        self.backtrack_inner()
+    }
+
+    fn backtrack_inner(&mut self) -> bool {
+        if self.grid.is_solved() {
+            return true;
+        }
+        // Find cell with fewest candidates (MRV)
+        let mut best: Option<(u8, crate::grid::Candidates)> = None;
+        for i in 0..81u8 {
+            if self.grid.get(i) == 0 {
+                let cands = self.grid.candidates(i);
+                match &best {
+                    None => best = Some((i, cands)),
+                    Some((_, ref prev)) if cands.cardinality() < prev.cardinality() => {
+                        best = Some((i, cands))
+                    }
+                    _ => {}
+                }
+            }
+        }
+        let (idx, cands) = match best {
+            Some(v) => v,
+            None => return false,
+        };
+        for v in cands.iter() {
+            let backup = self.grid;
+            self.grid.set(idx, v);
+            self.grid.rebuild_candidates();
+            if self.backtrack_inner() {
+                return true;
+            }
+            self.grid = backup;
+        }
+        false
+    }
+
     pub fn steps(&self) -> usize {
         self.steps
+    }
+
+    /// Clear skip/reject lists so previously rejected hints get retried.
+    pub fn clear_rejected(&mut self) {
+        self.skipped.clear();
+        self.rejected_elim_keys.clear();
     }
 
     pub fn count_solutions(&mut self) -> usize {
@@ -190,4 +364,48 @@ impl Solver {
         self.grid = backup;
         count == 1
     }
+
+    /// Validate that a hint is logically correct before applying.
+    /// Returns Ok(()) if valid, Err(message) if invalid.
+    pub fn validate_hint(&self, hint: &Hint) -> Result<(), String> {
+        let grid = &self.grid;
+
+        if hint.value > 0 {
+            let idx = hint.cell.index as usize;
+            if grid.get(hint.cell.index) != 0 {
+                return Err(format!("Cell {} already filled", idx));
+            }
+            if hint.value < 1 || hint.value > 9 {
+                return Err(format!("Invalid value {}", hint.value));
+            }
+            if !grid.candidates(hint.cell.index).has(hint.value) {
+                return Err(format!(
+                    "Value {} not in candidates for cell {}",
+                    hint.value, idx
+                ));
+            }
+        }
+
+        for &(cell, ref values) in &hint.eliminations {
+            let cands = grid.candidates(cell.index);
+            for &v in values {
+                if !cands.has(v) {
+                    return Err(format!(
+                        "Candidate {} not present in cell {} for elimination",
+                        v, cell.index
+                    ));
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+pub fn apply_hint_validated(solver: &mut Solver, hint: &Hint) {
+    solver
+        .validate_hint(hint)
+        .unwrap_or_else(|e| panic!("Invalid hint from {}: {}", hint.technique_name, e));
+    solver.apply_hint(hint);
 }

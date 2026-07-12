@@ -94,8 +94,8 @@ pub fn all_rules() -> Vec<Rule> {
         Rule::new("Generalized Naked Quint", generalized_naked_quint, 5.4),
         Rule::new("Generalized Naked Sext", generalized_naked_sext, 5.8),
         Rule::new("VLocking", vlocking, 4.5),
-        Rule::new("X-Cycles", x_cycles_simple, 6.5),
-        Rule::new("Y-Cycles", y_cycles_simple, 6.5),
+        Rule::new("X-Cycles Simple", x_cycles_simple, 6.5),
+        Rule::new("Y-Cycles Simple", y_cycles_simple, 6.5),
         Rule::new("Forcing Chain", forcing_chain, 7.0),
         Rule::new("Nishio Forcing Chain", nishio_forcing_chain, 7.5),
         Rule::new("Multiple Forcing Chain", multiple_forcing_chain, 8.0),
@@ -116,31 +116,35 @@ pub fn all_rules() -> Vec<Rule> {
             nested_forcing_chain_4,
             10.5,
         ),
-        Rule::new("X-Diagonal", x_diagonal_var, 5.5),
-        Rule::new("Disjoint Groups", disjoint_groups_var, 5.5),
-        Rule::new("Windows", windows_var, 5.5),
-        Rule::new("Center Dot", center_dot_var, 5.5),
-        Rule::new("Asterisk", asterisk_var, 5.5),
-        Rule::new("Girandola", girandola_var, 5.5),
-        Rule::new("Non-Consecutive", non_consecutive_var, 5.5),
-        Rule::new("Anti-Knight", anti_knight_var, 5.5),
-        Rule::new("Anti-King", anti_king_var, 5.5),
-        Rule::new("Toroidal", toroidal_var, 6.0),
-        Rule::new("Ferz NC", ferz_nc_var, 6.0),
+        // Variant constraint rules — NOT included by default.
+        // These only apply to variant puzzles with the corresponding constraint enabled.
+        // To use: add them to the solver's rule list when solving variant puzzles.
+        //
+        // Rule::new("X-Diagonal", x_diagonal_var, 5.5),
+        // Rule::new("Disjoint Groups", disjoint_groups_var, 5.5),
+        // Rule::new("Windows", windows_var, 5.5),
+        // Rule::new("Center Dot", center_dot_var, 5.5),
+        // Rule::new("Asterisk", asterisk_var, 5.5),
+        // Rule::new("Girandola", girandola_var, 5.5),
+        // Rule::new("Non-Consecutive", non_consecutive_var, 5.5),
+        // Rule::new("Anti-Knight", anti_knight_var, 5.5),
+        // Rule::new("Anti-King", anti_king_var, 5.5),
+        // Rule::new("Toroidal", toroidal_var, 6.0),
+        // Rule::new("Ferz NC", ferz_nc_var, 6.0),
     ]
 }
 
 /// Get rules ordered for Solve mode (lowest difficulty first).
 pub fn rules_for_solve() -> Vec<Rule> {
     let mut rules = all_rules();
-    rules.sort_by(|a, b| a.difficulty.partial_cmp(&b.difficulty).unwrap());
+    rules.sort_by(|a, b| a.difficulty.total_cmp(&b.difficulty));
     rules
 }
 
 /// Get rules ordered for Detect mode (highest difficulty first).
 pub fn rules_for_detect() -> Vec<Rule> {
     let mut rules = all_rules();
-    rules.sort_by(|a, b| b.difficulty.partial_cmp(&a.difficulty).unwrap());
+    rules.sort_by(|a, b| b.difficulty.total_cmp(&a.difficulty));
     rules
 }
 

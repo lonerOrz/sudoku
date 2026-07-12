@@ -17,6 +17,7 @@ use rand::Rng;
 use crate::error::Error;
 use crate::error::Result;
 use crate::grid::Grid;
+use crate::rating::Rater;
 use crate::solver::Solver;
 
 /// Symmetry types for puzzle generation.
@@ -108,6 +109,8 @@ pub struct Generator {
     pub max_difficulty: f64,
     /// Whether to require unique solution
     pub require_unique: bool,
+    /// Whether to verify the generated puzzle's ER matches the target range
+    pub verify_difficulty: bool,
     /// Symmetry type for the generated puzzle
     pub symmetry: Symmetry,
     /// Techniques to exclude (e.g., ["X-Wing", "Swordfish"])
@@ -124,6 +127,7 @@ impl Generator {
             min_difficulty: 0.0,
             max_difficulty: 10.0,
             require_unique: true,
+            verify_difficulty: true,
             symmetry: Symmetry::None,
             exclude_techniques: Vec::new(),
             include_techniques: Vec::new(),
@@ -137,6 +141,7 @@ impl Generator {
             min_difficulty: 0.0,
             max_difficulty: 10.0,
             require_unique: true,
+            verify_difficulty: true,
             symmetry: Symmetry::None,
             exclude_techniques: Vec::new(),
             include_techniques: Vec::new(),
@@ -150,6 +155,7 @@ impl Generator {
             min_difficulty: min,
             max_difficulty: max,
             require_unique: true,
+            verify_difficulty: true,
             symmetry: Symmetry::None,
             exclude_techniques: Vec::new(),
             include_techniques: Vec::new(),
@@ -162,6 +168,7 @@ impl Generator {
             min_difficulty: 0.0,
             max_difficulty: 10.0,
             require_unique: true,
+            verify_difficulty: true,
             symmetry,
             exclude_techniques: Vec::new(),
             include_techniques: Vec::new(),
@@ -192,9 +199,21 @@ impl Generator {
                 }
             }
 
-            if puzzle.clue_count() >= min_clues && puzzle.clue_count() <= max_clues {
-                return Ok(puzzle);
+            if puzzle.clue_count() < min_clues || puzzle.clue_count() > max_clues {
+                continue;
             }
+
+            // Verify ER matches target range
+            if self.verify_difficulty && (self.min_difficulty > 0.0 || self.max_difficulty < 10.0) {
+                let mut solver = Solver::new(puzzle);
+                let mut rater = Rater::new(&mut solver);
+                let rating = rater.analyse();
+                if rating.er < self.min_difficulty || rating.er > self.max_difficulty {
+                    continue;
+                }
+            }
+
+            return Ok(puzzle);
         }
 
         Err(Error::GenerationFailed)
@@ -212,10 +231,6 @@ impl Generator {
             (28, 40)
         } else if avg_diff <= 4.0 {
             (25, 35)
-        } else if avg_diff <= 5.5 {
-            (22, 30)
-        } else if avg_diff <= 7.0 {
-            (22, 30)
         } else {
             (22, 30)
         }

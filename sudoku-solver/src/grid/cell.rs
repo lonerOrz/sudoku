@@ -1,9 +1,14 @@
+//! Cell index type for flat grid addressing.
+
+/// Index of a cell in a flat 81-element grid (row-major: 0..80).
+///
+/// Provides `x()` (column), `y()` (row), and `box_index()` helpers.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Cell {
+pub struct CellIndex {
     pub index: u8,
 }
 
-impl Cell {
+impl CellIndex {
     pub const COUNT: usize = 81;
 
     #[inline]
@@ -28,14 +33,14 @@ impl Cell {
     }
 }
 
-impl From<u8> for Cell {
+impl From<u8> for CellIndex {
     fn from(index: u8) -> Self {
-        Cell::new(index)
+        CellIndex::new(index)
     }
 }
 
-impl From<usize> for Cell {
+impl From<usize> for CellIndex {
     fn from(index: usize) -> Self {
-        Cell::new(index as u8)
+        CellIndex::new(index as u8)
     }
 }

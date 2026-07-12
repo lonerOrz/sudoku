@@ -2,16 +2,33 @@
 name = "sudoku-solver"
 version = "0.1.0"
 edition = "2021"
-description = "Sudoku difficulty rater and generator"
-license = "MIT"
+description = "Sudoku difficulty rater, solver, and generator with 40+ solving techniques"
+license = "BSD-3-Clause"
+keywords = ["sudoku", "solver", "puzzle", "rating", "generator"]
+categories = ["puzzle", "algorithms"]
+readme = "README.md"
+repository = "https://github.com/lonerOrz/sudoku"
+homepage = "https://github.com/lonerOrz/sudoku/tree/main/sudoku-solver"
+
+[features]
+default = []
+cli = ["dep:clap", "dep:serde", "dep:serde_json", "dep:rayon"]
 
 [dependencies]
 thiserror = "1.0"
 rand = "0.8"
-clap = { version = "4.0", features = ["derive"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-rayon = "1.8"
+clap = { version = "4.0", features = ["derive"], optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+rayon = { version = "1.8", optional = true }
+
+[[bin]]
+name = "sudoku-solver"
+required-features = ["cli"]
+
+[[bench]]
+name = "solver_bench"
+harness = false
 
 [dev-dependencies]
 criterion = "0.5"

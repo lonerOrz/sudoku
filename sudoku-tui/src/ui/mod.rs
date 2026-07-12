@@ -32,6 +32,7 @@ pub fn draw(state: &AppState, f: &mut ratatui::prelude::Frame) {
                     paused: game.is_paused(),
                     controls: state.controls(),
                     candidates,
+                    technique_name: game.hint_technique().map(|s| s.to_string()),
                 },
             );
         }

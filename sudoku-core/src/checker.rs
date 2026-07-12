@@ -2,22 +2,45 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
-use bitflags::bitflags;
+use crate::board::{Grid, build_candidates};
 
-bitflags! {
-    #[derive(Clone, Copy, Default)]
-    pub struct ConflictType: u8 {
-        const ROW = 0b001;
-        const COL = 0b010;
-        const BOX = 0b100;
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub struct ConflictType(u8);
+
+impl ConflictType {
+    pub const NONE: Self = Self(0);
+    pub const ROW: Self = Self(1);
+    pub const COL: Self = Self(2);
+    pub const BOX: Self = Self(4);
+
+    pub fn is_empty(self) -> bool {
+        self.0 == 0
+    }
+    pub fn contains(self, other: Self) -> bool {
+        (self.0 & other.0) != 0
+    }
+    pub fn insert(&mut self, other: Self) {
+        self.0 |= other.0;
+    }
+}
+
+impl std::ops::BitOr for ConflictType {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self {
+        Self(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOrAssign for ConflictType {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 |= rhs.0;
     }
 }
 
 pub type Conflicts = [[ConflictType; 9]; 9];
 
 pub fn compute_conflicts(grid: &Grid) -> Conflicts {
-    let mut conflicts: Conflicts = [[ConflictType::empty(); 9]; 9];
+    let mut conflicts: Conflicts = [[ConflictType::NONE; 9]; 9];
 
     for r in 0..9 {
         let mut seen = 0u16;
@@ -84,17 +107,13 @@ pub fn compute_conflicts(grid: &Grid) -> Conflicts {
 }
 
 pub fn is_solved(grid: &Grid) -> bool {
-    let masks = BitmaskGrid::from_grid(grid);
-    for r in 0..9 {
-        for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                return false;
-            }
+    let cands = build_candidates(grid);
+    for i in 0..81 {
+        if grid[i / 9][i % 9].value().is_none() || !cands[i].is_empty() {
+            return false;
         }
     }
-    masks.rows.iter().all(|&m| m == ALL_VALUES)
-        && masks.cols.iter().all(|&m| m == ALL_VALUES)
-        && masks.boxes.iter().all(|&m| m == ALL_VALUES)
+    true
 }
 
 pub fn has_empty(grid: &Grid) -> bool {
@@ -112,17 +131,9 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {
         return vec![];
     }
-    let masks = BitmaskGrid::from_grid(grid);
-    let mask = masks.candidates(row, col);
-    let mut result = Vec::with_capacity(9);
-    let mut m = mask;
-    while m != 0 {
-        let lsb = m & m.wrapping_neg();
-        m &= m - 1;
-        let val = lsb.trailing_zeros() as u8;
-        result.push(val);
-    }
-    result
+    let cands = build_candidates(grid);
+    let idx = row * 9 + col;
+    cands[idx].iter().collect()
 }
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {
@@ -211,36 +222,36 @@ mod tests {
 
     #[test]
     fn test_conflict_type_flags() {
-        let mut ct = ConflictType::empty();
-        assert!(!ct.intersects(ConflictType::ROW));
-        assert!(!ct.intersects(ConflictType::COL));
-        assert!(!ct.intersects(ConflictType::BOX));
+        let mut ct = ConflictType::NONE;
+        assert!(!ct.contains(ConflictType::ROW));
+        assert!(!ct.contains(ConflictType::COL));
+        assert!(!ct.contains(ConflictType::BOX));
 
         ct.insert(ConflictType::ROW);
-        assert!(ct.intersects(ConflictType::ROW));
-        assert!(!ct.intersects(ConflictType::COL));
+        assert!(ct.contains(ConflictType::ROW));
+        assert!(!ct.contains(ConflictType::COL));
 
         ct.insert(ConflictType::COL);
         ct.insert(ConflictType::BOX);
-        assert!(ct.intersects(ConflictType::ROW));
-        assert!(ct.intersects(ConflictType::COL));
-        assert!(ct.intersects(ConflictType::BOX));
+        assert!(ct.contains(ConflictType::ROW));
+        assert!(ct.contains(ConflictType::COL));
+        assert!(ct.contains(ConflictType::BOX));
     }
 
     #[test]
     fn test_compute_conflicts_row() {
-        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = crate::Cell::Given(5);
         grid[0][3] = crate::Cell::UserInput(5);
 
         let conflicts = compute_conflicts(&grid);
-        assert!(conflicts[0][0].intersects(ConflictType::ROW));
-        assert!(conflicts[0][3].intersects(ConflictType::ROW));
+        assert!(conflicts[0][0].contains(ConflictType::ROW));
+        assert!(conflicts[0][3].contains(ConflictType::ROW));
     }
 
     #[test]
     fn test_compute_conflicts_no_conflict() {
-        let mut grid: Grid = [[crate::Cell::Empty; 9]; 9];
+        let mut grid: Grid = Grid::new();
         grid[0][0] = crate::Cell::Given(5);
         grid[0][3] = crate::Cell::Given(3);
 

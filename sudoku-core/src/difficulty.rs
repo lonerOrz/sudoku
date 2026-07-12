@@ -25,13 +25,14 @@ impl Difficulty {
         }
     }
 
-    pub fn all() -> &'static [Difficulty] {
-        &[
-            Difficulty::Easy,
-            Difficulty::Medium,
-            Difficulty::Hard,
-            Difficulty::Expert,
-        ]
+    /// ER (Experience Rating) range for this difficulty level.
+    pub fn er_range(&self) -> (f64, f64) {
+        match self {
+            Difficulty::Easy => (1.0, 2.0),
+            Difficulty::Medium => (2.0, 3.5),
+            Difficulty::Hard => (3.5, 5.0),
+            Difficulty::Expert => (5.0, 8.0),
+        }
     }
 
     pub fn next(&self) -> Difficulty {

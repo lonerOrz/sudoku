@@ -1,5 +1,7 @@
 use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
-use sudoku_core::{Difficulty, compute_conflicts, count_solutions, find_clue, generate, solve};
+use sudoku_core::{
+    Difficulty, compute_conflicts, count_solutions, find_solver_hint, generate, solve,
+};
 use sudoku_core::{find_errors, is_solved, is_valid, possible_values};
 
 fn generate_all_difficulties(c: &mut Criterion) {
@@ -98,11 +100,11 @@ fn shuffle_entropy(c: &mut Criterion) {
 }
 
 fn hint_find_clue(c: &mut Criterion) {
-    let (puzzle, solution) = generate(Difficulty::Medium);
+    let (puzzle, _solution) = generate(Difficulty::Medium);
 
-    c.bench_function("find_clue_medium", |b| {
+    c.bench_function("find_solver_hint_medium", |b| {
         b.iter(|| {
-            find_clue(black_box(&puzzle), black_box(&solution));
+            find_solver_hint(black_box(&puzzle));
         });
     });
 }
@@ -141,7 +143,8 @@ fn check_is_solved(c: &mut Criterion) {
     let (puzzle, solution) = generate(Difficulty::Medium);
     let solved: sudoku_core::Grid = core::array::from_fn(|r| {
         core::array::from_fn(|c| sudoku_core::Cell::Given(solution[r][c]))
-    });
+    })
+    .into();
 
     c.bench_function("is_solved_true", |b| {
         b.iter(|| {

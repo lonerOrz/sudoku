@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find X-Wing patterns: when a digit appears in exactly two rows/columns forming a rectangle.
@@ -24,11 +24,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx % 9)
                     .collect();
 
-                if row1_cols.len() >= 2
-                    && row1_cols.len() <= 3
-                    && row2_cols.len() >= 2
-                    && row2_cols.len() <= 3
-                {
+                if row1_cols.len() == 2 && row2_cols.len() == 2 {
                     let common: Vec<u8> = row1_cols
                         .iter()
                         .filter(|&&c| row2_cols.contains(&c))
@@ -49,7 +45,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             for &c in &common {
                                 let cell_idx = row.cells[c as usize];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -64,7 +60,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 3.2,
                                 technique_name: "X-Wing".to_string(),
                                 description: desc,
-                                cell: Cell::from(row1.cells[col1 as usize]),
+                                cell: CellIndex::from(row1.cells[col1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -95,11 +91,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx / 9)
                     .collect();
 
-                if col1_rows.len() >= 2
-                    && col1_rows.len() <= 3
-                    && col2_rows.len() >= 2
-                    && col2_rows.len() <= 3
-                {
+                if col1_rows.len() == 2 && col2_rows.len() == 2 {
                     let common: Vec<u8> = col1_rows
                         .iter()
                         .filter(|&&r| col2_rows.contains(&r))
@@ -119,7 +111,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             let row = &ROWS[row1 as usize];
                             let cell_idx = row.cells[c];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
 
@@ -130,7 +122,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                             let row = &ROWS[row2 as usize];
                             let cell_idx = row.cells[c];
                             if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                             }
                         }
 
@@ -144,7 +136,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 3.2,
                                 technique_name: "X-Wing".to_string(),
                                 description: desc,
-                                cell: Cell::from(COLS[col1_idx].cells[row1 as usize]),
+                                cell: CellIndex::from(COLS[col1_idx].cells[row1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -170,48 +162,33 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                     let row1_cols: Vec<u8> = row1
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row1_cols.len() < 2 || row1_cols.len() > 3 {
+                    if row1_cols.is_empty() || row1_cols.len() > 3 {
                         continue;
                     }
 
                     let row2_cols: Vec<u8> = row2
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row2_cols.len() < 2 || row2_cols.len() > 3 {
+                    if row2_cols.is_empty() || row2_cols.len() > 3 {
                         continue;
                     }
 
                     let row3_cols: Vec<u8> = row3
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row3_cols.len() < 2 || row3_cols.len() > 3 {
+                    if row3_cols.is_empty() || row3_cols.len() > 3 {
                         continue;
                     }
 
@@ -241,7 +218,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                             for &c in &all_cols {
                                 let cell_idx = row.cells[c as usize];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -256,7 +233,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.0,
                                 technique_name: "Swordfish".to_string(),
                                 description: desc,
-                                cell: Cell::from(row1.cells[col1 as usize]),
+                                cell: CellIndex::from(row1.cells[col1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -278,48 +255,33 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                     let col1_rows: Vec<u8> = col1
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col1_rows.len() < 2 || col1_rows.len() > 3 {
+                    if col1_rows.is_empty() || col1_rows.len() > 3 {
                         continue;
                     }
 
                     let col2_rows: Vec<u8> = col2
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col2_rows.len() < 2 || col2_rows.len() > 3 {
+                    if col2_rows.is_empty() || col2_rows.len() > 3 {
                         continue;
                     }
 
                     let col3_rows: Vec<u8> = col3
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col3_rows.len() < 2 || col3_rows.len() > 3 {
+                    if col3_rows.is_empty() || col3_rows.len() > 3 {
                         continue;
                     }
 
@@ -349,7 +311,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 let row = &ROWS[r as usize];
                                 let cell_idx = row.cells[c];
                                 if grid.get(cell_idx) == 0 && grid.candidates(cell_idx).has(digit) {
-                                    eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                    eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                 }
                             }
                         }
@@ -364,7 +326,7 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.0,
                                 technique_name: "Swordfish".to_string(),
                                 description: desc,
-                                cell: Cell::from(COLS[col1_idx].cells[row1 as usize]),
+                                cell: CellIndex::from(COLS[col1_idx].cells[row1 as usize]),
                                 value: 0,
                                 eliminations,
                             });
@@ -398,17 +360,17 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 row.cells
                                     .iter()
                                     .filter(|&&idx| {
-                                        grid.get(idx) == 0
-                                            && grid.candidates(idx).has(digit)
-                                            && grid.candidates(idx).cardinality() >= 2
-                                            && grid.candidates(idx).cardinality() <= 4
+                                        grid.get(idx) == 0 && grid.candidates(idx).has(digit)
                                     })
                                     .map(|&idx| idx % 9)
                                     .collect()
                             })
                             .collect();
 
-                        if row_cols.iter().any(|cols| cols.len() < 2 || cols.len() > 4) {
+                        if row_cols
+                            .iter()
+                            .any(|cols| cols.is_empty() || cols.len() > 4)
+                        {
                             continue;
                         }
 
@@ -434,7 +396,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     if grid.get(cell_idx) == 0
                                         && grid.candidates(cell_idx).has(digit)
                                     {
-                                        eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                        eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                     }
                                 }
                             }
@@ -457,11 +419,13 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: Cell::from(ROWS[row0_idx].cells[all_cols[0] as usize]),
+                                    cell: CellIndex::from(
+                                        ROWS[row0_idx].cells[all_cols[0] as usize],
+                                    ),
                                     value: 0,
                                     eliminations,
                                 });
-                                return;
+                                continue;
                             }
                         }
                     }
@@ -489,17 +453,17 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 col.cells
                                     .iter()
                                     .filter(|&&idx| {
-                                        grid.get(idx) == 0
-                                            && grid.candidates(idx).has(digit)
-                                            && grid.candidates(idx).cardinality() >= 2
-                                            && grid.candidates(idx).cardinality() <= 4
+                                        grid.get(idx) == 0 && grid.candidates(idx).has(digit)
                                     })
                                     .map(|&idx| idx / 9)
                                     .collect()
                             })
                             .collect();
 
-                        if col_rows.iter().any(|rows| rows.len() < 2 || rows.len() > 4) {
+                        if col_rows
+                            .iter()
+                            .any(|rows| rows.is_empty() || rows.len() > 4)
+                        {
                             continue;
                         }
 
@@ -524,7 +488,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     if grid.get(cell_idx) == 0
                                         && grid.candidates(cell_idx).has(digit)
                                     {
-                                        eliminations.push((Cell::from(cell_idx), vec![digit]));
+                                        eliminations.push((CellIndex::from(cell_idx), vec![digit]));
                                     }
                                 }
                             }
@@ -547,11 +511,12 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     difficulty: 5.2,
                                     technique_name: "Jellyfish".to_string(),
                                     description: desc,
-                                    cell: Cell::from(COLS[col0_idx].cells[all_rows[0] as usize]),
+                                    cell: CellIndex::from(
+                                        COLS[col0_idx].cells[all_rows[0] as usize],
+                                    ),
                                     value: 0,
                                     eliminations,
                                 });
-                                return;
                             }
                         }
                     }

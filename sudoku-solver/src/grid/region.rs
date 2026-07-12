@@ -1,3 +1,6 @@
+//! Row, column, and block region definitions.
+
+/// Type of Sudoku constraint region.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RegionType {
     Row,
@@ -5,7 +8,8 @@ pub enum RegionType {
     Block,
 }
 
-#[derive(Clone, Copy, Debug)]
+/// A row, column, or block of 9 cells.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Region {
     pub region_type: RegionType,
     pub index: u8,

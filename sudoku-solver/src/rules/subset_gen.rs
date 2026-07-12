@@ -1,4 +1,4 @@
-use crate::grid::{Cell, Grid, BLOCKS, COLS, ROWS};
+use crate::grid::{CellIndex, Grid, BLOCKS, COLS, ROWS};
 use crate::solver::{Hint, HintAccumulator};
 
 /// Find Generalized Naked Sets: N cells in a region containing exactly N candidates.
@@ -69,7 +69,7 @@ fn find_gns_in_cells(
                     .collect();
 
                 if !to_remove.is_empty() {
-                    eliminations.push((Cell::from(cell), to_remove));
+                    eliminations.push((CellIndex::from(cell), to_remove));
                 }
             }
 
@@ -92,7 +92,7 @@ fn find_gns_in_cells(
                         "Generalized Naked Set: {} cells with {} candidates in {:?}",
                         n, n, region.region_type
                     ),
-                    cell: Cell::from(cells[0]),
+                    cell: CellIndex::from(cells[0]),
                     value: 0,
                     eliminations,
                 });

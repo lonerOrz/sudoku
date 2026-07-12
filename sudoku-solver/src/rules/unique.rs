@@ -24,8 +24,16 @@ pub fn unique_rectangle_type1(grid: &Grid, acc: &mut HintAccumulator) {
                     let b3 = c3_idx / 9 / 3 * 3 + c3_idx % 9 / 3;
                     let b4 = c4_idx / 9 / 3 * 3 + c4_idx % 9 / 3;
 
-                    if !(b1 == b2 && b3 == b4 && b1 == b3) {
-                        continue;
+                    // Must span exactly 2 boxes (not 1, not 4)
+                    {
+                        let mut bs = [b1, b2, b3, b4];
+                        bs.sort();
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
+                        if n != 1 {
+                            continue;
+                        }
                     }
 
                     let cands1 = grid.candidates(c1_idx);
@@ -83,7 +91,7 @@ pub fn unique_rectangle_type1(grid: &Grid, acc: &mut HintAccumulator) {
                                 difficulty: 4.5,
                                 technique_name: "Unique Rectangle Type 1".to_string(),
                                 description: desc,
-                                cell: crate::grid::Cell::from(pivot_idx),
+                                cell: crate::grid::CellIndex::from(pivot_idx),
                                 value: z,
                                 eliminations: vec![],
                             });
@@ -118,8 +126,16 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                     let b3 = c3_idx / 9 / 3 * 3 + c3_idx % 9 / 3;
                     let b4 = c4_idx / 9 / 3 * 3 + c4_idx % 9 / 3;
 
-                    if !(b1 == b2 && b3 == b4 && b1 == b3) {
-                        continue;
+                    // Must span exactly 2 boxes (not 1, not 4)
+                    {
+                        let mut bs = [b1, b2, b3, b4];
+                        bs.sort();
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
+                        if n != 1 {
+                            continue;
+                        }
                     }
 
                     let cands1 = grid.candidates(c1_idx);
@@ -184,7 +200,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                                 && grid.candidates(cell_idx).has(z)
                                             {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(cell_idx),
+                                                    crate::grid::CellIndex::from(cell_idx),
                                                     vec![z],
                                                 ));
                                             }
@@ -200,7 +216,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                                 && grid.candidates(cell_idx).has(z)
                                             {
                                                 eliminations.push((
-                                                    crate::grid::Cell::from(cell_idx),
+                                                    crate::grid::CellIndex::from(cell_idx),
                                                     vec![z],
                                                 ));
                                             }
@@ -220,7 +236,7 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
                                             difficulty: 4.6,
                                             technique_name: "Unique Rectangle Type 2".to_string(),
                                             description: desc,
-                                            cell: crate::grid::Cell::from(c1_idx),
+                                            cell: crate::grid::CellIndex::from(c1_idx),
                                             value: 0,
                                             eliminations,
                                         });
@@ -235,7 +251,6 @@ pub fn unique_rectangle_type2(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
-#[allow(dead_code)]
 pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
     for r1 in 0..9 {
         for r2 in (r1 + 1)..9 {
@@ -259,8 +274,16 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                     let b3 = c3_idx / 9 / 3 * 3 + c3_idx % 9 / 3;
                     let b4 = c4_idx / 9 / 3 * 3 + c4_idx % 9 / 3;
 
-                    if !(b1 == b2 && b3 == b4 && b1 == b3) {
-                        continue;
+                    // Must span exactly 2 boxes (not 1, not 4)
+                    {
+                        let mut bs = [b1, b2, b3, b4];
+                        bs.sort();
+                        let n = (bs[0] != bs[1]) as u8
+                            + (bs[1] != bs[2]) as u8
+                            + (bs[2] != bs[3]) as u8;
+                        if n != 1 {
+                            continue;
+                        }
                     }
 
                     let cands1 = grid.candidates(c1_idx);
@@ -326,7 +349,7 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                                             && grid.candidates(idx).has(extra_digit)
                                         {
                                             eliminations.push((
-                                                crate::grid::Cell::from(idx),
+                                                crate::grid::CellIndex::from(idx),
                                                 vec![extra_digit],
                                             ));
                                         }
@@ -344,7 +367,7 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
                                         difficulty: 4.8,
                                         technique_name: "Unique Rectangle Type 3".to_string(),
                                         description: desc,
-                                        cell: crate::grid::Cell::from(c1_idx),
+                                        cell: crate::grid::CellIndex::from(c1_idx),
                                         value: 0,
                                         eliminations,
                                     });
@@ -359,7 +382,6 @@ pub fn unique_rectangle_type3(grid: &Grid, acc: &mut HintAccumulator) {
     }
 }
 
-#[allow(dead_code)]
 pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
     for r1 in 0..9 {
         for r2 in (r1 + 1)..9 {
@@ -378,165 +400,199 @@ pub fn unique_rectangle_type4(grid: &Grid, acc: &mut HintAccumulator) {
                         continue;
                     }
 
+                    // Must span exactly 2 boxes (not 1, not 4)
                     let b1 = c1_idx / 9 / 3 * 3 + c1_idx % 9 / 3;
                     let b2 = c2_idx / 9 / 3 * 3 + c2_idx % 9 / 3;
                     let b3 = c3_idx / 9 / 3 * 3 + c3_idx % 9 / 3;
                     let b4 = c4_idx / 9 / 3 * 3 + c4_idx % 9 / 3;
-
-                    if !(b1 == b2 && b3 == b4 && b1 == b3) {
-                        continue;
+                    let mut boxes = [b1, b2, b3, b4];
+                    boxes.sort();
+                    {
+                        let n = (boxes[0] != boxes[1]) as u8
+                            + (boxes[1] != boxes[2]) as u8
+                            + (boxes[2] != boxes[3]) as u8;
+                        if n != 1 {
+                            continue;
+                        }
                     }
 
-                    let cands1 = grid.candidates(c1_idx);
-                    let cands2 = grid.candidates(c2_idx);
-                    let cands3 = grid.candidates(c3_idx);
-                    let cands4 = grid.candidates(c4_idx);
+                    let cands = [
+                        grid.candidates(c1_idx),
+                        grid.candidates(c2_idx),
+                        grid.candidates(c3_idx),
+                        grid.candidates(c4_idx),
+                    ];
+                    let idx = [c1_idx, c2_idx, c3_idx, c4_idx];
 
-                    let all_pairs: Vec<u8> = (1..=9)
+                    // Find base candidates common to all 4 cells
+                    let base: Vec<u8> = (1..=9)
                         .filter(|&d| {
-                            cands1.has(d) && cands2.has(d) && cands3.has(d) && cands4.has(d)
+                            cands[0].has(d) && cands[1].has(d) && cands[2].has(d) && cands[3].has(d)
                         })
                         .collect();
-
-                    if all_pairs.len() != 2 {
+                    if base.len() != 2 {
                         continue;
                     }
 
-                    let x = all_pairs[0];
-                    let y = all_pairs[1];
+                    // UR Type 4: one base digit is strong-linked (in exactly 2 cells
+                    // sharing a row or column). Eliminate the OTHER base digit from
+                    // cells outside the UR in the complementary row/column.
+                    for &base_digit in &base {
+                        let other_digit = if base_digit == base[0] {
+                            base[1]
+                        } else {
+                            base[0]
+                        };
 
-                    let get_extra = |cands: crate::grid::Candidates| -> Vec<u8> {
-                        (1..=9)
-                            .filter(|&d| d != x && d != y && cands.has(d))
-                            .collect()
-                    };
-
-                    let extra1 = get_extra(cands1);
-                    let extra2 = get_extra(cands2);
-                    let extra3 = get_extra(cands3);
-                    let extra4 = get_extra(cands4);
-
-                    let cells = [
-                        (c1_idx, c1, extra1),
-                        (c2_idx, c2, extra2),
-                        (c3_idx, c1, extra3),
-                        (c4_idx, c2, extra4),
-                    ];
-
-                    let extra_cells: Vec<_> =
-                        cells.iter().filter(|&(_, _, e)| !e.is_empty()).collect();
-
-                    if extra_cells.len() >= 2 {
-                        for i in 0..extra_cells.len() {
-                            for j in (i + 1)..extra_cells.len() {
-                                let (idx_i, col_i, extra_i) =
-                                    (extra_cells[i].0, extra_cells[i].1, &extra_cells[i].2);
-                                let (idx_j, col_j, extra_j) =
-                                    (extra_cells[j].0, extra_cells[j].1, &extra_cells[j].2);
-
-                                if col_i == col_j {
-                                    for &digit in extra_i {
-                                        if !extra_j.contains(&digit) {
-                                            continue;
-                                        }
-                                        let col = col_i as usize;
-                                        let mut digit_count = 0;
-                                        for r in 0..9 {
-                                            let cell_idx = ROWS[r as usize].cells[col];
-                                            if grid.get(cell_idx) == 0
-                                                && grid.candidates(cell_idx).has(digit)
-                                            {
-                                                digit_count += 1;
-                                            }
-                                        }
-                                        if digit_count == 2 {
-                                            let mut eliminations = Vec::new();
-                                            if grid.candidates(idx_i).has(x) {
-                                                eliminations.push((
-                                                    crate::grid::Cell::from(idx_i),
-                                                    vec![x],
-                                                ));
-                                            }
-                                            if grid.candidates(idx_j).has(x) {
-                                                eliminations.push((
-                                                    crate::grid::Cell::from(idx_j),
-                                                    vec![x],
-                                                ));
-                                            }
-                                            if !eliminations.is_empty() {
-                                                let desc = format!(
-                                                    "Unique Rectangle Type 4: digit {} forms strong link in col {}, rows {},{} -> eliminate {}",
-                                                    digit, col + 1, idx_i / 9 + 1, idx_j / 9 + 1, x
-                                                );
-                                                acc.add(Hint {
-                                                    hint_type:
-                                                        crate::solver::HintType::UniqueRectangleType4,
-                                                    difficulty: 5.0,
-                                                    technique_name: "Unique Rectangle Type 4"
-                                                        .to_string(),
-                                                    description: desc,
-                                                    cell: crate::grid::Cell::from(c1_idx),
-                                                    value: 0,
-                                                    eliminations,
-                                                });
-                                                return;
-                                            }
-                                        }
-                                    }
+                        // Strong link in row r1: base_digit only in cells 0,1
+                        // → eliminate other_digit from row r2 (outside cells 2,3)
+                        if cands[0].has(base_digit)
+                            && cands[1].has(base_digit)
+                            && !cands[2].has(base_digit)
+                            && !cands[3].has(base_digit)
+                        {
+                            let mut eliminations = Vec::new();
+                            for c in 0..9u8 {
+                                let cell = ROWS[r2 as usize].cells[c as usize];
+                                if grid.get(cell) == 0
+                                    && cell != idx[2]
+                                    && cell != idx[3]
+                                    && grid.candidates(cell).has(other_digit)
+                                {
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
+                            }
+                            if !eliminations.is_empty() {
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::UniqueRectangleType4,
+                                    difficulty: 5.0,
+                                    technique_name: "Unique Rectangle Type 4".to_string(),
+                                    description: format!(
+                                        "UR Type 4: digit {} strong-linked in row {}, cols {},{} -> eliminate {} from row {}",
+                                        base_digit, r1 + 1, c1 + 1, c2 + 1, other_digit, r2 + 1
+                                    ),
+                                    cell: crate::grid::CellIndex::from(c1_idx),
+                                    value: 0,
+                                    eliminations,
+                                });
+                                return;
+                            }
+                        }
 
-                                let row_i = idx_i / 9;
-                                let row_j = idx_j / 9;
-                                if row_i == row_j {
-                                    for &digit in extra_i {
-                                        if !extra_j.contains(&digit) {
-                                            continue;
-                                        }
-                                        let row = row_i as usize;
-                                        let mut digit_count = 0;
-                                        for c in 0..9 {
-                                            let cell_idx = ROWS[row].cells[c as usize];
-                                            if grid.get(cell_idx) == 0
-                                                && grid.candidates(cell_idx).has(digit)
-                                            {
-                                                digit_count += 1;
-                                            }
-                                        }
-                                        if digit_count == 2 {
-                                            let mut eliminations = Vec::new();
-                                            if grid.candidates(idx_i).has(x) {
-                                                eliminations.push((
-                                                    crate::grid::Cell::from(idx_i),
-                                                    vec![x],
-                                                ));
-                                            }
-                                            if grid.candidates(idx_j).has(x) {
-                                                eliminations.push((
-                                                    crate::grid::Cell::from(idx_j),
-                                                    vec![x],
-                                                ));
-                                            }
-                                            if !eliminations.is_empty() {
-                                                let desc = format!(
-                                                    "Unique Rectangle Type 4: digit {} forms strong link in row {}, cols {},{} -> eliminate {}",
-                                                    digit, row + 1, idx_i % 9 + 1, idx_j % 9 + 1, x
-                                                );
-                                                acc.add(Hint {
-                                                    hint_type:
-                                                        crate::solver::HintType::UniqueRectangleType4,
-                                                    difficulty: 5.0,
-                                                    technique_name: "Unique Rectangle Type 4"
-                                                        .to_string(),
-                                                    description: desc,
-                                                    cell: crate::grid::Cell::from(c1_idx),
-                                                    value: 0,
-                                                    eliminations,
-                                                });
-                                                return;
-                                            }
-                                        }
-                                    }
+                        // Strong link in row r2: base_digit only in cells 2,3
+                        // → eliminate other_digit from row r1 (outside cells 0,1)
+                        if cands[2].has(base_digit)
+                            && cands[3].has(base_digit)
+                            && !cands[0].has(base_digit)
+                            && !cands[1].has(base_digit)
+                        {
+                            let mut eliminations = Vec::new();
+                            for c in 0..9u8 {
+                                let cell = ROWS[r1 as usize].cells[c as usize];
+                                if grid.get(cell) == 0
+                                    && cell != idx[0]
+                                    && cell != idx[1]
+                                    && grid.candidates(cell).has(other_digit)
+                                {
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
                                 }
+                            }
+                            if !eliminations.is_empty() {
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::UniqueRectangleType4,
+                                    difficulty: 5.0,
+                                    technique_name: "Unique Rectangle Type 4".to_string(),
+                                    description: format!(
+                                        "UR Type 4: digit {} strong-linked in row {}, cols {},{} -> eliminate {} from row {}",
+                                        base_digit, r2 + 1, c1 + 1, c2 + 1, other_digit, r1 + 1
+                                    ),
+                                    cell: crate::grid::CellIndex::from(c1_idx),
+                                    value: 0,
+                                    eliminations,
+                                });
+                                return;
+                            }
+                        }
+
+                        // Strong link in column c1: base_digit only in cells 0,2
+                        // → eliminate other_digit from column c2 (outside cells 1,3)
+                        if cands[0].has(base_digit)
+                            && cands[2].has(base_digit)
+                            && !cands[1].has(base_digit)
+                            && !cands[3].has(base_digit)
+                        {
+                            let mut eliminations = Vec::new();
+                            for r in 0..9u8 {
+                                let cell = ROWS[r as usize].cells[c2 as usize];
+                                if grid.get(cell) == 0
+                                    && cell != idx[1]
+                                    && cell != idx[3]
+                                    && grid.candidates(cell).has(other_digit)
+                                {
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
+                                }
+                            }
+                            if !eliminations.is_empty() {
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::UniqueRectangleType4,
+                                    difficulty: 5.0,
+                                    technique_name: "Unique Rectangle Type 4".to_string(),
+                                    description: format!(
+                                        "UR Type 4: digit {} strong-linked in col {}, rows {},{} -> eliminate {} from col {}",
+                                        base_digit, c1 + 1, r1 + 1, r2 + 1, other_digit, c2 + 1
+                                    ),
+                                    cell: crate::grid::CellIndex::from(c1_idx),
+                                    value: 0,
+                                    eliminations,
+                                });
+                                return;
+                            }
+                        }
+
+                        // Strong link in column c2: base_digit only in cells 1,3
+                        // → eliminate other_digit from column c1 (outside cells 0,2)
+                        if cands[1].has(base_digit)
+                            && cands[3].has(base_digit)
+                            && !cands[0].has(base_digit)
+                            && !cands[2].has(base_digit)
+                        {
+                            let mut eliminations = Vec::new();
+                            for r in 0..9u8 {
+                                let cell = ROWS[r as usize].cells[c1 as usize];
+                                if grid.get(cell) == 0
+                                    && cell != idx[0]
+                                    && cell != idx[2]
+                                    && grid.candidates(cell).has(other_digit)
+                                {
+                                    eliminations.push((
+                                        crate::grid::CellIndex::from(cell),
+                                        vec![other_digit],
+                                    ));
+                                }
+                            }
+                            if !eliminations.is_empty() {
+                                acc.add(Hint {
+                                    hint_type: crate::solver::HintType::UniqueRectangleType4,
+                                    difficulty: 5.0,
+                                    technique_name: "Unique Rectangle Type 4".to_string(),
+                                    description: format!(
+                                        "UR Type 4: digit {} strong-linked in col {}, rows {},{} -> eliminate {} from col {}",
+                                        base_digit, c2 + 1, r1 + 1, r2 + 1, other_digit, c1 + 1
+                                    ),
+                                    cell: crate::grid::CellIndex::from(c1_idx),
+                                    value: 0,
+                                    eliminations,
+                                });
+                                return;
                             }
                         }
                     }
@@ -570,7 +626,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
                     return; // More than one triple-cell, not BUG+1
                 }
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+1
+                return; // CellIndex with != 2 or 3 candidates, not BUG+1
             }
         }
     }
@@ -594,7 +650,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
             // Found BUG+1: d must be the solution
             let desc =
                 format!(
-                "BUG+1: Cell ({},{}) with extra candidate {} breaks deadly pattern -> must be {}",
+                "BUG+1: CellIndex ({},{}) with extra candidate {} breaks deadly pattern -> must be {}",
                 pivot_idx / 9 + 1, pivot_idx % 9 + 1, d, d
             );
 
@@ -603,7 +659,7 @@ pub fn bug_plus_one(grid: &Grid, acc: &mut HintAccumulator) {
                 difficulty: 5.6,
                 technique_name: "BUG+1".to_string(),
                 description: desc,
-                cell: crate::grid::Cell::from(pivot_idx),
+                cell: crate::grid::CellIndex::from(pivot_idx),
                 value: d,
                 eliminations: vec![],
             });
@@ -740,7 +796,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
             if count == 3 {
                 triple_cells.push((i, cands));
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+2
+                return; // CellIndex with != 2 or 3 candidates, not BUG+2
             }
         }
     }
@@ -787,7 +843,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
     }
 
     // Step 5: Find common visible cells for elimination
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
 
     let mut eliminations = Vec::new();
 
@@ -798,7 +854,7 @@ pub fn bug_plus_two(grid: &Grid, acc: &mut HintAccumulator) {
             if cands.has(extra_value) {
                 // Check if this cell is visible to both triple-cells
                 if is_visible_cell(cell1_idx, i) && is_visible_cell(cell2_idx, i) {
-                    eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                    eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
                 }
             }
         }
@@ -932,7 +988,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
             if count == 3 {
                 triple_cells.push((i, cands));
             } else if count != 2 {
-                return; // Cell with != 2 or 3 candidates, not BUG+3
+                return; // CellIndex with != 2 or 3 candidates, not BUG+3
             }
         }
     }
@@ -989,7 +1045,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
     }
 
     // Step 5: Find common visible cells for elimination
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
 
     let mut eliminations = Vec::new();
 
@@ -1003,7 +1059,7 @@ pub fn bug_plus_three(grid: &Grid, acc: &mut HintAccumulator) {
                     && is_visible_cell(cell2_idx, i)
                     && is_visible_cell(cell3_idx, i)
                 {
-                    eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                    eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
                 }
             }
         }
@@ -1184,7 +1240,7 @@ pub fn bug_plus_four(grid: &Grid, acc: &mut HintAccumulator) {
         return;
     }
 
-    let cell1 = crate::grid::Cell::from(cell1_idx);
+    let cell1 = crate::grid::CellIndex::from(cell1_idx);
     let mut eliminations = Vec::new();
 
     for i in 0..81 {
@@ -1197,7 +1253,7 @@ pub fn bug_plus_four(grid: &Grid, acc: &mut HintAccumulator) {
                 && is_visible_cell(cell3_idx, i)
                 && is_visible_cell(cell4_idx, i)
             {
-                eliminations.push((crate::grid::Cell::from(i), vec![extra_value]));
+                eliminations.push((crate::grid::CellIndex::from(i), vec![extra_value]));
             }
         }
     }
