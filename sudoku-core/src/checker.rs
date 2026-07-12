@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{ALL_VALUES, BitmaskGrid, Grid};
+use crate::board::{Grid, build_candidates};
 use bitflags::bitflags;
 
 bitflags! {
@@ -84,17 +84,13 @@ pub fn compute_conflicts(grid: &Grid) -> Conflicts {
 }
 
 pub fn is_solved(grid: &Grid) -> bool {
-    let masks = BitmaskGrid::from_grid(grid);
-    for r in 0..9 {
-        for c in 0..9 {
-            if grid[r][c].value().is_none() {
-                return false;
-            }
+    let cands = build_candidates(grid);
+    for i in 0..81 {
+        if grid[i / 9][i % 9].value().is_none() || !cands[i].is_empty() {
+            return false;
         }
     }
-    masks.rows.iter().all(|&m| m == ALL_VALUES)
-        && masks.cols.iter().all(|&m| m == ALL_VALUES)
-        && masks.boxes.iter().all(|&m| m == ALL_VALUES)
+    true
 }
 
 pub fn has_empty(grid: &Grid) -> bool {
@@ -112,17 +108,9 @@ pub fn possible_values(grid: &Grid, row: usize, col: usize) -> Vec<u8> {
     if grid[row][col].value().is_some() {
         return vec![];
     }
-    let masks = BitmaskGrid::from_grid(grid);
-    let mask = masks.candidates(row, col);
-    let mut result = Vec::with_capacity(9);
-    let mut m = mask;
-    while m != 0 {
-        let lsb = m & m.wrapping_neg();
-        m &= m - 1;
-        let val = lsb.trailing_zeros() as u8;
-        result.push(val);
-    }
-    result
+    let cands = build_candidates(grid);
+    let idx = row * 9 + col;
+    cands[idx].iter().collect()
 }
 
 pub fn find_errors(grid: &Grid) -> Vec<(usize, usize)> {

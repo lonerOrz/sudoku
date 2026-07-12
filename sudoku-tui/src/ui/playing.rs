@@ -19,6 +19,7 @@ pub struct GameInfo {
     pub paused: bool,
     pub pencil_mode: bool,
     pub hint_mode: bool,
+    pub technique_name: Option<String>,
 }
 
 impl GameInfo {
@@ -34,7 +35,7 @@ impl GameInfo {
             Span::raw("Normal")
         };
 
-        vec![
+        let mut lines = vec![
             Line::from(vec![Span::styled(
                 "Info",
                 Style::default()
@@ -56,7 +57,17 @@ impl GameInfo {
             Line::from(vec![Span::raw(format!("Undo used: {}", self.undo_used))]),
             Line::from(vec![Span::raw("")]),
             Line::from(vec![Span::raw("Mode: "), mode]),
-        ]
+        ];
+
+        if let Some(ref technique) = self.technique_name {
+            lines.push(Line::from(vec![Span::raw("")]));
+            lines.push(Line::from(vec![Span::styled(
+                format!("Technique: {}", technique),
+                Style::default().fg(Color::Cyan),
+            )]));
+        }
+
+        lines
     }
 }
 
@@ -88,6 +99,7 @@ pub struct DrawParams<'a> {
     pub paused: bool,
     pub controls: &'a [Control],
     pub candidates: Option<&'a [bool; 9]>,
+    pub technique_name: Option<String>,
 }
 
 pub fn draw(f: &mut Frame, params: &DrawParams) {
@@ -122,6 +134,7 @@ pub fn draw(f: &mut Frame, params: &DrawParams) {
         paused: params.paused,
         pencil_mode: params.pencil_mode,
         hint_mode: params.hint_mode,
+        technique_name: params.technique_name.clone(),
     }
     .render();
     let info_height = info.len() as u16;

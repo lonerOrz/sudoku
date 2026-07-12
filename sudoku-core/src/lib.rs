@@ -7,7 +7,7 @@ pub mod generator;
 pub mod hints;
 pub mod solver;
 
-pub use board::{BitmaskGrid, Cell, Grid, PEERS, Solution, is_valid};
+pub use board::{Cell, Grid, PEERS, Solution, build_candidates, is_valid};
 
 pub fn clear_peers(pencil_marks: &mut [[Vec<u8>; 9]; 9], row: usize, col: usize, val: u8) {
     for &peer_idx in &PEERS[row * 9 + col] {
@@ -24,7 +24,8 @@ pub use checker::{
 };
 pub use difficulty::Difficulty;
 pub use generator::generate;
-pub use hints::{Clue, find_clue, find_hidden_single, find_naked_single};
+pub use hints::{Clue, find_clue, find_hidden_single, find_naked_single, find_solver_hint};
+pub use sudoku_solver::Hint;
 pub use solver::{count_solutions, solve};
 
 #[cfg(test)]

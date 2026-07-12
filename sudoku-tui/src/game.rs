@@ -4,7 +4,8 @@ use crate::command::Command;
 use crate::input::playing::Mode;
 use crate::state::{AppState, HistoryEntry, PencilMarks};
 use crossterm::event::KeyCode;
-use sudoku_core::{Cell, Difficulty, clear_peers, compute_conflicts, generate, has_empty};
+use sudoku_core::{Cell, Difficulty, clear_peers, compute_conflicts, find_solver_hint, generate,
+    has_empty};
 
 pub fn init_menu(difficulty: Difficulty) -> AppState {
     AppState::Menu { difficulty }
@@ -142,6 +143,7 @@ pub struct Game {
     elapsed_secs: u64,
     paused: bool,
     history: Vec<HistoryEntry>,
+    current_hint: Option<sudoku_core::Hint>,
 }
 
 impl Game {
@@ -170,6 +172,7 @@ impl Game {
             elapsed_secs: 0,
             paused: false,
             history: vec![],
+            current_hint: None,
         }
     }
 
@@ -278,6 +281,15 @@ impl Game {
 
     pub fn toggle_hint_mode(&mut self) {
         self.hint_mode = !self.hint_mode;
+        if self.hint_mode {
+            self.current_hint = find_solver_hint(&self.puzzle);
+        } else {
+            self.current_hint = None;
+        }
+    }
+
+    pub fn hint_technique(&self) -> Option<&str> {
+        self.current_hint.as_ref().map(|h| h.technique_name.as_str())
     }
 
     pub fn move_cursor(&mut self, dr: i32, dc: i32) {
@@ -390,7 +402,17 @@ impl Game {
             return None;
         }
 
-        let value = self.solution[r][c];
+        let value = if let Some(ref hint) = self.current_hint {
+            let hint_r = hint.cell.y() as usize;
+            let hint_c = hint.cell.x() as usize;
+            if r == hint_r && c == hint_c && hint.value > 0 {
+                hint.value
+            } else {
+                self.solution[r][c]
+            }
+        } else {
+            self.solution[r][c]
+        };
         if value == 0 {
             return None;
         }
@@ -410,6 +432,7 @@ impl Game {
         self.conflicts = compute_conflicts(&self.puzzle);
         self.hints_used += 1;
         self.hint_mode = false;
+        self.current_hint = None;
 
         if !has_empty(&self.puzzle) && !has_conflicts(&self.conflicts) {
             return Some(AppState::Won {
@@ -469,6 +492,7 @@ mod tests {
             elapsed_secs: 0,
             paused: false,
             history: vec![],
+            current_hint: None,
         }
     }
 
@@ -665,6 +689,7 @@ mod tests {
             elapsed_secs: 0,
             paused: false,
             history: Vec::new(),
+            current_hint: None,
         };
 
         let mut filled = 0;

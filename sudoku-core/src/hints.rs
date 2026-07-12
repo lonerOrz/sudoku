@@ -2,7 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
-use crate::board::{BitmaskGrid, Grid, Solution};
+use crate::board::{Grid, Solution, build_candidates};
 
 #[derive(Clone, Debug)]
 pub struct Clue {
@@ -23,16 +23,15 @@ pub fn find_clue(grid: &Grid, solution: &Solution) -> Option<Clue> {
 }
 
 pub fn find_naked_single(grid: &Grid) -> Option<Clue> {
-    let masks = BitmaskGrid::from_grid(grid);
+    let cands = build_candidates(grid);
     for r in 0..9 {
         for c in 0..9 {
-            let mask = masks.candidates(r, c);
-            if mask.count_ones() == 1 {
-                let val = mask.trailing_zeros() as u8;
+            let idx = r * 9 + c;
+            if grid[r][c].value().is_none() && cands[idx].is_single() {
                 return Some(Clue {
                     target_row: r,
                     target_col: c,
-                    value: val,
+                    value: cands[idx].first().unwrap(),
                     technique: "Naked Single",
                 });
             }
@@ -42,103 +41,90 @@ pub fn find_naked_single(grid: &Grid) -> Option<Clue> {
 }
 
 pub fn find_hidden_single(grid: &Grid) -> Option<Clue> {
-    let masks = BitmaskGrid::from_grid(grid);
+    let cands = build_candidates(grid);
 
+    // Check rows
     for r in 0..9 {
         for val in 1..=9 {
-            let bit = 1u16 << val;
-            if masks.rows[r] & bit == 0 {
-                let mut count = 0u8;
-                let mut pos = 0usize;
-                for c in 0..9 {
-                    if grid[r][c].value().is_none()
-                        && masks.cols[c] & bit == 0
-                        && masks.boxes[(r / 3) * 3 + c / 3] & bit == 0
-                    {
-                        count += 1;
-                        pos = c;
-                        if count > 1 {
-                            break;
-                        }
+            let mut count = 0u8;
+            let mut pos = 0usize;
+            for c in 0..9 {
+                let idx = r * 9 + c;
+                if grid[r][c].value().is_none() && cands[idx].has(val) {
+                    count += 1;
+                    pos = c;
+                    if count > 1 {
+                        break;
                     }
                 }
-                if count == 1 {
-                    return Some(Clue {
-                        target_row: r,
-                        target_col: pos,
-                        value: val,
-                        technique: "Hidden Single",
-                    });
-                }
+            }
+            if count == 1 {
+                return Some(Clue {
+                    target_row: r,
+                    target_col: pos,
+                    value: val,
+                    technique: "Hidden Single",
+                });
             }
         }
     }
 
+    // Check columns
     for c in 0..9 {
         for val in 1..=9 {
-            let bit = 1u16 << val;
-            if masks.cols[c] & bit == 0 {
-                let mut count = 0u8;
-                let mut pos = 0usize;
-                for r in 0..9 {
-                    if grid[r][c].value().is_none()
-                        && masks.rows[r] & bit == 0
-                        && masks.boxes[(r / 3) * 3 + c / 3] & bit == 0
-                    {
-                        count += 1;
-                        pos = r;
-                        if count > 1 {
-                            break;
-                        }
+            let mut count = 0u8;
+            let mut pos = 0usize;
+            for r in 0..9 {
+                let idx = r * 9 + c;
+                if grid[r][c].value().is_none() && cands[idx].has(val) {
+                    count += 1;
+                    pos = r;
+                    if count > 1 {
+                        break;
                     }
                 }
-                if count == 1 {
-                    return Some(Clue {
-                        target_row: pos,
-                        target_col: c,
-                        value: val,
-                        technique: "Hidden Single",
-                    });
-                }
+            }
+            if count == 1 {
+                return Some(Clue {
+                    target_row: pos,
+                    target_col: c,
+                    value: val,
+                    technique: "Hidden Single",
+                });
             }
         }
     }
 
+    // Check boxes
     for box_r in (0..9).step_by(3) {
         for box_c in (0..9).step_by(3) {
             for val in 1..=9 {
-                let bit = 1u16 << val;
-                let b = (box_r / 3) * 3 + box_c / 3;
-                if masks.boxes[b] & bit == 0 {
-                    let mut count = 0u8;
-                    let mut pos = (0usize, 0usize);
-                    for dr in 0..3 {
-                        for dc in 0..3 {
-                            let r = box_r + dr;
-                            let c = box_c + dc;
-                            if grid[r][c].value().is_none()
-                                && masks.rows[r] & bit == 0
-                                && masks.cols[c] & bit == 0
-                            {
-                                count += 1;
-                                pos = (r, c);
-                                if count > 1 {
-                                    break;
-                                }
+                let mut count = 0u8;
+                let mut pos = (0usize, 0usize);
+                for dr in 0..3 {
+                    for dc in 0..3 {
+                        let r = box_r + dr;
+                        let c = box_c + dc;
+                        let idx = r * 9 + c;
+                        if grid[r][c].value().is_none() && cands[idx].has(val) {
+                            count += 1;
+                            pos = (r, c);
+                            if count > 1 {
+                                break;
                             }
                         }
-                        if count > 1 {
-                            break;
-                        }
                     }
-                    if count == 1 {
-                        return Some(Clue {
-                            target_row: pos.0,
-                            target_col: pos.1,
-                            value: val,
-                            technique: "Hidden Single",
-                        });
+                    if count > 1 {
+                        break;
                     }
+                }
+                if count == 1 {
+                    return Some(Clue {
+                        target_row: pos.0,
+                        target_col: pos.1,
+                        value: val,
+                        technique: "Hidden Single",
+                    });
                 }
             }
         }
@@ -161,4 +147,10 @@ pub fn find_direct_reveal(grid: &Grid, solution: &Solution) -> Option<Clue> {
         }
     }
     None
+}
+
+pub fn find_solver_hint(grid: &Grid) -> Option<sudoku_solver::Hint> {
+    let solver_grid = sudoku_solver::Grid::from_flat(grid.flat());
+    let mut solver = sudoku_solver::Solver::new(solver_grid);
+    solver.next_hint()
 }

@@ -36,6 +36,21 @@ impl Grid {
         Self::from_str(s)
     }
 
+    pub fn from_flat(cells: [u8; 81]) -> Self {
+        let mut grid = Self::new();
+        let mut clue_count = 0;
+        for (i, &v) in cells.iter().enumerate() {
+            grid.cells[i] = v;
+            if v > 0 {
+                clue_count += 1;
+                grid.candidates[i] = Candidates::empty();
+            }
+        }
+        grid.clue_count = clue_count;
+        grid.rebuild_candidates();
+        grid
+    }
+
     #[inline]
     pub fn get(&self, idx: u8) -> u8 {
         self.cells[idx as usize]

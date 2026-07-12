@@ -139,6 +139,24 @@ impl BitmaskGrid {
     }
 }
 
+pub fn build_candidates(grid: &Grid) -> [sudoku_solver::Candidates; 81] {
+    let mut cands = [sudoku_solver::Candidates::full(); 81];
+    for i in 0..81 {
+        let r = i / 9;
+        let c = i % 9;
+        if let Some(v) = grid[r][c].value() {
+            cands[i] = sudoku_solver::Candidates::empty();
+            for &peer in &PEERS[i] {
+                if peer == SENTINEL {
+                    break;
+                }
+                cands[peer as usize].remove(v);
+            }
+        }
+    }
+    cands
+}
+
 const SENTINEL: u8 = u8::MAX;
 
 const fn calc_peers() -> [[u8; 20]; 81] {
