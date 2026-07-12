@@ -641,55 +641,18 @@ pub fn uvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
         }
 
         let pivot_values: Vec<u8> = pivot_cands.iter().collect();
-        let u = pivot_values[0];
 
-        let wing_configs = [
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[5],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[4],
-                pivot_values[5],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-            ),
-            (
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-            ),
-        ];
-
-        for wing_vals in wing_configs.iter() {
-            find_uvwxyz_wing_pattern(grid, acc, pivot_idx, u, *wing_vals);
+        // Try each pivot value as the elimination digit
+        for elim_idx in 0..6 {
+            let elim_digit = pivot_values[elim_idx];
+            let wing_vals: Vec<u8> = pivot_values
+                .iter()
+                .enumerate()
+                .filter(|&(i, _)| i != elim_idx)
+                .map(|(_, &v)| v)
+                .collect();
+            let wing_config = (wing_vals[0], wing_vals[1], wing_vals[2], wing_vals[3], wing_vals[4]);
+            find_uvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, wing_config);
         }
     }
 }
@@ -801,69 +764,18 @@ pub fn tuvwxyz_wing(grid: &Grid, acc: &mut HintAccumulator) {
         }
 
         let pivot_values: Vec<u8> = pivot_cands.iter().collect();
-        let elim_digit = pivot_values[0];
 
-        let wing_configs = [
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[6],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[5],
-                pivot_values[6],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[4],
-                pivot_values[5],
-                pivot_values[6],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[1],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-                pivot_values[6],
-            ),
-            (
-                pivot_values[0],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-                pivot_values[6],
-            ),
-            (
-                pivot_values[1],
-                pivot_values[2],
-                pivot_values[3],
-                pivot_values[4],
-                pivot_values[5],
-                pivot_values[6],
-            ),
-        ];
-
-        for wing_vals in wing_configs.iter() {
-            find_tuvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, *wing_vals);
+        // Try each pivot value as the elimination digit
+        for elim_idx in 0..7 {
+            let elim_digit = pivot_values[elim_idx];
+            let wing_vals: Vec<u8> = pivot_values
+                .iter()
+                .enumerate()
+                .filter(|&(i, _)| i != elim_idx)
+                .map(|(_, &v)| v)
+                .collect();
+            let wing_config = (wing_vals[0], wing_vals[1], wing_vals[2], wing_vals[3], wing_vals[4], wing_vals[5]);
+            find_tuvwxyz_wing_pattern(grid, acc, pivot_idx, elim_digit, wing_config);
         }
     }
 }
@@ -1107,33 +1019,85 @@ fn find_xy_wing_double_link(grid: &Grid, acc: &mut HintAccumulator) {
 ///
 /// Difficulty: SE 7.0+
 pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
-    // Find pairs of Almost Locked Sets (cells with n+1 candidates in n cells)
-    // For simplicity, we start with 2-cell ALS (bi-value cells)
+    // ALS (Almost Locked Set): N cells with exactly N+1 candidates total.
+    // ALS-XZ: two ALS groups share a restricted common digit X.
+    //   "Restricted" = every cell of A with X sees every cell of B with X.
+    //   Eliminate other common digit Z from cells that see ALL cells of A with Z
+    //   AND ALL cells of B with Z.
+    //
+    // We find 1-cell ALS (bivalue) and 2-cell ALS (3 candidates in 2 cells).
 
-    for cell1 in 0..81 {
-        if grid.get(cell1) != 0 {
+    // Collect all ALS groups: (cell_indices, candidate_union)
+    struct ALSGroup {
+        cells: Vec<u8>,
+        cands: Vec<u8>,
+    }
+
+    let mut groups: Vec<ALSGroup> = Vec::new();
+
+    // 1-cell ALS: single empty cell with exactly 2 candidates
+    for i in 0..81u8 {
+        if grid.get(i) != 0 {
             continue;
         }
+        let ci: Vec<u8> = grid.candidates(i).iter().collect();
+        if ci.len() == 2 {
+            groups.push(ALSGroup {
+                cells: vec![i],
+                cands: ci,
+            });
+        }
+    }
 
-        let cands1: Vec<u8> = grid.candidates(cell1).iter().collect();
-        if cands1.len() < 2 || cands1.len() > 3 {
+    // 2-cell ALS: two empty cells in the SAME unit whose union has exactly 3 candidates
+    for i in 0..80u8 {
+        if grid.get(i) != 0 {
             continue;
         }
-
-        for cell2 in (cell1 + 1)..81 {
-            if grid.get(cell2) != 0 {
+        let ci: Vec<u8> = grid.candidates(i).iter().collect();
+        if ci.len() > 3 {
+            continue;
+        }
+        for j in (i + 1)..81u8 {
+            if grid.get(j) != 0 {
                 continue;
             }
-
-            let cands2: Vec<u8> = grid.candidates(cell2).iter().collect();
-            if cands2.len() < 2 || cands2.len() > 3 {
+            // ALS cells must share a unit (row, column, or box)
+            if !is_visible(i, j) {
                 continue;
             }
+            let cj: Vec<u8> = grid.candidates(j).iter().collect();
+            if cj.len() > 3 {
+                continue;
+            }
+            // Union of candidates
+            let mut union: Vec<u8> = ci.iter().chain(cj.iter()).copied().collect();
+            union.sort();
+            union.dedup();
+            if union.len() == 3 {
+                groups.push(ALSGroup {
+                    cells: vec![i, j],
+                    cands: union,
+                });
+            }
+        }
+    }
 
-            // Find restricted common digits (X and Z)
-            let common: Vec<u8> = cands1
+    if groups.len() < 2 {
+        return;
+    }
+
+    // For each pair of ALS groups, check ALS-XZ conditions
+    for a in 0..groups.len() {
+        for b in (a + 1)..groups.len() {
+            let ga = &groups[a];
+            let gb = &groups[b];
+
+            // Common candidates between the two groups
+            let common: Vec<u8> = ga
+                .cands
                 .iter()
-                .filter(|v| cands2.contains(v))
+                .filter(|v| gb.cands.contains(v))
                 .copied()
                 .collect();
 
@@ -1141,51 +1105,117 @@ pub fn als_xz_rule(grid: &Grid, acc: &mut HintAccumulator) {
                 continue;
             }
 
-            // Check if cells can see each other (for restricted common)
-            if !is_visible(cell1, cell2) {
-                continue;
-            }
+            // For each common candidate X, check if it's a restricted common
+            for &x in &common {
+                // Cells in group A that contain X
+                let cells_a_x: Vec<u8> = ga
+                    .cells
+                    .iter()
+                    .filter(|&&c| grid.candidates(c).has(x))
+                    .copied()
+                    .collect();
+                // Cells in group B that contain X
+                let cells_b_x: Vec<u8> = gb
+                    .cells
+                    .iter()
+                    .filter(|&&c| grid.candidates(c).has(x))
+                    .copied()
+                    .collect();
 
-            // For ALS-XZ, we need cells that can't both be false for restricted commons
-            // Find elimination targets
-            let x = common[0];
-            let z = common[1];
+                if cells_a_x.is_empty() || cells_b_x.is_empty() {
+                    continue;
+                }
 
-            // Find cells that can see both ALS and contain Z
-            let targets: Vec<u8> = (0..81)
-                .filter(|&c| {
-                    c != cell1
-                        && c != cell2
-                        && grid.get(c) == 0
-                        && is_visible(c, cell1)
-                        && is_visible(c, cell2)
-                        && grid.candidates(c).has(z)
-                })
-                .collect();
-
-            if !targets.is_empty() {
-                let eliminations: Vec<(CellIndex, Vec<u8>)> =
-                    targets.iter().map(|&t| (CellIndex::from(t), vec![z])).collect();
-
-                let desc =
-                    format!(
-                    "ALS-XZ: cells R{}C{}{{{}}} and R{}C{}{{{}}} share X={} Z={} -> eliminate {}",
-                    (cell1 / 9) + 1, (cell1 % 9) + 1,
-                    cands1.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","),
-                    (cell2 / 9) + 1, (cell2 % 9) + 1,
-                    cands2.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(","),
-                    x, z, z
-                );
-
-                acc.add(Hint {
-                    hint_type: crate::solver::HintType::AlignedPairExclusion,
-                    difficulty: 7.0,
-                    technique_name: "ALS-XZ".to_string(),
-                    description: desc,
-                    cell: CellIndex::from(cell1),
-                    value: 0,
-                    eliminations,
+                // X is restricted common iff every cell in A with X sees every cell in B with X
+                let restricted = cells_a_x.iter().all(|&ca| {
+                    cells_b_x.iter().all(|&cb| is_visible(ca, cb))
                 });
+
+                if !restricted {
+                    continue;
+                }
+
+                // For each other common candidate Z, eliminate from cells seeing both groups' Z cells
+                for &z in &common {
+                    if z == x {
+                        continue;
+                    }
+
+                    let cells_a_z: Vec<u8> = ga
+                        .cells
+                        .iter()
+                        .filter(|&&c| grid.candidates(c).has(z))
+                        .copied()
+                        .collect();
+                    let cells_b_z: Vec<u8> = gb
+                        .cells
+                        .iter()
+                        .filter(|&&c| grid.candidates(c).has(z))
+                        .copied()
+                        .collect();
+
+                    if cells_a_z.is_empty() || cells_b_z.is_empty() {
+                        continue;
+                    }
+
+                    // Target: cells that see ALL cells of A with Z AND ALL cells of B with Z
+                    let targets: Vec<u8> = (0..81u8)
+                        .filter(|&c| {
+                            grid.get(c) == 0
+                                && grid.candidates(c).has(z)
+                                && !ga.cells.contains(&c)
+                                && !gb.cells.contains(&c)
+                                && cells_a_z.iter().all(|&az| is_visible(c, az))
+                                && cells_b_z.iter().all(|&bz| is_visible(c, bz))
+                        })
+                        .collect();
+
+                    if targets.is_empty() {
+                        continue;
+                    }
+
+                    let cell_labels = |cells: &[u8]| -> String {
+                        cells
+                            .iter()
+                            .map(|&c| {
+                                let cands: Vec<u8> = grid.candidates(c).iter().collect();
+                                format!(
+                                    "R{}C{{{}}}",
+                                    (c / 9) + 1,
+                                    cands.iter()
+                                        .map(|v| v.to_string())
+                                        .collect::<Vec<_>>()
+                                        .join(",")
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                    };
+
+                    let desc = format!(
+                        "ALS-XZ: [{}] and [{}] share X={} Z={} -> eliminate {}",
+                        cell_labels(&ga.cells),
+                        cell_labels(&gb.cells),
+                        x,
+                        z,
+                        z,
+                    );
+
+                    let eliminations: Vec<(CellIndex, Vec<u8>)> = targets
+                        .iter()
+                        .map(|&t| (CellIndex::from(t), vec![z]))
+                        .collect();
+
+                    acc.add(Hint {
+                        hint_type: crate::solver::HintType::AlsWithXzRule,
+                        difficulty: 7.0,
+                        technique_name: "ALS-XZ".to_string(),
+                        description: desc,
+                        cell: CellIndex::from(ga.cells[0]),
+                        value: 0,
+                        eliminations,
+                    });
+                }
             }
         }
     }

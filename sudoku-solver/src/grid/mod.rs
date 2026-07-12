@@ -86,6 +86,11 @@ impl Grid {
         }
     }
 
+    /// Clear all candidates for a cell (used when a value is placed).
+    pub fn clear_candidates(&mut self, idx: u8) {
+        self.candidates[idx as usize] = Candidates::empty();
+    }
+
     pub fn rebuild_candidates(&mut self) {
         for i in 0..81 {
             if self.cells[i] > 0 {
@@ -143,6 +148,66 @@ impl Grid {
         for &i in &BLOCKS[b as usize].cells {
             if self.cells[i as usize] == val {
                 return false;
+            }
+        }
+        true
+    }
+
+    /// Check grid invariants. Returns true if consistent.
+    pub fn check_consistency(&self) -> bool {
+        for i in 0..81 {
+            let val = self.cells[i];
+            if val == 0 {
+                if self.candidates[i].is_empty() {
+                    return false;
+                }
+            } else {
+                if !self.candidates[i].is_empty() {
+                    return false;
+                }
+                if val > 9 {
+                    return false;
+                }
+            }
+        }
+        // Check rows and columns
+        for unit in 0..9 {
+            let mut seen = [false; 10];
+            for c in 0..9 {
+                let v = self.cells[unit * 9 + c] as usize;
+                if v > 0 && seen[v] {
+                    return false;
+                }
+                if v > 0 {
+                    seen[v] = true;
+                }
+            }
+            let mut seen = [false; 10];
+            for r in 0..9 {
+                let v = self.cells[r * 9 + unit] as usize;
+                if v > 0 && seen[v] {
+                    return false;
+                }
+                if v > 0 {
+                    seen[v] = true;
+                }
+            }
+        }
+        // Check boxes
+        for b in 0..9 {
+            let mut seen = [false; 10];
+            let br = (b / 3) * 3;
+            let bc = (b % 3) * 3;
+            for r in br..br + 3 {
+                for c in bc..bc + 3 {
+                    let v = self.cells[r * 9 + c] as usize;
+                    if v > 0 && seen[v] {
+                        return false;
+                    }
+                    if v > 0 {
+                        seen[v] = true;
+                    }
+                }
             }
         }
         true

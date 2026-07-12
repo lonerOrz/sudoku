@@ -24,10 +24,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx % 9)
                     .collect();
 
-                if row1_cols.len() >= 2
-                    && row1_cols.len() <= 3
-                    && row2_cols.len() >= 2
-                    && row2_cols.len() <= 3
+                if row1_cols.len() == 2 && row2_cols.len() == 2
                 {
                     let common: Vec<u8> = row1_cols
                         .iter()
@@ -95,10 +92,7 @@ pub fn x_wing(grid: &Grid, acc: &mut HintAccumulator) {
                     .map(|&idx| idx / 9)
                     .collect();
 
-                if col1_rows.len() >= 2
-                    && col1_rows.len() <= 3
-                    && col2_rows.len() >= 2
-                    && col2_rows.len() <= 3
+                if col1_rows.len() == 2 && col2_rows.len() == 2
                 {
                     let common: Vec<u8> = col1_rows
                         .iter()
@@ -170,48 +164,33 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                     let row1_cols: Vec<u8> = row1
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row1_cols.len() < 2 || row1_cols.len() > 3 {
+                    if row1_cols.is_empty() || row1_cols.len() > 3 {
                         continue;
                     }
 
                     let row2_cols: Vec<u8> = row2
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row2_cols.len() < 2 || row2_cols.len() > 3 {
+                    if row2_cols.is_empty() || row2_cols.len() > 3 {
                         continue;
                     }
 
                     let row3_cols: Vec<u8> = row3
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx % 9)
                         .collect();
 
-                    if row3_cols.len() < 2 || row3_cols.len() > 3 {
+                    if row3_cols.is_empty() || row3_cols.len() > 3 {
                         continue;
                     }
 
@@ -278,48 +257,33 @@ pub fn swordfish(grid: &Grid, acc: &mut HintAccumulator) {
                     let col1_rows: Vec<u8> = col1
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col1_rows.len() < 2 || col1_rows.len() > 3 {
+                    if col1_rows.is_empty() || col1_rows.len() > 3 {
                         continue;
                     }
 
                     let col2_rows: Vec<u8> = col2
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col2_rows.len() < 2 || col2_rows.len() > 3 {
+                    if col2_rows.is_empty() || col2_rows.len() > 3 {
                         continue;
                     }
 
                     let col3_rows: Vec<u8> = col3
                         .cells
                         .iter()
-                        .filter(|&&idx| {
-                            grid.get(idx) == 0
-                                && grid.candidates(idx).has(digit)
-                                && grid.candidates(idx).cardinality() >= 2
-                                && grid.candidates(idx).cardinality() <= 3
-                        })
+                        .filter(|&&idx| grid.get(idx) == 0 && grid.candidates(idx).has(digit))
                         .map(|&idx| idx / 9)
                         .collect();
 
-                    if col3_rows.len() < 2 || col3_rows.len() > 3 {
+                    if col3_rows.is_empty() || col3_rows.len() > 3 {
                         continue;
                     }
 
@@ -398,17 +362,14 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 row.cells
                                     .iter()
                                     .filter(|&&idx| {
-                                        grid.get(idx) == 0
-                                            && grid.candidates(idx).has(digit)
-                                            && grid.candidates(idx).cardinality() >= 2
-                                            && grid.candidates(idx).cardinality() <= 4
+                                        grid.get(idx) == 0 && grid.candidates(idx).has(digit)
                                     })
                                     .map(|&idx| idx % 9)
                                     .collect()
                             })
                             .collect();
 
-                        if row_cols.iter().any(|cols| cols.len() < 2 || cols.len() > 4) {
+                        if row_cols.iter().any(|cols| cols.is_empty() || cols.len() > 4) {
                             continue;
                         }
 
@@ -461,7 +422,7 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     value: 0,
                                     eliminations,
                                 });
-                                return;
+                                continue;
                             }
                         }
                     }
@@ -489,17 +450,14 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                 col.cells
                                     .iter()
                                     .filter(|&&idx| {
-                                        grid.get(idx) == 0
-                                            && grid.candidates(idx).has(digit)
-                                            && grid.candidates(idx).cardinality() >= 2
-                                            && grid.candidates(idx).cardinality() <= 4
+                                        grid.get(idx) == 0 && grid.candidates(idx).has(digit)
                                     })
                                     .map(|&idx| idx / 9)
                                     .collect()
                             })
                             .collect();
 
-                        if col_rows.iter().any(|rows| rows.len() < 2 || rows.len() > 4) {
+                        if col_rows.iter().any(|rows| rows.is_empty() || rows.len() > 4) {
                             continue;
                         }
 
@@ -551,7 +509,6 @@ pub fn jellyfish(grid: &Grid, acc: &mut HintAccumulator) {
                                     value: 0,
                                     eliminations,
                                 });
-                                return;
                             }
                         }
                     }

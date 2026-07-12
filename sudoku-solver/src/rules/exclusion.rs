@@ -363,6 +363,32 @@ pub fn aligned_triplet_exclusion(grid: &Grid, acc: &mut HintAccumulator) {
             }
         }
     }
+
+    // Find base cell triplets in blocks
+    for block in &BLOCKS {
+        let empty_cells: Vec<u8> = block
+            .cells
+            .iter()
+            .copied()
+            .filter(|&c| grid.get(c) == 0)
+            .collect();
+
+        if empty_cells.len() < 3 {
+            continue;
+        }
+
+        for i in 0..empty_cells.len() {
+            for j in (i + 1)..empty_cells.len() {
+                for k in (j + 1)..empty_cells.len() {
+                    let cell1 = empty_cells[i];
+                    let cell2 = empty_cells[j];
+                    let cell3 = empty_cells[k];
+
+                    check_ate_for_triplet(grid, acc, cell1, cell2, cell3);
+                }
+            }
+        }
+    }
 }
 
 /// Check ATE for a specific triplet of base cells

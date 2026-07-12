@@ -824,7 +824,7 @@ fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                 let rows = [r1_idx, r2_idx, r3_idx];
                 let rows_data = [r1, r2, r3];
 
-                // Find columns where each row has the digit (with cardinality 2-3 for strong link)
+                // Find columns where each row has the digit
                 let mut row_cols: [Vec<u8>; 3] = [Vec::new(), Vec::new(), Vec::new()];
 
                 for (i, &_row_idx) in rows.iter().enumerate() {
@@ -834,15 +834,12 @@ fn find_strong_links_fish_rows(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         .iter()
                         .copied()
                         .filter(|&cell| {
-                            grid.get(cell) == 0
-                                && grid.candidates(cell).has(digit)
-                                && grid.candidates(cell).cardinality() >= 2
-                                && grid.candidates(cell).cardinality() <= 3
+                            grid.get(cell) == 0 && grid.candidates(cell).has(digit)
                         })
                         .map(|cell| cell % 9)
                         .collect();
 
-                    // Each row must have 2-3 candidates for strong link
+                    // Each row must have the digit in 2-3 columns
                     if row_cols[i].len() < 2 || row_cols[i].len() > 3 {
                         continue;
                     }
@@ -917,7 +914,7 @@ fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                 let cols = [c1_idx, c2_idx, c3_idx];
                 let cols_data = [c1, c2, c3];
 
-                // Find rows where each column has the digit (with cardinality 2-3 for strong link)
+                // Find rows where each column has the digit
                 let mut col_rows: [Vec<u8>; 3] = [Vec::new(), Vec::new(), Vec::new()];
 
                 for (i, &_col_idx) in cols.iter().enumerate() {
@@ -927,15 +924,12 @@ fn find_strong_links_fish_cols(grid: &Grid, acc: &mut HintAccumulator, digit: u8
                         .iter()
                         .copied()
                         .filter(|&cell| {
-                            grid.get(cell) == 0
-                                && grid.candidates(cell).has(digit)
-                                && grid.candidates(cell).cardinality() >= 2
-                                && grid.candidates(cell).cardinality() <= 3
+                            grid.get(cell) == 0 && grid.candidates(cell).has(digit)
                         })
                         .map(|cell| cell / 9)
                         .collect();
 
-                    // Each column must have 2-3 candidates for strong link
+                    // Each column must have the digit in 2-3 rows
                     if col_rows[i].len() < 2 || col_rows[i].len() > 3 {
                         continue;
                     }

@@ -38,6 +38,7 @@ pub enum HintType {
     StrongLinksFish,
     AlignedPairExclusion,
     AlignedTripletExclusion,
+    AlsWithXzRule,
     GeneralizedNakedSet,
     VLocking,
     XCyclesSimple,
